@@ -2,7 +2,7 @@ CC = gcc
 COPT = -O2 
 LIB = -lcurl
 
-OBJ = tun.o http.o main.o
+OBJ = parser.o tun.o http.o main.o
 
 NAME = chaosvpn
 

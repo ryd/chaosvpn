@@ -16,6 +16,9 @@ int main (int argc,char *argv[]) {
 			printf("Unable to fetch tinc-chaosvpn.txt - maybe server is down\n");
 			return 1;
 		}
-		printf("http:%s\n", my_buffer.text);
+		if (parser_parse_config(my_buffer.text)) {
+			printf("Unable to parse config\n");
+			return 1;
+		}
 		return 0;
 }
