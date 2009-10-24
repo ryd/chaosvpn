@@ -1,6 +1,7 @@
 #include "curl/curl.h"
 #include <string.h>
 #include <stdlib.h>
+#include "main.h"
 
 struct MemoryStruct {
   char *memory;
@@ -29,8 +30,9 @@ static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *da
   return realsize;
 }
 
+extern struct buffer;
 
-int http_request(char *url, char *response) {
+int http_request(char *url, struct buffer *response) {
 	CURL *curl;
 	CURLcode res;
 	struct MemoryStruct chunk;
@@ -56,7 +58,9 @@ int http_request(char *url, char *response) {
 
 	curl_easy_cleanup(curl);
 
-	memcpy(response, chunk.memory, chunk.size);
+	//memcpy(, chunk.memory, chunk.size);
+	response->text = chunk.memory;
+
 
 	return 0;
 }

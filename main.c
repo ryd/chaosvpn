@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "main.h"
+
+struct buffer my_buffer;
 
 int main (int argc,char *argv[]) {
 		if (tun_check_or_create()) {
@@ -8,10 +11,11 @@ int main (int argc,char *argv[]) {
 		}
 
 		char buffer[8196];
-		if (http_request("http://nons.de/", buffer)) {
-			printf("somthing went wrong\n");
+		struct buffer *buffer_ptr = &my_buffer;
+		if (http_request("https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt?id=undef&password=&ip=", buffer_ptr)) {
+			printf("Unable to fetch tinc-chaosvpn.txt - maybe server is down\n");
 			return 1;
 		}
-		printf("http:%s\n", buffer);
+		printf("http:%s\n", my_buffer.text);
 		return 0;
 }

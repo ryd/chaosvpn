@@ -1,0 +1,4 @@
+struct buffer {
+	char *text;
+};
+
