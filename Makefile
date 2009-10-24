@@ -1,14 +1,13 @@
 CC = gcc
 COPT = -O2 
-LIB = -lm
+LIB = -lcurl
 
-OBJ = main.o tun.o
+OBJ = tun.o http.o main.o
 
 NAME = chaosvpn
 
 $(NAME): $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LIB)
-	strip $@
 
 %.o: %.c
 	$(CC) $(COPT) -c $<

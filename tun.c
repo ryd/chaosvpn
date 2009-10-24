@@ -16,7 +16,6 @@ int tun_create_dev(){
 		return 1;
 	}
 	if (mknod (TUN_DEV, S_IFCHR | S_IRUSR | S_IWUSR, makedev(10, 200))) {
-		printf("Error - unable to create tun device - maybe wrong user\n");
 		return 1;
 	}
 	return 0;
@@ -25,6 +24,7 @@ int tun_create_dev(){
 int tun_check_or_create() {
 	FILE *fp;
 	if (!EXISTS(TUN_DEV)) {
+		printf("tun device does't exists - trying to create it.");
 		return tun_create_dev();
 	}
 	return 0;
