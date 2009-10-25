@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "list.h"
 #include "main.h"
 
 struct buffer my_buffer;
@@ -16,9 +17,20 @@ int main (int argc,char *argv[]) {
 			printf("Unable to fetch tinc-chaosvpn.txt - maybe server is down\n");
 			return 1;
 		}
-		if (parser_parse_config(my_buffer.text)) {
+
+		struct list_head config_list;
+		INIT_LIST_HEAD(&config_list);
+
+		if (parser_parse_config(my_buffer.text, &config_list)) {
 			printf("Unable to parse config\n");
 			return 1;
 		}
+
+		struct list_head *p;
+		list_for_each(p, &config_list) {
+			struct configlist *i = container_of(p, struct configlist, list);
+			printf("name:%s\n", i->config->name);
+		}
+
 		return 0;
 }
