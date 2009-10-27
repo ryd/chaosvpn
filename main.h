@@ -27,6 +27,6 @@ struct config {
     char *silent;
     char *port;
     char *indirectdata;
-    struct list_head key;
+    char *key;
 };
 

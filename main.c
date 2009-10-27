@@ -30,6 +30,7 @@ int main (int argc,char *argv[]) {
 		list_for_each(p, &config_list) {
 			struct configlist *i = container_of(p, struct configlist, list);
 			printf("name:%s\n", i->config->name);
+			printf("key:%s", i->config->key);
 		}
 
 		return 0;
