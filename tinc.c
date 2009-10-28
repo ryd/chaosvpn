@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "main.h"
+#include "list.h"
 
 #define TINC_DEFAULT_PORT "665"
 
@@ -9,6 +10,19 @@ char *tinc_extent_string(char *dest, char *src) {
 	char *text = realloc(dest, strlen(dest) + strlen(src) + 1);
 	strcat(text, src);
 	return text;
+}
+
+char *tinc_add_subnet(char *config, struct list_head *network) {
+	struct list_head *p;
+	list_for_each(p, network) {
+		struct stringlist *i = container_of(p, struct stringlist, list);
+
+		config = tinc_extent_string(config, "Subnet=");
+		config = tinc_extent_string(config, i->text);
+		config = tinc_extent_string(config, "\n");
+	}
+
+	return config;
 }
 
 int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
@@ -36,6 +50,9 @@ int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
 			TINC_DEFAULT_PORT
 	);
 	config = tinc_extent_string(config, "\n");
+
+	config = tinc_add_subnet(config, &peer->network);
+	config = tinc_add_subnet(config, &peer->network6);
 
 	output->text = config;
 	return 0;
