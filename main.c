@@ -24,8 +24,17 @@ int main (int argc,char *argv[]) {
 		}
 
 		struct buffer *tinc_config = malloc(sizeof(struct buffer));
-		tinc_generate_config(tinc_config);
-		printf("config: %s\n", tinc_config->text);
+		tinc_generate_config(tinc_config, "chaos", "undef", "127.0.0.1");
+		printf("config:\n%s", tinc_config->text);
+
+		struct list_head *p;
+		list_for_each(p, &config_list) {
+			struct buffer *peer_config = malloc(sizeof(struct buffer));
+			struct configlist *i = container_of(p, struct configlist, list);
+
+			tinc_generate_peer_config(peer_config, i->config);
+			printf("peer:\n%s", peer_config->text);
+		}
 
 		return 0;
 }
