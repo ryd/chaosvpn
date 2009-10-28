@@ -54,6 +54,14 @@ int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
 	config = tinc_add_subnet(config, &peer->network);
 	config = tinc_add_subnet(config, &peer->network6);
 
+	config = tinc_extent_string(config,
+			strlen(peer->use_tcp_only) == 0 ?
+			"TCPonly=no\n\n" :
+			"TCPonly=yes\n\n"
+	);
+
+	config = tinc_extent_string(config, peer->key);
+
 	output->text = config;
 	return 0;
 }
