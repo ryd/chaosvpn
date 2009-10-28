@@ -11,7 +11,6 @@
 
 int tun_create_dev(){
 	mode_t mask = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-	int i;
 	if (!EXISTS(TUN_PATH) && mkdir(TUN_PATH, mask)) {
 		return 1;
 	}
@@ -22,7 +21,6 @@ int tun_create_dev(){
 }
 
 int tun_check_or_create() {
-	FILE *fp;
 	if (!EXISTS(TUN_DEV)) {
 		printf("tun device does't exists - trying to create it.");
 		return tun_create_dev();
