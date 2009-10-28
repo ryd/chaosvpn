@@ -6,6 +6,7 @@
 
 struct config *my_config;
 int parse_key_mode;
+static char *EMPTY = "";
 
 char *parser_check_new_item(char *token) {
 	char *name = NULL;
@@ -40,17 +41,32 @@ void parser_extent_key(char *line) {
 	strcat(my_config->key, "\n");
 }
 
+int parser_create_config(char *name){
+	my_config = malloc(sizeof(struct config));
+
+	INIT_LIST_HEAD(&my_config->network);
+	INIT_LIST_HEAD(&my_config->network6);
+	INIT_LIST_HEAD(&my_config->route_network);
+	INIT_LIST_HEAD(&my_config->route_network6);
+
+	my_config->name = name;
+	my_config->gatewayhost = EMPTY;
+	my_config->owner = EMPTY;
+	my_config->use_tcp_only = EMPTY;
+	my_config->hidden = EMPTY;
+	my_config->silent = EMPTY;
+	my_config->port = EMPTY;
+	my_config->indirectdata = EMPTY;
+	my_config->key = EMPTY;
+
+	return 0;
+}
+
 
 int parser_parse_line(char *line, struct list_head *configlist) {
 	char *item = parser_check_new_item(line);
 	if (item) {
-		my_config = malloc(sizeof(struct config));
-		my_config->name = item;
-		INIT_LIST_HEAD(&my_config->network);
-		INIT_LIST_HEAD(&my_config->network6);
-		INIT_LIST_HEAD(&my_config->route_network);
-		INIT_LIST_HEAD(&my_config->route_network6);
-
+		parser_create_config(item);
 		parse_key_mode = 0;
 
 		struct configlist *i = malloc(sizeof(struct configlist));
