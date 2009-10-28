@@ -1,8 +1,8 @@
 CC = gcc
-COPT = -O2 
+COPT = -O2
 LIB = -lcurl
 
-OBJ = fs.o parser.o tun.o http.o main.o
+OBJ = tinc.o fs.o parser.o tun.o http.o main.o
 
 NAME = chaosvpn
 
