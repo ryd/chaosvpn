@@ -2,11 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "main.h"
+#include "http.h"
 
-struct MemoryStruct {
-	char *memory;
-	size_t size;
-};
 
 void *myrealloc(void *ptr, size_t size) {
 	if(ptr)

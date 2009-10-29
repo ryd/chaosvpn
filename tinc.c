@@ -3,8 +3,7 @@
 #include <string.h>
 #include "main.h"
 #include "list.h"
-
-#define TINC_DEFAULT_PORT "665"
+#include "tinc.h"
 
 char *tinc_extent_string(char *dest, char *src) {
 	char *text = realloc(dest, strlen(dest) + strlen(src) + 1);

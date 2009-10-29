@@ -4,10 +4,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "tun.h"
 
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
-#define TUN_DEV   "/dev/net/tun"
-#define TUN_PATH  "/dev/net"
 
 int tun_create_dev(){
 	mode_t mask = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;

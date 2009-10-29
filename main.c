@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include "list.h"
 #include "main.h"
+#include "tun.h"
+#include "http.h"
+#include "parser.h"
+#include "tinc.h"
 
 int main (int argc,char *argv[]) {
 		if (tun_check_or_create()) {

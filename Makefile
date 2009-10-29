@@ -1,5 +1,5 @@
 CC = gcc
-COPT = -O2
+COPT = -O2 -Wall
 LIB = -lcurl
 
 OBJ = tinc.o fs.o parser.o tun.o http.o main.o

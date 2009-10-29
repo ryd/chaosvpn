@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include "list.h"
 #include "main.h"
+#include "parser.h"
 
 struct config *my_config;
 int parse_key_mode;
-static char *EMPTY = "";
 
 char *parser_check_new_item(char *token) {
 	char *name = NULL;
@@ -72,35 +72,35 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 		struct configlist *i = malloc(sizeof(struct configlist));
 		i->config = my_config;
 		list_add_tail(&i->list, configlist);
-	} else if (item = parser_check_configitem(line, "gatewayhost=")) {
+	} else if ((item = parser_check_configitem(line, "gatewayhost="))) {
 		my_config->gatewayhost = item;
-	} else if (item = parser_check_configitem(line, "owner=")) {
+	} else if ((item = parser_check_configitem(line, "owner="))) {
 		my_config->owner = item;
-	} else if (item = parser_check_configitem(line, "use-tcp-only=")) {
+	} else if ((item = parser_check_configitem(line, "use-tcp-only="))) {
 		my_config->use_tcp_only = item;
-	} else if (item = parser_check_configitem(line, "network=")) {
+	} else if ((item = parser_check_configitem(line, "network="))) {
 		list_add_tail(parser_stringlist(item), &my_config->network);
-	} else if (item = parser_check_configitem(line, "network6=")) {
+	} else if ((item = parser_check_configitem(line, "network6="))) {
 		list_add_tail(parser_stringlist(item), &my_config->network6);
-	} else if (item = parser_check_configitem(line, "route_network=")) {
+	} else if ((item = parser_check_configitem(line, "route_network="))) {
 		list_add_tail(parser_stringlist(item), &my_config->route_network);
-	} else if (item = parser_check_configitem(line, "route_network6=")) {
+	} else if ((item = parser_check_configitem(line, "route_network6="))) {
 		list_add_tail(parser_stringlist(item), &my_config->route_network6);
-	} else if (item = parser_check_configitem(line, "hidden=")) {
+	} else if ((item = parser_check_configitem(line, "hidden="))) {
 		my_config->hidden = item;
-	} else if (item = parser_check_configitem(line, "silent=")) {
+	} else if ((item = parser_check_configitem(line, "silent="))) {
 		my_config->silent = item;
-	} else if (item = parser_check_configitem(line, "port=")) {
+	} else if ((item = parser_check_configitem(line, "port="))) {
 		my_config->port = item;
-	} else if (item = parser_check_configitem(line, "indirectdata=")) {
+	} else if ((item = parser_check_configitem(line, "indirectdata="))) {
 		my_config->indirectdata = item;
-	} else if (item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----")) {
+	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
 		my_config->key = malloc(strlen(line) + 2);
 		memcpy(my_config->key, line, strlen(line));
 		memcpy(my_config->key + strlen(line), "\0", 1); // I thing - there is a better solution
 		strcat(my_config->key, "\n");
 		parse_key_mode = 1;
-	} else if (item = parser_check_configitem(line, "-----END RSA PUBLIC KEY-----")) {
+	} else if ((item = parser_check_configitem(line, "-----END RSA PUBLIC KEY-----"))) {
 		parser_extent_key(line);
 		parse_key_mode = 0;
 	} else {
