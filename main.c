@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 #include "list.h"
 #include "main.h"
 #include "tun.h"
@@ -7,9 +10,18 @@
 #include "parser.h"
 #include "tinc.h"
 
+int main_check_root() {
+		    return getuid() != 0;
+}
+
 int main (int argc,char *argv[]) {
+		if (main_check_root()) {
+			printf("Error - wrong user - please start as root user\n");
+			return 1;
+		}
+
 		if (tun_check_or_create()) {
-			printf("Error - unable to create tun device - maybe wrong user\n");
+			printf("Error - unable to create tun device\n");
 			return 1;
 		}
 
@@ -37,7 +49,7 @@ int main (int argc,char *argv[]) {
 			struct configlist *i = container_of(p, struct configlist, list);
 
 			tinc_generate_peer_config(peer_config, i->config);
-			printf("peer:\n%s", peer_config->text);
+			printf("peer:%s\n%s", i->config->name, peer_config->text);
 		}
 
 		return 0;
