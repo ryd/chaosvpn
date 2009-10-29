@@ -12,9 +12,8 @@ char *parser_check_new_item(char *token) {
 	char *name = NULL;
 	if (!strncmp(token, "[", 1) &&
 			!strncmp(token + strlen(token) - 1, "]", 1)) {
-		name = malloc(strlen(token));
+		name = calloc(sizeof(char), strlen(token) - 1);
 		memcpy(name, token + 1, strlen(token) - 2);
-		memcpy(name + strlen(token) - 2, "\0", 1); // I thing - there is a better solution
 	}
 	return name;
 }
@@ -95,9 +94,8 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 	} else if ((item = parser_check_configitem(line, "indirectdata="))) {
 		my_config->indirectdata = item;
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
-		my_config->key = malloc(strlen(line) + 2);
+		my_config->key = calloc(sizeof(char), strlen(line) + 2);
 		memcpy(my_config->key, line, strlen(line));
-		memcpy(my_config->key + strlen(line), "\0", 1); // I thing - there is a better solution
 		strcat(my_config->key, "\n");
 		parse_key_mode = 1;
 	} else if ((item = parser_check_configitem(line, "-----END RSA PUBLIC KEY-----"))) {

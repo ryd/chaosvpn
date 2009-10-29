@@ -25,8 +25,7 @@ char *tinc_add_subnet(char *config, struct list_head *network) {
 }
 
 int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
-	char *config = malloc(sizeof(char));
-	memcpy(config, "\0", 1); //empty string
+	char *config = calloc(sizeof(char), 1); //empty string
 
 	config = tinc_extent_string(config, "Address=");
 	config = tinc_extent_string(config, peer->gatewayhost);
