@@ -3,6 +3,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
@@ -51,5 +53,29 @@ fs_writecontents(const char const* fn, const char const* cnt, const int len, con
 	fh = open(fn, O_CREAT | O_WRONLY, mode);
 	bw = write(fh, cnt, len);
 	close(fh);
-	return len == bw;
+	return len != bw;
 }
+
+
+int
+fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode)
+{
+    char *buf, *ptr;
+    int res;
+    unsigned int dlen, reqlen;
+
+    dlen = strlen(dir) + 1;
+    if(!dlen) return 1;
+    reqlen = dlen + strlen(fn) + 1;
+    if(reqlen < dlen) return 1;
+    if(!(buf = ptr = malloc(reqlen))) return 1;
+    strcpy(ptr, dir);
+    *(ptr + dlen - 1) = '/';
+    *(ptr + dlen) = 0;
+    strcat(ptr, fn);
+    for(ptr=buf+dlen;*ptr;ptr++) if(*ptr== '/') *ptr='_';
+    res = fs_writecontents(buf, cnt, len, mode);
+    free(buf);
+    return res;
+}
+
