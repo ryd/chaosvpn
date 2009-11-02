@@ -50,7 +50,7 @@ int main (int argc,char *argv[]) {
 		tinc_generate_config(tinc_config, "chaos", "undef", "127.0.0.1");
 		if(fs_writecontents("undef.config", tinc_config->text, strlen(tinc_config->text), 0400)) {
 			fputs("unable to write config file!\n", stderr);
-			return 111;
+			return 1;
         	}
 		puts(".");
 
@@ -62,7 +62,10 @@ int main (int argc,char *argv[]) {
 			printf("Writing config file for peer %s:", i->config->name);
 			fflush(stdout);
 			tinc_generate_peer_config(peer_config, i->config);
-			fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0400);
+			if(fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0400)) {
+				fputs("unable to write config file.\n", stderr);
+				return 1;
+			}
 			puts(".");
 		}
 
