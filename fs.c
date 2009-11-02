@@ -1,6 +1,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
@@ -41,3 +43,13 @@ int fs_cp_r(char *src, char *dest) {
 	return 0;
 }
 
+int
+fs_writecontents(const char const* fn, const char const* cnt, const int len, const int mode)
+{
+	int fh;
+	int bw;
+	fh = open(fn, O_CREAT | O_WRONLY, mode);
+	bw = write(fh, cnt, len);
+	close(fh);
+	return len == bw;
+}
