@@ -1,9 +1,9 @@
-#include "curl/curl.h"
 #include <string.h>
 #include <stdlib.h>
 #include "main.h"
 #include "http.h"
 
+#include <curl/curl.h>
 
 void *myrealloc(void *ptr, size_t size) {
 	if(ptr)
