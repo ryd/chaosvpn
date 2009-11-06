@@ -63,23 +63,23 @@ fs_writecontents(const char const* fn, const char const* cnt, const int len, con
 int
 fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode)
 {
-    char *buf = NULL, *ptr = NULL;
-    int res;
-    unsigned int dlen, reqlen;
+	char *buf = NULL, *ptr = NULL;
+	int res;
+	unsigned int dlen, reqlen;
 
-    dlen = strlen(dir) + 1;
-    /* ABABAB: code never executed: if(!dlen) return 1; */
-    reqlen = dlen + strlen(fn) + 1;	/* Gives us two extra bytes at end when one is required */
-    /* ABABAB: code never executed: if(reqlen < dlen) return 1; */
-    if(NULL == (ptr = malloc((size_t)reqlen))) return 1;
-    buf = ptr;			/* for the write below */
-    strcpy(ptr, dir);
-    *(ptr + dlen - 1) = '/';
-    *(ptr + dlen) = '\0';
-    strcat(ptr, fn);
-    for(ptr=buf+dlen;'\0' != *ptr;ptr++) if('/' == *ptr) *ptr='_';
-    res = fs_writecontents(buf, cnt, len, mode);
-    free(buf);
-    return res;
+	dlen = strlen(dir) + 1;
+	/* ABABAB: code never executed: if(!dlen) return 1; */
+	reqlen = dlen + strlen(fn) + 1;	/* Gives us two extra bytes at end when one is required */
+	/* ABABAB: code never executed: if(reqlen < dlen) return 1; */
+	if (NULL == (ptr = malloc((size_t)reqlen))) return 1;
+	buf = ptr;			/* for the write below */
+	strcpy(ptr, dir);
+	*(ptr + dlen - 1) = '/';
+	*(ptr + dlen) = '\0';
+	strcat(ptr, fn);
+	for(ptr=buf+dlen;'\0' != *ptr;ptr++) if('/' == *ptr) *ptr='_';
+	res = fs_writecontents(buf, cnt, len, mode);
+	free(buf);
+	return res;
 }
 

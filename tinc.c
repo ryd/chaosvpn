@@ -13,6 +13,7 @@ char *tinc_extent_string(char *dest, char *src) {
 
 char *tinc_add_subnet(char *config, struct list_head *network) {
 	struct list_head *p;
+
 	list_for_each(p, network) {
 		struct stringlist *i = container_of(p, struct stringlist, list);
 

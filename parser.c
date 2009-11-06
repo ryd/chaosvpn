@@ -19,10 +19,10 @@ char *parser_check_new_item(char *token) {
 }
 
 char *parser_check_configitem(char *line, char *config) {
-		if (!strncmp(line, config, strlen(config))) {
-			return line + strlen(config);
-		}
-		return NULL;
+	if (!strncmp(line, config, strlen(config))) {
+		return line + strlen(config);
+	}
+	return NULL;
 }
 
 struct list_head *parser_stringlist (char *item) {
@@ -64,6 +64,7 @@ int parser_create_config(char *name){
 
 int parser_parse_line(char *line, struct list_head *configlist) {
 	char *item = parser_check_new_item(line);
+
 	if (item) {
 		struct configlist *i;
 
