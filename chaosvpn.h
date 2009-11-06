@@ -1,0 +1,1 @@
+#define	NOERR	(0)
