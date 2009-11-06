@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "chaosvpn.h"
+
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
  * On success, path is returned intact.  On failure, path is undefined.
@@ -14,7 +16,7 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 	int err,pos,i;
 
 	err = mkdir( path, mode );
-	if( err && errno == ENOENT ) {
+	if( (err != NOERR) && errno == ENOENT ) {
 
 		/* find the last occurance of '/' */
 		for( i = 0, pos = 0; path[ i ] != '\0'; i++ ) {
@@ -29,7 +31,7 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 
 		path[ pos ] = '\0';
 		err = fs_mkdir_p( path, mode );
-		if( err )
+		if( err != NOERR )
 			return err;
 
 		path[ pos ] = '/';
@@ -40,40 +42,42 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 }
 
 
-int fs_cp_r(char *src, char *dest) {
+int fs_cp_r(char /*@unused@*/*src, char /*@unused@*/*dest) {
 	//spaceholder
 	return 0;
 }
 
-int
+bool
 fs_writecontents(const char const* fn, const char const* cnt, const int len, const int mode)
 {
 	int fh;
 	int bw;
 	fh = open(fn, O_CREAT | O_WRONLY, mode);
-	bw = write(fh, cnt, len);
-	close(fh);
+	/* ABABAB: should throw proper error here */
+	bw = write(fh, cnt, (size_t)len);
+	(void)close(fh);
 	return len != bw;
 }
 
 
-int
+bool
 fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode)
 {
-    char *buf, *ptr;
-    int res;
+    char *buf = NULL, *ptr = NULL;
+    bool res;
     unsigned int dlen, reqlen;
 
     dlen = strlen(dir) + 1;
-    if(!dlen) return 1;
-    reqlen = dlen + strlen(fn) + 1;
-    if(reqlen < dlen) return 1;
-    if(!(buf = ptr = malloc(reqlen))) return 1;
+    /* ABABAB: code never executed: if(!dlen) return 1; */
+    reqlen = dlen + strlen(fn) + 1;	/* Gives us two extra bytes at end when one is required */
+    /* ABABAB: code never executed: if(reqlen < dlen) return 1; */
+    if(NULL == (ptr = malloc((size_t)reqlen))) return 1;
+    buf = ptr;			/* for the write below */
     strcpy(ptr, dir);
     *(ptr + dlen - 1) = '/';
-    *(ptr + dlen) = 0;
+    *(ptr + dlen) = '\0';
     strcat(ptr, fn);
-    for(ptr=buf+dlen;*ptr;ptr++) if(*ptr== '/') *ptr='_';
+    for(ptr=buf+dlen;'\0' != *ptr;ptr++) if('/' == *ptr) *ptr='_';
     res = fs_writecontents(buf, cnt, len, mode);
     free(buf);
     return res;

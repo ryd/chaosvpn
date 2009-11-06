@@ -1,22 +1,15 @@
+#include "curl/curl.h"
 #include <string.h>
 #include <stdlib.h>
 #include "main.h"
 #include "http.h"
 
-#include <curl/curl.h>
-
-void *myrealloc(void *ptr, size_t size) {
-	if(ptr)
-		return realloc(ptr, size);
-	else
-		return malloc(size);
-}
 
 size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data) {
 	size_t realsize = size * nmemb;
 	struct MemoryStruct *mem = (struct MemoryStruct *)data;
 
-	mem->memory = myrealloc(mem->memory, mem->size + realsize + 1);
+	mem->memory = realloc(mem->memory, mem->size + realsize + 1);
 	if (mem->memory) {
 		memcpy(&(mem->memory[mem->size]), ptr, realsize);
 		mem->size += realsize;

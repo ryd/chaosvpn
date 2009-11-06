@@ -65,10 +65,13 @@ int parser_create_config(char *name){
 int parser_parse_line(char *line, struct list_head *configlist) {
 	char *item = parser_check_new_item(line);
 	if (item) {
+		struct configlist *i;
+
 		parser_create_config(item);
 		parse_key_mode = 0;
 
-		struct configlist *i = malloc(sizeof(struct configlist));
+		i = malloc(sizeof *i);
+		if (i == NULL) return 0;
 		i->config = my_config;
 		list_add_tail(&i->list, configlist);
 	} else if ((item = parser_check_configitem(line, "gatewayhost="))) {
@@ -111,7 +114,7 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 	return 0;
 }
 
-int parser_parse_config (char *data, struct list_head *config_list) {
+bool parser_parse_config (char *data, struct list_head *config_list) {
 	char *token;
 	char *search = "\n";
 	
