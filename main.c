@@ -60,7 +60,7 @@ int main (int argc,char *argv[]) {
 
 	tinc_config = malloc(sizeof *tinc_config);
 	tinc_generate_config(tinc_config, "chaos", "undef", "127.0.0.1");
-	if(fs_writecontents("undef.config", tinc_config->text, strlen(tinc_config->text), 0400)) {
+	if(fs_writecontents("undef.config", tinc_config->text, strlen(tinc_config->text), 0600)) {
 		(void)fputs("unable to write config file!\n", stderr);
 		free(tinc_config);
 		return 1;
@@ -76,7 +76,7 @@ int main (int argc,char *argv[]) {
 		printf("Writing config file for peer %s:", i->config->name);
 		(void)fflush(stdout);
 		tinc_generate_peer_config(peer_config, i->config);
-		if(fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0400)) {
+		if(fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0600)) {
 			fputs("unable to write config file.\n", stderr);
 			free(peer_config);
 			return 1;
