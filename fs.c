@@ -59,7 +59,7 @@ fs_writecontents(const char const* fn, const char const* cnt, const int len, con
 	/* ABABAB: should throw proper error here */
 	bw = write(fh, cnt, (size_t)len);
 	(void)close(fh);
-	return len != bw;
+	return (len != bw);
 }
 
 
