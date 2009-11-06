@@ -53,6 +53,9 @@ fs_writecontents(const char const* fn, const char const* cnt, const int len, con
 	int fh;
 	int bw;
 	fh = open(fn, O_CREAT | O_WRONLY, mode);
+	if (fh == -1) {
+		return 0;
+	}
 	/* ABABAB: should throw proper error here */
 	bw = write(fh, cnt, (size_t)len);
 	(void)close(fh);
