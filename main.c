@@ -12,7 +12,7 @@
 #include "parser.h"
 #include "tinc.h"
 
-static bool main_check_root() {
+static int main_check_root() {
 		    return getuid() != 0;
 }
 

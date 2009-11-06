@@ -34,15 +34,12 @@ struct list_head {
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
-#if 0
 static inline void INIT_LIST_HEAD(struct list_head *list)
 {
 	list->next = list;
 	list->prev = list;
 }
-#endif	/* 0 */
 
-#if 0
 /*
  * Insert a new entry between two known consecutive entries.
  *
@@ -58,7 +55,6 @@ static inline void __list_add(struct list_head *new,
 	new->prev = prev;
 	prev->next = new;
 }
-#endif	/* 0 */
 
 #if 0
 /**
@@ -76,7 +72,6 @@ static inline void list_add(struct list_head *new, struct list_head *head)
 #endif	/* 0 */
 
 
-#if 0
 /**
  * list_add_tail - add a new entry
  * @new: new entry to be added
@@ -89,7 +84,6 @@ static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
 }
-#endif	/* 0 */
 
 
 #if 0

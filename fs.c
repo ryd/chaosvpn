@@ -47,7 +47,7 @@ int fs_cp_r(char /*@unused@*/*src, char /*@unused@*/*dest) {
 	return 0;
 }
 
-bool
+int
 fs_writecontents(const char const* fn, const char const* cnt, const int len, const int mode)
 {
 	int fh;
@@ -60,11 +60,11 @@ fs_writecontents(const char const* fn, const char const* cnt, const int len, con
 }
 
 
-bool
+int
 fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode)
 {
     char *buf = NULL, *ptr = NULL;
-    bool res;
+    int res;
     unsigned int dlen, reqlen;
 
     dlen = strlen(dir) + 1;

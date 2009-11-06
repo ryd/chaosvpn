@@ -13,7 +13,7 @@ $(NAME): $(OBJ)
 	$(CC) $(COPT) -c $<
        
 clean:
-	rm *.o $(NAME) 
+	rm -f *.o $(NAME) 
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]

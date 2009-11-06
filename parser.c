@@ -114,7 +114,7 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 	return 0;
 }
 
-bool parser_parse_config (char *data, struct list_head *config_list) {
+int parser_parse_config (char *data, struct list_head *config_list) {
 	char *token;
 	char *search = "\n";
 	

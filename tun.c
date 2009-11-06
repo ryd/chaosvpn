@@ -7,6 +7,7 @@
 #include <sys/sysmacros.h>
 
 #include "tun.h"
+#include "chaosvpn.h"
 
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
 
@@ -21,7 +22,7 @@ int tun_create_dev(){
 	return 0;
 }
 
-bool tun_check_or_create() {
+int tun_check_or_create() {
 	if (!EXISTS(TUN_DEV)) {
 		printf("tun device does't exists - trying to create it.");
 		return tun_create_dev();
