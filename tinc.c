@@ -83,9 +83,13 @@ int tinc_generate_config(struct buffer *output, char *interface, char *name, cha
 	config = tinc_extent_string(config, name);
 	config = tinc_extent_string(config, "\n");
 
-	config = tinc_extent_string(config, "BindToAddress=");
-	config = tinc_extent_string(config, ip);
-	config = tinc_extent_string(config, "\n");
+	config = tinc_extent_string(config, "Hostnames=yes\n");
+
+	if (ip && strlen(ip) > 0 && !strcmp(ip, "127.0.0.1")) {
+		config = tinc_extent_string(config, "BindToAddress=");
+		config = tinc_extent_string(config, ip);
+		config = tinc_extent_string(config, "\n");
+	}
 
 	output->text = config;
 	return 0;
