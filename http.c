@@ -22,6 +22,7 @@ int http_request(char *url, struct buffer *response) {
 	CURL *curl;
 	CURLcode res;
 	struct MemoryStruct chunk;
+	long code;
 
 	chunk.memory=NULL;
 	chunk.size = 0;
@@ -41,6 +42,17 @@ int http_request(char *url, struct buffer *response) {
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "ChaosVPNclient/2.0");
 
 	res = curl_easy_perform(curl);
+	if (res != 0) {
+		printf("Unable to request URL\n");
+		return res;
+	}
+
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
+	if (code != 200) {
+		printf("Request deliver wrong response code - %d\n", code);
+		return 1;
+	}
+
 	response->text = chunk.memory;
 
 	curl_easy_cleanup(curl);
