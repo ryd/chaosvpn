@@ -48,16 +48,16 @@ int fs_cp_r(char /*@unused@*/*src, char /*@unused@*/*dest) {
 }
 
 int
-fs_writecontents(const char const* fn, const char const* cnt, const int len, const int mode)
+fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode)
 {
 	int fh;
-	int bw;
-	fh = open(fn, O_CREAT | O_WRONLY, mode);
+	size_t bw;
+	fh = open(fn, O_CREAT | O_WRONLY | O_TRUNC, mode);
 	if (fh == -1) {
-		return 0;
+		return 1;
 	}
 	/* ABABAB: should throw proper error here */
-	bw = write(fh, cnt, (size_t)len);
+	bw = write(fh, cnt, len);
 	(void)close(fh);
 	return (len != bw);
 }

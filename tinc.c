@@ -66,9 +66,9 @@ int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
 	return 0;
 }
 
-int tinc_generate_config(struct buffer *output, char *interface, char *name, char *ip) {
-	char *config = malloc(sizeof(char));
-	memcpy(config, "\0", 1); //empty string
+int tinc_generate_config(struct buffer *output, char *interface, char *name, char *ip, struct list_head *config_list) {
+	struct list_head *p;
+	char *config = calloc(sizeof(char), 1);
 
 	config = tinc_extent_string(config, "AddressFamily=ipv4\n");
 	config = tinc_extent_string(config, "Device=/dev/net/tun\n\n");
@@ -89,6 +89,18 @@ int tinc_generate_config(struct buffer *output, char *interface, char *name, cha
 		config = tinc_extent_string(config, "BindToAddress=");
 		config = tinc_extent_string(config, ip);
 		config = tinc_extent_string(config, "\n");
+	}
+
+    list_for_each(p, config_list) {
+        struct configlist *i = container_of(p, struct configlist, list);
+
+		if (strlen(i->config->gatewayhost) > 0 &&
+				strlen(i->config->hidden) == 0 &&
+				strlen(i->config->silent) == 0) {
+			config = tinc_extent_string(config, "ConnectTo=");
+			config = tinc_extent_string(config, i->config->name);
+			config = tinc_extent_string(config, "\n");
+		}
 	}
 
 	output->text = config;
