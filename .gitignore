@@ -1,3 +1,5 @@
 *~
 *.o
 chaosvpn
+undef.config
+undef
