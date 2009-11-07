@@ -55,11 +55,12 @@ int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
 
 	config = tinc_extent_string(config,
 			strlen(peer->use_tcp_only) == 0 ?
-			"TCPonly=no\n\n" :
-			"TCPonly=yes\n\n"
+			"TCPonly=no\n" :
+			"TCPonly=yes\n"
 	);
 
 	config = tinc_extent_string(config, peer->key);
+	config = tinc_extent_string(config, "\n");
 
 	output->text = config;
 	return 0;
