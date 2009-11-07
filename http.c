@@ -41,6 +41,8 @@ int http_request(char *url, struct buffer *response) {
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "ChaosVPNclient/2.0");
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlerror);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 
 	res = curl_easy_perform(curl);
 
