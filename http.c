@@ -53,7 +53,7 @@ int http_request(char *url, struct buffer *response) {
 
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	if (code != 200) {
-		printf("Request deliver wrong response code - %d\n", code);
+		printf("Request deliver wrong response code - %ld\n", code);
 		return 1;
 	}
 
