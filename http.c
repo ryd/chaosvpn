@@ -22,6 +22,7 @@ int http_request(char *url, struct buffer *response) {
 	CURL *curl;
 	CURLcode res;
 	struct MemoryStruct chunk;
+	long code;
 	char curlerror[CURL_ERROR_SIZE];
 
 	chunk.memory=NULL;
@@ -45,9 +46,15 @@ int http_request(char *url, struct buffer *response) {
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 
 	res = curl_easy_perform(curl);
-
 	if (res) {
-		printf("\nrequest failed: %s\n", curlerror);
+		printf("Unable to request URL - %s\n", curlerror);
+		return res;
+	}
+
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
+	if (code != 200) {
+		printf("Request deliver wrong response code - %d\n", code);
+		return 1;
 	}
 
 	response->text = chunk.memory;
