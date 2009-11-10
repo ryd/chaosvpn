@@ -107,3 +107,23 @@ int tinc_generate_config(struct buffer *output, char *interface, char *name, cha
 	return 0;
 }
 
+int tinc_generate_up(struct buffer *output, char *interface, char *name, char *ip, struct list_head *config_list) {
+	struct list_head *p;
+	char *config = calloc(sizeof(char), 1);
+
+	config = tinc_extent_string(config, "#!/bin/sh\n");
+
+    list_for_each(p, config_list) {
+        struct configlist *i = container_of(p, struct configlist, list);
+
+		if (strlen(i->config->gatewayhost) > 0) {
+			config = tinc_extent_string(config, "/bin/ip -4 route add ");
+			config = tinc_extent_string(config, i->config->name);
+			config = tinc_extent_string(config, " dev $INTERFACE\n");
+		}
+	}
+
+	output->text = config;
+	return 0;
+}
+

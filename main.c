@@ -64,9 +64,17 @@ int main (int argc,char *argv[]) {
 		(void)fputs("unable to write config file!\n", stderr);
 		free(tinc_config);
 		return 1;
-       	}
-	(void)puts(".");
+    }
 
+	tinc_config = malloc(sizeof *tinc_config);
+	tinc_generate_up(tinc_config, "chaos", "chaos", "127.0.0.1", &config_list);
+	if(fs_writecontents("up.sh", tinc_config->text, strlen(tinc_config->text), 0600)) {
+		(void)fputs("unable to write up file!\n", stderr);
+		free(tinc_config);
+		return 1;
+    }
+
+	(void)puts(".");
 	list_for_each(p, &config_list) {
 		struct buffer *peer_config;
 		struct configlist *i = container_of(p, struct configlist, list);
