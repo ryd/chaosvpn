@@ -30,9 +30,9 @@ config:
     | setting SEPARATOR config
     ;
 
-setting: KEYWORD ASSIGNMENT INTVAL	{*((int*)$1) = $3; printf("%d == %d\n", $1, $3);}
-    | KEYWORD ASSIGNMENT FLOATVAL	{*((float*)$1) = $3; printf("%d == %f\n", $1, $3);}
-    | KEYWORD ASSIGNMENT STRINGMARKER string	STRINGMARKER	{*((char**)$1) = $4; printf("%d == %s\n", $1, $4);}
+setting: KEYWORD ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
+    | KEYWORD ASSIGNMENT FLOATVAL	{ *((float*)$1) = $3; }
+    | KEYWORD ASSIGNMENT STRINGMARKER string	STRINGMARKER	{ *((char**)$1) = $4; }
     ;
 
 string: { $$ = strdup(""); /* ugly */ }
