@@ -18,6 +18,7 @@ extern char* s_ifconfig6;
 extern char* s_master_url;
 extern char* s_base;
 extern char* s_pidfile;
+extern char* s_interface;
 extern int s_tincd_debuglevel;
 
 

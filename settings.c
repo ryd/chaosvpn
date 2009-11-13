@@ -17,5 +17,6 @@ char* s_ifconfig6 = NULL;
 char* s_master_url = NULL;
 char* s_base = NULL;
 char* s_pidfile = NULL;
+char* s_interface = "eth0";
 int s_tincd_debuglevel = 0;
 
