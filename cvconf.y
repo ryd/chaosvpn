@@ -30,7 +30,7 @@ extern char* concatias(int, char*, int);
 %type <sval> string
 
 %%
-parser: config { settings_init_defaults(); }
+parser: { settings_init_defaults(); } config
 
 config:
     | setting SEPARATOR config
