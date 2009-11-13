@@ -16,6 +16,6 @@ void string_clear(struct string*);
 int string_concat(struct string*, const char*);
 int string_concatb(struct string*, const char*, int);
 void string_free(struct string*);
-const char* string_get(struct string*);
+char* string_get(struct string*);
 int string_init(struct string*, int, int);
 #endif
