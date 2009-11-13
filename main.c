@@ -11,6 +11,9 @@
 #include "http.h"
 #include "parser.h"
 #include "tinc.h"
+#include "settings.h"
+
+#include "string/string.h"
 
 extern FILE *yyin;
 
@@ -23,6 +26,10 @@ int main (int argc,char *argv[]) {
 	struct list_head config_list;
 	struct buffer *tinc_config = NULL;
 	struct list_head *p = NULL;
+
+	struct string httpurl;
+	struct string configfilename;
+	struct string hostfilepath;
 
 	if (main_check_root()) {
 		printf("Error - wrong user - please start as root user\n");
@@ -50,10 +57,17 @@ int main (int argc,char *argv[]) {
 		return 1;
 	}
 
-	if (http_request("https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt?id=undef&password=&ip=", http_response)) {
+	string_init(&httpurl, 512, 512);
+	string_concat(&httpurl, s_master_url);
+	string_concat(&httpurl, "?id=");
+	string_concat(&httpurl, s_my_peerid);
+	string_concat(&httpurl, "&password=");
+	string_concat(&httpurl, s_my_password);
+	if (http_request(string_get(&httpurl), http_response)) {
 		printf("Unable to fetch tinc-chaosvpn.txt - maybe server is down\n");
 		return 1;
 	}
+	string_free(&httpurl);
 	puts(".");
 
 	INIT_LIST_HEAD(&config_list);
@@ -68,22 +82,30 @@ int main (int argc,char *argv[]) {
 	(void)fflush(stdout);
 
 	tinc_config = malloc(sizeof *tinc_config);
-	tinc_generate_config(tinc_config, "chaos", "undef", "127.0.0.1", &config_list);
-	if(fs_writecontents("undef.config", tinc_config->text, strlen(tinc_config->text), 0600)) {
+	tinc_generate_config(tinc_config, s_networkname, s_my_peerid, s_my_vpn_ip, &config_list);
+
+	string_init(&configfilename, 512, 512);
+	string_concat(&configfilename, s_my_peerid);
+	string_concat(&configfilename, ".config");
+	if(fs_writecontents(string_get(&configfilename), tinc_config->text, strlen(tinc_config->text), 0600)) {
 		(void)fputs("unable to write config file!\n", stderr);
 		free(tinc_config);
 		return 1;
-    }
+	}
+	string_free(&configfilename);
 
 	tinc_config = malloc(sizeof *tinc_config);
-	tinc_generate_up(tinc_config, "chaos", "chaos", "127.0.0.1", &config_list);
+	tinc_generate_up(tinc_config, s_networkname, s_networkname, s_my_vpn_ip, &config_list);
 	if(fs_writecontents("up.sh", tinc_config->text, strlen(tinc_config->text), 0600)) {
 		(void)fputs("unable to write up file!\n", stderr);
 		free(tinc_config);
 		return 1;
-    }
-
+	}
 	(void)puts(".");
+
+	string_init(&hostfilepath, 512, 512);
+	string_concat(&hostfilepath, s_my_peerid);
+	string_concat(&hostfilepath, "/hosts/");
 	list_for_each(p, &config_list) {
 		struct buffer *peer_config;
 		struct configlist *i = container_of(p, struct configlist, list);
@@ -93,13 +115,14 @@ int main (int argc,char *argv[]) {
 		printf("Writing config file for peer %s:", i->config->name);
 		(void)fflush(stdout);
 		tinc_generate_peer_config(peer_config, i->config);
-		if(fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0600)) {
+		if(fs_writecontents_safe(string_get(&hostfilepath), i->config->name, peer_config->text, strlen(peer_config->text), 0600)) {
 			fputs("unable to write config file.\n", stderr);
 			free(peer_config);
 			return 1;
 		}
 		(void)puts(".");
 	}
+	string_free(&hostfilepath);
 
 	return 0;
 }
