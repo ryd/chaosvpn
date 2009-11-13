@@ -27,7 +27,7 @@
 <PV>[0-9]+	{yylval.ival = atoi(yytext); return INTVAL;}
 <PV>\"	{ BEGIN SS; return STRINGMARKER; }
 <SS>\"	{ BEGIN 0; return STRINGMARKER; }
-<SS>\\\$ {yylval.sval = strdup("\\$"); return STRING;}
+<SS>\\\$ {yylval.sval = strdup("$"); return STRING;}
 <SS>[^"\\\$\n]* {yylval.sval = strdup(yytext); return STRING;}
 ;	{ return SEPARATOR; }
 #.*
