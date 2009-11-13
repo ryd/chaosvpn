@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "chaosvpn.h"
+
+#include "settings.h"
 
 extern int yyerror(char*);
 extern int yylex (void);
@@ -29,6 +30,8 @@ extern char* concatias(int, char*, int);
 %type <sval> string
 
 %%
+parser: config { settings_init_defaults(); }
+
 config:
     | setting SEPARATOR config
     ;

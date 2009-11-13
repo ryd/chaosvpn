@@ -1,5 +1,5 @@
 %{
-#include "chaosvpn.h"
+#include "settings.h"
 #include "y.tab.h"
 %}
 %Start PV SS
