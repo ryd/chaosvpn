@@ -25,7 +25,7 @@ lex.yy.c: cvconf.l
 	$(LEX) cvconf.l
 
 clean:
-	rm -f *.o $(NAME) 
+	rm -f *.o y.tab.c y.tab.h lex.yy.c $(NAME) 
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
