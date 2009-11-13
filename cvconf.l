@@ -18,7 +18,6 @@
 \$base   {yylval.pval = &s_base; return KEYWORD;}
 \$pidfile   {yylval.pval = &s_pidfile; return KEYWORD;}
 \$tincd_debuglevel   {yylval.pval = &s_tincd_debuglevel; return KEYWORD;}
-\$INTERFACE	{yylval.pval = &s_interface; return KEYWORD; }
 
 @exclude.*;
 
@@ -27,7 +26,8 @@
 <PV>[0-9]+	{yylval.ival = atoi(yytext); return INTVAL;}
 <PV>\"	{ BEGIN SS; return STRINGMARKER; }
 <SS>\"	{ BEGIN 0; return STRINGMARKER; }
-<SS>[^"\$\n]* {yylval.sval = strdup(yytext); return STRING;}
+<SS>\\\$ {yylval.sval = strdup("\\$"); return STRING;}
+<SS>[^"\\\$\n]* {yylval.sval = strdup(yytext); return STRING;}
 ;	{ return SEPARATOR; }
 #.*
 [ \t\n]*
