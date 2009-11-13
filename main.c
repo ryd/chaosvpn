@@ -12,6 +12,8 @@
 #include "parser.h"
 #include "tinc.h"
 
+extern FILE *yyin;
+
 static int main_check_root() {
 	return getuid() != 0;
 }
@@ -26,6 +28,13 @@ int main (int argc,char *argv[]) {
 		printf("Error - wrong user - please start as root user\n");
 		return 1;
 	}
+
+	yyin = fopen("chaosvpn.conf", "r");
+	if (!yyin) {
+		fputs("Error: unable to open chaosvpn.conf!\n", stderr);
+		return 1;
+	}
+	yyparse();
 
 	if (tun_check_or_create()) {
 		printf("Error - unable to create tun device\n");
