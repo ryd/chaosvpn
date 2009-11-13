@@ -18,6 +18,7 @@
 \$base   {yylval.pval = &s_base; return KEYWORD;}
 \$pidfile   {yylval.pval = &s_pidfile; return KEYWORD;}
 \$tincd_debuglevel   {yylval.pval = &s_tincd_debuglevel; return KEYWORD;}
+\$my_vpn_netmask	{yylval.pval = &s_my_vpn_netmask; return KEYWORD;}
 
 @exclude.*;
 

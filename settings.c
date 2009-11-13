@@ -18,5 +18,6 @@ char* s_master_url = NULL;
 char* s_base = NULL;
 char* s_pidfile = NULL;
 char* s_interface = "eth0";
+char* s_my_vpn_netmask = "255.255.255.0";
 int s_tincd_debuglevel = 0;
 

@@ -19,6 +19,7 @@ extern char* s_master_url;
 extern char* s_base;
 extern char* s_pidfile;
 extern char* s_interface;
+extern char* s_my_vpn_netmask;
 extern int s_tincd_debuglevel;
 
 
