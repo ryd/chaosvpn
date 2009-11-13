@@ -38,7 +38,7 @@ config:
 
 setting: KEYWORD_I ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
     | KEYWORD_F ASSIGNMENT FLOATVAL	{ *((float*)$1) = $3; }
-    | KEYWORD_S ASSIGNMENT STRINGMARKER string	STRINGMARKER	{ *((char**)$1) = $4; }
+    | KEYWORD_S ASSIGNMENT STRINGMARKER string	STRINGMARKER	{ if (*(char**)$1) {free(*(char**)$1);} *((char**)$1) = $4; }
     ;
 
 string: { $$ = strdup(""); /* ugly */ }
