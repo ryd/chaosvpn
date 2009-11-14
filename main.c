@@ -106,6 +106,7 @@ int main (int argc,char *argv[]) {
 	string_init(&hostfilepath, 512, 512);
 	string_concat(&hostfilepath, s_my_peerid);
 	string_concat(&hostfilepath, "/hosts/");
+	fs_mkdir_p(string_get(&hostfilepath), 0700);
 	list_for_each(p, &config_list) {
 		struct buffer *peer_config;
 		struct configlist *i = container_of(p, struct configlist, list);
