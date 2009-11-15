@@ -1,5 +1,8 @@
 *~
 *.o
 chaosvpn
+lex.yy.c
+y.tab.c
+y.tab.h
 undef.config
 undef

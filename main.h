@@ -14,6 +14,11 @@ struct peer_config_list {
     struct peer_config *peer_config;
 };
 
+struct key_value {
+	char *key;
+	char *value;
+};
+
 struct peer_config {
     char *name;
     char *gatewayhost;
