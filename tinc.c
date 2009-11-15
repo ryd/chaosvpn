@@ -15,7 +15,7 @@ char *tinc_add_subnet(char *config, struct list_head *network) {
 	struct list_head *p;
 
 	list_for_each(p, network) {
-		struct stringlist *i = container_of(p, struct stringlist, list);
+		struct string_list *i = container_of(p, struct string_list, list);
 
 		config = tinc_extent_string(config, "Subnet=");
 		config = tinc_extent_string(config, i->text);
@@ -25,7 +25,7 @@ char *tinc_add_subnet(char *config, struct list_head *network) {
 	return config;
 }
 
-int tinc_generate_peer_config(struct buffer *output, struct config *peer) {
+int tinc_generate_peer_config(struct buffer *output, struct peer_config *peer) {
 	char *config = calloc(sizeof(char), 1); //empty string
 
 	config = tinc_extent_string(config, "Address=");
@@ -92,13 +92,13 @@ int tinc_generate_config(struct buffer *output, char *interface, char *name, cha
 	}
 
     list_for_each(p, config_list) {
-        struct configlist *i = container_of(p, struct configlist, list);
+        struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
-		if (strlen(i->config->gatewayhost) > 0 &&
-				strlen(i->config->hidden) == 0 &&
-				strlen(i->config->silent) == 0) {
+		if (strlen(i->peer_config->gatewayhost) > 0 &&
+				strlen(i->peer_config->hidden) == 0 &&
+				strlen(i->peer_config->silent) == 0) {
 			config = tinc_extent_string(config, "ConnectTo=");
-			config = tinc_extent_string(config, i->config->name);
+			config = tinc_extent_string(config, i->peer_config->name);
 			config = tinc_extent_string(config, "\n");
 		}
 	}
@@ -114,11 +114,11 @@ int tinc_generate_up(struct buffer *output, char *interface, char *name, char *i
 	config = tinc_extent_string(config, "#!/bin/sh\n");
 
     list_for_each(p, config_list) {
-        struct configlist *i = container_of(p, struct configlist, list);
+        struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
-		if (strlen(i->config->gatewayhost) > 0) {
+		if (strlen(i->peer_config->gatewayhost) > 0) {
 			config = tinc_extent_string(config, "/bin/ip -4 route add ");
-			config = tinc_extent_string(config, i->config->name);
+			config = tinc_extent_string(config, i->peer_config->name);
 			config = tinc_extent_string(config, " dev $INTERFACE\n");
 		}
 	}

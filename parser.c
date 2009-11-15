@@ -5,7 +5,7 @@
 #include "main.h"
 #include "parser.h"
 
-struct config *my_config;
+struct peer_config *my_config;
 int parse_key_mode;
 
 char *parser_check_new_item(char *token) {
@@ -26,7 +26,7 @@ char *parser_check_configitem(char *line, char *config) {
 }
 
 struct list_head *parser_stringlist (char *item) {
-	struct stringlist *i = malloc(sizeof(struct stringlist));
+	struct string_list *i = malloc(sizeof(struct string_list));
 	i->text = item;
 	return &i->list;
 }
@@ -41,7 +41,7 @@ void parser_extent_key(char *line) {
 }
 
 int parser_create_config(char *name){
-	my_config = malloc(sizeof(struct config));
+	my_config = malloc(sizeof(struct peer_config));
 
 	INIT_LIST_HEAD(&my_config->network);
 	INIT_LIST_HEAD(&my_config->network6);
@@ -66,14 +66,14 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 	char *item = parser_check_new_item(line);
 
 	if (item) {
-		struct configlist *i;
+		struct peer_config_list *i;
 
 		parser_create_config(item);
 		parse_key_mode = 0;
 
 		i = malloc(sizeof *i);
 		if (i == NULL) return 0;
-		i->config = my_config;
+		i->peer_config = my_config;
 		list_add_tail(&i->list, configlist);
 	} else if ((item = parser_check_configitem(line, "gatewayhost="))) {
 		my_config->gatewayhost = item;

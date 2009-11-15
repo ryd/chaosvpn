@@ -4,17 +4,17 @@ struct buffer {
 	char *text;
 };
 
-struct stringlist {
+struct string_list {
     struct list_head list;
     char *text;
 };
 
-struct configlist {
+struct peer_config_list {
     struct list_head list;
-    struct config *config;
+    struct peer_config *peer_config;
 };
 
-struct config {
+struct peer_config {
     char *name;
     char *gatewayhost;
     char *owner;
@@ -28,5 +28,20 @@ struct config {
     char *port;
     char *indirectdata;
     char *key;
+};
+
+struct config {
+	char *peerid;
+	char *vpn_ip;
+	char *vpn_ip6;
+	char *networkname;
+	char *tincd_bin;
+	char *ip_bin;
+	char *ifconfig;
+	char *ifconfig6;
+	char *master_url;
+	char *base_path;
+	char *pidfile;
+	struct peer_config_list peer_config;
 };
 

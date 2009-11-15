@@ -77,14 +77,14 @@ int main (int argc,char *argv[]) {
 	(void)puts(".");
 	list_for_each(p, &config_list) {
 		struct buffer *peer_config;
-		struct configlist *i = container_of(p, struct configlist, list);
+		struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
 		peer_config = malloc(sizeof *peer_config);
 
-		printf("Writing config file for peer %s:", i->config->name);
+		printf("Writing config file for peer %s:", i->peer_config->name);
 		(void)fflush(stdout);
-		tinc_generate_peer_config(peer_config, i->config);
-		if(fs_writecontents_safe("undef/hosts/", i->config->name, peer_config->text, strlen(peer_config->text), 0600)) {
+		tinc_generate_peer_config(peer_config, i->peer_config);
+		if(fs_writecontents_safe("undef/hosts/", i->peer_config->name, peer_config->text, strlen(peer_config->text), 0600)) {
 			fputs("unable to write config file.\n", stderr);
 			free(peer_config);
 			return 1;
