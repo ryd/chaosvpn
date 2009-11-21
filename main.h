@@ -9,16 +9,6 @@ struct string_list {
     char *text;
 };
 
-struct peer_config_list {
-    struct list_head list;
-    struct peer_config *peer_config;
-};
-
-struct key_value {
-	char *key;
-	char *value;
-};
-
 struct peer_config {
     char *name;
     char *gatewayhost;
@@ -35,6 +25,11 @@ struct peer_config {
     char *key;
 };
 
+struct peer_config_list {
+    struct list_head list;
+    struct peer_config *peer_config;
+};
+
 struct config {
 	char *peerid;
 	char *vpn_ip;
@@ -47,6 +42,6 @@ struct config {
 	char *master_url;
 	char *base_path;
 	char *pidfile;
-	struct peer_config_list peer_config;
+	struct list_head peer_config;
 };
 

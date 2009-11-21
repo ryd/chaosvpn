@@ -66,64 +66,66 @@ int tinc_generate_peer_config(struct buffer *output, struct peer_config *peer) {
 	return 0;
 }
 
-int tinc_generate_config(struct buffer *output, char *interface, char *name, char *ip, struct list_head *config_list) {
+int tinc_generate_config(struct buffer *output, struct config *config) {
 	struct list_head *p;
-	char *config = calloc(sizeof(char), 1);
+	char *buffer = calloc(sizeof(char), 1);
 
-	config = tinc_extent_string(config, "AddressFamily=ipv4\n");
-	config = tinc_extent_string(config, "Device=/dev/net/tun\n\n");
+	buffer = tinc_extent_string(buffer, "AddressFamily=ipv4\n");
+	buffer = tinc_extent_string(buffer, "Device=/dev/net/tun\n\n");
 
-	config = tinc_extent_string(config, "Interface=");
-	config = tinc_extent_string(config, interface);
-	config = tinc_extent_string(config, "_vpn\n");
+	buffer = tinc_extent_string(buffer, "Interface=");
+	buffer = tinc_extent_string(buffer, config->networkname);
+	buffer = tinc_extent_string(buffer, "_vpn\n");
 
-	config = tinc_extent_string(config, "Mode=router\n");
+	buffer = tinc_extent_string(buffer, "Mode=router\n");
 
-	config = tinc_extent_string(config, "Name=");
-	config = tinc_extent_string(config, name);
-	config = tinc_extent_string(config, "\n");
+	buffer = tinc_extent_string(buffer, "Name=");
+	buffer = tinc_extent_string(buffer, config->peerid);
+	buffer = tinc_extent_string(buffer, "\n");
 
-	config = tinc_extent_string(config, "Hostnames=yes\n");
+	buffer = tinc_extent_string(buffer, "Hostnames=yes\n");
 
-	if (ip && strlen(ip) > 0 && !strcmp(ip, "127.0.0.1")) {
-		config = tinc_extent_string(config, "BindToAddress=");
-		config = tinc_extent_string(config, ip);
-		config = tinc_extent_string(config, "\n");
+	if (config->vpn_ip && strlen(config->vpn_ip) > 0 && 
+			!strcmp(config->vpn_ip, "127.0.0.1")) {
+		buffer = tinc_extent_string(buffer, "BindToAddress=");
+		buffer = tinc_extent_string(buffer, config->vpn_ip);
+		buffer = tinc_extent_string(buffer, "\n");
 	}
 
-    list_for_each(p, config_list) {
+    list_for_each(p, &config->peer_config) {
         struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
 		if (strlen(i->peer_config->gatewayhost) > 0 &&
 				strlen(i->peer_config->hidden) == 0 &&
 				strlen(i->peer_config->silent) == 0) {
-			config = tinc_extent_string(config, "ConnectTo=");
-			config = tinc_extent_string(config, i->peer_config->name);
-			config = tinc_extent_string(config, "\n");
+			buffer = tinc_extent_string(buffer, "ConnectTo=");
+			buffer = tinc_extent_string(buffer, i->peer_config->name);
+			buffer = tinc_extent_string(buffer, "\n");
 		}
 	}
 
-	output->text = config;
+	output->text = buffer;
+
 	return 0;
 }
 
-int tinc_generate_up(struct buffer *output, char *interface, char *name, char *ip, struct list_head *config_list) {
+int tinc_generate_up(struct buffer *output, struct config *config) {
 	struct list_head *p;
-	char *config = calloc(sizeof(char), 1);
+	char *buffer = calloc(sizeof(char), 1);
 
-	config = tinc_extent_string(config, "#!/bin/sh\n");
+	buffer = tinc_extent_string(buffer, "#!/bin/sh\n");
 
-    list_for_each(p, config_list) {
+    list_for_each(p, &config->peer_config) {
         struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
 		if (strlen(i->peer_config->gatewayhost) > 0) {
-			config = tinc_extent_string(config, "/bin/ip -4 route add ");
-			config = tinc_extent_string(config, i->peer_config->name);
-			config = tinc_extent_string(config, " dev $INTERFACE\n");
+			buffer = tinc_extent_string(buffer, "/bin/ip -4 route add ");
+			buffer = tinc_extent_string(buffer, i->peer_config->name);
+			buffer = tinc_extent_string(buffer, " dev $INTERFACE\n");
 		}
 	}
 
-	output->text = config;
+	output->text = buffer;
 	return 0;
 }
 
