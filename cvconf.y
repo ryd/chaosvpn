@@ -42,7 +42,13 @@ setting: KEYWORD_I ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
     ;
 
 string: { $$ = strdup(""); /* ugly */ }
-    | KEYWORD_S string { $$ = catandfree(*(char**)$1, $2, 0, 1); };
+    | KEYWORD_S string { 
+        if (*(char**)$1 == NULL) {
+            fputs("error: access to uninitialized configuration variable\n", stderr);
+            exit(1);
+        }
+        $$ = catandfree(*(char**)$1, $2, 0, 1); 
+    };
     | KEYWORD_I string { $$ = concatias(*(int*)$1, $2, 1); };
     | STRING string { $$ = catandfree($1, $2, 1, 1); }
     ;
