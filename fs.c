@@ -5,8 +5,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fts.h>
 
 #include "chaosvpn.h"
+#include "string/string.h"
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
@@ -41,10 +43,72 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 	return err;
 }
 
+static int
+fs_fts_compare(const FTSENT** a, const FTSENT** b)
+{
+    int fts_info_a;
+    int fts_info_b;
 
-int fs_cp_r(char /*@unused@*/*src, char /*@unused@*/*dest) {
-	// TODO to be implementated
-	return 0;
+    fts_info_a = (*a)->fts_info;
+    if (fts_info_a == FTS_ERR) return 0;
+    if (fts_info_a == FTS_NS) return 0;
+    if (fts_info_a == FTS_DNR) return 0;
+    fts_info_b = (*b)->fts_info;
+    if (fts_info_b == FTS_ERR) return 0;
+    if (fts_info_b == FTS_NS) return 0;
+    if (fts_info_b == FTS_DNR) return 0;
+    if (fts_info_a == FTS_D) return -1;
+    if (fts_info_b == FTS_D) return 1;
+    return 0;
+}
+
+int
+fs_cp_file(const char const* src, const char const* dst)
+{
+}
+
+
+int
+fs_cp_r(char* src, char* dest)
+{
+    FTS* fts;
+    FTSENT* entry;
+    char* srces[2];
+    struct stat sb;
+
+    char* srcpath;
+    struct string dstpath;
+    int splen;
+    int dplen;
+    int dpslash;
+
+    if (stat(src, &sb)) return 1;
+    /* This routine only accepts directories as source */
+    if (!S_ISDIR(sb.st_mode)) return 1;
+
+    srces[0] = src;
+    srces[1] = NULL;
+    fts = fts_open(srces, FTS_XDEV, fs_fts_compare);
+    if (!fts) return 1;
+
+    splen = strlen(src);
+    if (src[splen - 1] != '/') ++splen;
+    dplen = strlen(dest);
+    dpslash = (dest[dplen - 1] == '/');
+
+    string_init(&dstpath, 512, 512);
+    while((entry = fts_read(fts))) {
+        srcpath = entry->fts_path + splen;
+        string_clear(&dstpath);
+        string_concatb(&dstpath, dest, dplen);
+        if (!dpslash) string_concatb(&dstpath, "/", 1);
+        string_concat(&dstpath, srcpath);
+        printf("Entry: %s => %s\n", srcpath, string_get(&dstpath));
+    }
+    fts_close(fts);
+    string_free(&dstpath);
+
+    return 0;
 }
 
 int
