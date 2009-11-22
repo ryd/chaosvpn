@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <fts.h>
 
-#include "chaosvpn.h"
 #include "string/string.h"
+#include "fs.h"
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.

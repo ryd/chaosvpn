@@ -20,8 +20,6 @@ $(STRINGOBJ):
        
 lex.yy.o: lex.yy.c y.tab.h
 
-lex.yy.o y.tab.o: chaosvpn.h
-
 y.tab.c y.tab.h: cvconf.y
 	$(YACC) -d cvconf.y
 

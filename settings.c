@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "chaosvpn.h"
-
 // NOTE: *must* assign NULL here to string values; initialize those in
 // settings_init_defaults(). All numerics may be initialized here.
 

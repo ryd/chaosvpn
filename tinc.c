@@ -125,6 +125,8 @@ int tinc_generate_up(struct buffer *output, struct config *config) {
 		}
 	}
 
+	// TODO still not complete
+
 	output->text = buffer;
 	return 0;
 }
