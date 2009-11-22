@@ -43,7 +43,7 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 
 
 int fs_cp_r(char /*@unused@*/*src, char /*@unused@*/*dest) {
-	//spaceholder
+	// TODO to be implementated
 	return 0;
 }
 

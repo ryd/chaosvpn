@@ -182,6 +182,7 @@ int main_write_config_up(struct config *config) {
 
 	tinc_generate_up(up_file, config);
 
+	// TODO path for up.sh
 	if(fs_writecontents("up.sh", up_file->text, strlen(up_file->text), 0600)) {
 		(void)fputs("unable to write up file!\n", stderr);
 		free(up_file);
@@ -193,13 +194,16 @@ int main_write_config_up(struct config *config) {
 	return 0;
 }
 
+int main_create_backup(struct config *config) {
+	// TODO to be implementated
+	return 0;
+}
+
 int main (int argc,char *argv[]) {
 	struct config *config = main_initialize_config();
 
 	int err = main_init(config);
 	if (err) return err;
-
-	//main_backup_oldconfig();
 
 	(void)fputs("Fetching information:", stdout);
 	(void)fflush(stdout);
@@ -222,11 +226,14 @@ int main (int argc,char *argv[]) {
 	(void)fputs("Writing global config file:", stdout);
 	(void)fflush(stdout);
 
-	if (main_write_config_tinc(config) ||
+	if (main_create_backup(config) ||
+			main_write_config_tinc(config) ||
 			main_write_config_hosts(config) ||
 			main_write_config_up(config)) {
 		return 1;
 	}
+
+	// TODO pidfile check && tincd start
 
 	(void)puts(".");
 
