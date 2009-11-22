@@ -1,6 +1,8 @@
 %{
 #include "settings.h"
 #include "y.tab.h"
+
+int yycurline = 1;
 %}
 %Start PV SS
 %%
@@ -19,6 +21,11 @@
 \$pidfile   {yylval.pval = &s_pidfile; return KEYWORD_S;}
 \$tincd_debuglevel   {yylval.pval = &s_tincd_debuglevel; return KEYWORD_I;}
 \$my_vpn_netmask	{yylval.pval = &s_my_vpn_netmask; return KEYWORD_S;}
+\$[_a-z]+   {
+    fprintf(stderr, "parse error: unknown configuration variable "
+            "\"%s\" in line %d\n", yytext, yycurline);
+    exit(1);
+}
 
 @exclude.*;
 
@@ -31,4 +38,5 @@
 <SS>[^"\\\$\n]* {yylval.sval = strdup(yytext); return STRING;}
 ;	{ return SEPARATOR; }
 #.*
-[ \t\n]*
+[ \t]*
+\n  { ++yycurline; }
