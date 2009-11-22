@@ -1,6 +1,8 @@
 %{
 #include "settings.h"
 #include "y.tab.h"
+
+int yycurline = 1;
 %}
 %Start PV SS
 %%
@@ -31,4 +33,5 @@
 <SS>[^"\\\$\n]* {yylval.sval = strdup(yytext); return STRING;}
 ;	{ return SEPARATOR; }
 #.*
-[ \t\n]*
+[ \t]*
+\n  { ++yycurline; }
