@@ -88,7 +88,7 @@ fs_cp_r(char* src, char* dest)
 
     srces[0] = src;
     srces[1] = NULL;
-    fts = fts_open(srces, FTS_XDEV, fs_fts_compare);
+    fts = fts_open(srces, FTS_XDEV | FTS_NOCHDIR, fs_fts_compare);
     if (!fts) return 1;
 
     splen = strlen(src);
@@ -103,6 +103,11 @@ fs_cp_r(char* src, char* dest)
         string_concatb(&dstpath, dest, dplen);
         if (!dpslash) string_concatb(&dstpath, "/", 1);
         string_concat(&dstpath, srcpath);
+        if (entry->fts_info & FTS_D) {
+            // mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
+            mkdir(string_get(&dstpath), 0777);
+            printf("mkdir >>\"%s\"<<: %d\n", string_get(&dstpath), errno);
+        }
         printf("Entry: %s => %s\n", srcpath, string_get(&dstpath));
     }
     fts_close(fts);
