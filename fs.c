@@ -136,7 +136,11 @@ fs_cp_r(char* src, char* dest)
 
     string_init(&dstpath, 512, 512);
     while((entry = fts_read(fts))) {
-        srcpath = entry->fts_path + splen;
+        if (entry->fts_path[splen - 1] == 0) {
+            srcpath = entry->fts_path + splen - 1;
+        } else {
+            srcpath = entry->fts_path + splen;
+        }
         string_clear(&dstpath);
         string_concatb(&dstpath, dest, dplen);
         if (!dpslash) string_concatb(&dstpath, "/", 1);
