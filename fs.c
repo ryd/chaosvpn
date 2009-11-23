@@ -46,119 +46,119 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 static int
 fs_fts_compare(const FTSENT** a, const FTSENT** b)
 {
-    int fts_info_a;
-    int fts_info_b;
+	int fts_info_a;
+	int fts_info_b;
 
-    fts_info_a = (*a)->fts_info;
-    if (fts_info_a == FTS_ERR) return 0;
-    if (fts_info_a == FTS_NS) return 0;
-    if (fts_info_a == FTS_DNR) return 0;
-    fts_info_b = (*b)->fts_info;
-    if (fts_info_b == FTS_ERR) return 0;
-    if (fts_info_b == FTS_NS) return 0;
-    if (fts_info_b == FTS_DNR) return 0;
-    if (fts_info_a == FTS_D) return -1;
-    if (fts_info_b == FTS_D) return 1;
-    return 0;
+	fts_info_a = (*a)->fts_info;
+	if (fts_info_a == FTS_ERR) return 0;
+	if (fts_info_a == FTS_NS) return 0;
+	if (fts_info_a == FTS_DNR) return 0;
+	fts_info_b = (*b)->fts_info;
+	if (fts_info_b == FTS_ERR) return 0;
+	if (fts_info_b == FTS_NS) return 0;
+	if (fts_info_b == FTS_DNR) return 0;
+	if (fts_info_a == FTS_D) return -1;
+	if (fts_info_b == FTS_D) return 1;
+	return 0;
 }
 
 int
 fs_cp_file(const char const* src, const char const* dst)
 {
-    int fh_source;
-    int fh_destination;
-    struct stat stat_source;
-    ssize_t filesize;
-    ssize_t readbytes;
-    ssize_t writtenbytes;
-    char* buf;
+	int fh_source;
+	int fh_destination;
+	struct stat stat_source;
+	ssize_t filesize;
+	ssize_t readbytes;
+	ssize_t writtenbytes;
+	char* buf;
 
-    if (stat(src, &stat_source)) return 1;
-    fh_source = open(src, O_RDONLY);
-    if (fh_source == -1) return 1;
-    fh_destination = open(dst, O_CREAT | O_WRONLY, stat_source.st_mode & 07777);
-    if (fh_destination == -1) {
-        close(fh_source);
-        return 1;
-    }
-    filesize = stat_source.st_size;
-    buf = malloc(stat_source.st_blksize);
-    if (!buf) {
-        close(fh_source);
-        close(fh_destination);
-        return 1;
-    }
-    while (filesize > 0) {
-        readbytes = read(fh_source, buf, stat_source.st_blksize);
-        writtenbytes = write(fh_destination, buf, readbytes);
-        if (writtenbytes != readbytes) {
-            close(fh_source);
-            close(fh_destination);
-            free(buf);
-            return 1;
-        }
-        filesize -= writtenbytes;
-    }
-    close(fh_source);
-    close(fh_destination);
-    free(buf);
-    return 0;
+	if (stat(src, &stat_source)) return 1;
+	fh_source = open(src, O_RDONLY);
+	if (fh_source == -1) return 1;
+	fh_destination = open(dst, O_CREAT | O_WRONLY, stat_source.st_mode & 07777);
+	if (fh_destination == -1) {
+		close(fh_source);
+		return 1;
+	}
+	filesize = stat_source.st_size;
+	buf = malloc(stat_source.st_blksize);
+	if (!buf) {
+		close(fh_source);
+		close(fh_destination);
+		return 1;
+	}
+	while (filesize > 0) {
+		readbytes = read(fh_source, buf, stat_source.st_blksize);
+		writtenbytes = write(fh_destination, buf, readbytes);
+		if (writtenbytes != readbytes) {
+			close(fh_source);
+			close(fh_destination);
+			free(buf);
+			return 1;
+		}
+		filesize -= writtenbytes;
+	}
+	close(fh_source);
+	close(fh_destination);
+	free(buf);
+	return 0;
 }
 
 
 int
 fs_cp_r(char* src, char* dest)
 {
-    FTS* fts;
-    FTSENT* entry;
-    char* srces[2];
-    struct stat sb;
+	FTS* fts;
+	FTSENT* entry;
+	char* srces[2];
+	struct stat sb;
 
-    char* srcpath;
-    struct string dstpath;
-    int splen;
-    int dplen;
-    int dpslash;
+	char* srcpath;
+	struct string dstpath;
+	int splen;
+	int dplen;
+	int dpslash;
 
-    if (stat(src, &sb)) return 1;
-    /* This routine only accepts directories as source */
-    if (!S_ISDIR(sb.st_mode)) return 1;
+	if (stat(src, &sb)) return 1;
+	/* This routine only accepts directories as source */
+	if (!S_ISDIR(sb.st_mode)) return 1;
 
-    srces[0] = src;
-    srces[1] = NULL;
-    fts = fts_open(srces, FTS_XDEV | FTS_NOCHDIR, fs_fts_compare);
-    if (!fts) return 1;
+	srces[0] = src;
+	srces[1] = NULL;
+	fts = fts_open(srces, FTS_XDEV | FTS_NOCHDIR, fs_fts_compare);
+	if (!fts) return 1;
 
-    splen = strlen(src);
-    if (src[splen - 1] != '/') ++splen;
-    dplen = strlen(dest);
-    dpslash = (dest[dplen - 1] == '/');
+	splen = strlen(src);
+	if (src[splen - 1] != '/') ++splen;
+	dplen = strlen(dest);
+	dpslash = (dest[dplen - 1] == '/');
 
-    string_init(&dstpath, 512, 512);
-    while((entry = fts_read(fts))) {
-        if (entry->fts_path[splen - 1] == 0) {
-            srcpath = entry->fts_path + splen - 1;
-        } else {
-            srcpath = entry->fts_path + splen;
-        }
-        string_clear(&dstpath);
-        string_concatb(&dstpath, dest, dplen);
-        if (!dpslash) string_concatb(&dstpath, "/", 1);
-        string_concat(&dstpath, srcpath);
-        if (entry->fts_info & FTS_D) {
-            mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
-        }
-        if (entry->fts_info & FTS_F) {
-            if (fs_cp_file(entry->fts_path, string_get(&dstpath))) {
-                string_free(&dstpath);
-                return 1;
-            }
-        }
-    }
-    fts_close(fts);
-    string_free(&dstpath);
+	string_init(&dstpath, 512, 512);
+	while((entry = fts_read(fts))) {
+		if (entry->fts_path[splen - 1] == 0) {
+			srcpath = entry->fts_path + splen - 1;
+		} else {
+			srcpath = entry->fts_path + splen;
+		}
+		string_clear(&dstpath);
+		string_concatb(&dstpath, dest, dplen);
+		if (!dpslash) string_concatb(&dstpath, "/", 1);
+		string_concat(&dstpath, srcpath);
+		if (entry->fts_info & FTS_D) {
+			mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
+		}
+		if (entry->fts_info & FTS_F) {
+			if (fs_cp_file(entry->fts_path, string_get(&dstpath))) {
+				string_free(&dstpath);
+				return 1;
+			}
+		}
+	}
+	fts_close(fts);
+	string_free(&dstpath);
 
-    return 0;
+	return 0;
 }
 
 int
