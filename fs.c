@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -6,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fts.h>
+#include <stdio.h>
 
 #include "string/string.h"
 #include "fs.h"
@@ -113,6 +115,7 @@ fs_cp_r(char* src, char* dest)
 	FTSENT* entry;
 	char* srces[2];
 	struct stat sb;
+	struct timeval tv[2];
 
 	char* srcpath;
 	struct string dstpath;
@@ -145,13 +148,23 @@ fs_cp_r(char* src, char* dest)
 		string_concatb(&dstpath, dest, dplen);
 		if (!dpslash) string_concatb(&dstpath, "/", 1);
 		string_concat(&dstpath, srcpath);
+		tv[0].tv_usec = 0;
+		tv[1].tv_usec = 0;
+		tv[0].tv_sec = entry->fts_statp->st_atime;
+		tv[1].tv_sec = entry->fts_statp->st_mtime;
 		if (entry->fts_info & FTS_D) {
 			mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
-		}
-		if (entry->fts_info & FTS_F) {
+		} else if (entry->fts_info & FTS_DC) {
+			if (utimes(string_get(&dstpath), tv)) {
+				fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(&dstpath));
+			}
+		} else if (entry->fts_info & FTS_F) {
 			if (fs_cp_file(entry->fts_path, string_get(&dstpath))) {
 				string_free(&dstpath);
 				return 1;
+			}
+			if (utimes(string_get(&dstpath), tv)) {
+				fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(&dstpath));
 			}
 		}
 	}
