@@ -94,12 +94,14 @@ fs_cp_file(const char const* src, const char const* dst)
         if (writtenbytes != readbytes) {
             close(fh_source);
             close(fh_destination);
+            free(buf);
             return 1;
         }
         filesize -= writtenbytes;
     }
     close(fh_source);
     close(fh_destination);
+    free(buf);
     return 0;
 }
 
