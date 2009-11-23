@@ -149,7 +149,10 @@ fs_cp_r(char* src, char* dest)
             mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
         }
         if (entry->fts_info & FTS_F) {
-            if (fs_cp_file(entry->fts_path, string_get(&dstpath))) return 1;
+            if (fs_cp_file(entry->fts_path, string_get(&dstpath))) {
+                string_free(&dstpath);
+                return 1;
+            }
         }
     }
     fts_close(fts);
