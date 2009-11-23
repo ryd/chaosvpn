@@ -8,8 +8,8 @@
 extern int yyerror(char*);
 extern int yylex (void);
 
-extern char* catandfree(char*, char*, int, int);
-extern char* concatias(int, char*, int);
+static char* catandfree(char*, char*, int, int);
+static char* concatias(int, char*, int);
 
 extern int yycurline;
 %}
@@ -64,7 +64,7 @@ yyerror(char* msg)
     return 0;
 }
 
-char*
+static char*
 concatias(int i, char* s, int frees)
 {
     char* buf;
@@ -80,7 +80,7 @@ concatias(int i, char* s, int frees)
     return buf;
 }
 
-char*
+static char*
 catandfree(char* s1, char* s2, int frees1, int frees2)
 {
     size_t newlen;
