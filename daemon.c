@@ -101,7 +101,7 @@ daemon_stop(struct daemon_info* di, unsigned int sleepdelay)
 {
     pid_t pgid;
 
-    pgid = __getpgid(di->di_pid);
+    pgid = di->di_pid; //__getpgid(di->di_pid);
     if (pgid == -1) {
         return 0;
     }
