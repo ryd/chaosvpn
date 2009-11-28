@@ -1,5 +1,5 @@
 CC = gcc
-COPT = -O2 -Wall
+COPT = -O2 -Wall -g
 LIB = -lcurl -ll
 LEX=flex
 YACC=yacc
