@@ -300,11 +300,7 @@ static void
 sigchild(int __unused)
 {
 	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
-	if (s_tincd_restart_delay > 0) {
-		sleep(s_tincd_restart_delay);
-	}
-	fputs("\x1B[31;1mrestarting tincd.\x1B[0m\n", stderr);
-	if (daemon_start(&di_tincd)) {
+	if (daemon_sigchld(&di_tincd, s_tincd_restart_delay)) {
 		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
 		exit(1);
 	}
