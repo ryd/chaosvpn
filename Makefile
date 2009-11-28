@@ -5,7 +5,7 @@ LEX=flex
 YACC=yacc
 
 STRINGOBJ=string/string_clear.o string/string_concatb.o string/string_concat.o string/string_free.o string/string_get.o string/string_init.o
-OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o $(STRINGOBJ)
+OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o daemon.o $(STRINGOBJ)
 
 NAME = chaosvpn
 
