@@ -12,9 +12,11 @@ static int tinc_add_subnet(struct string*, struct list_head*);
 int
 tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 {
-	if (string_concat(buffer, "Address=")) return 1;
-	if (string_concat(buffer, peer->gatewayhost)) return 1;
-	if (string_concat(buffer, "\n")) return 1;
+        if (strlen(peer->gatewayhost) > 0) {
+        	if (string_concat(buffer, "Address=")) return 1;
+        	if (string_concat(buffer, peer->gatewayhost)) return 1;
+        	if (string_concat(buffer, "\n")) return 1;
+        }
 
 	if (string_concat(buffer, "Cipher=")) return 1;
 	if (string_concat(buffer,
