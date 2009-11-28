@@ -278,19 +278,24 @@ main_write_config_hosts(struct config *config) {
 
 static int
 main_write_config_up(struct config *config) {
-	struct string up_file;
+	struct string up_filecontents;
+	struct string up_filepath;
 
-	string_init(&up_file, 8192, 2048);
-	tinc_generate_up(&up_file, config);
+	string_init(&up_filecontents, 8192, 2048);
+	tinc_generate_up(&up_filecontents, config);
 
-	// TODO path for up.sh
-	if(fs_writecontents("up.sh", up_file.s, up_file._u._s.length, 0600)) {
-		(void)fputs("unable to write up file!\n", stderr);
-		string_free(&up_file);
+	string_init(&up_filepath, 512, 512);
+	string_concat(&up_filepath, config->base_path);
+	string_concat(&up_filepath, "/tinc-up");
+	if(fs_writecontents(string_get(&up_filepath), up_filecontents.s, up_filecontents._u._s.length, 0750)) {
+		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&up_filepath));
+		string_free(&up_filecontents);
+		string_free(&up_filepath);
 		return 1;
 	}
 	
-	string_free(&up_file);
+	string_free(&up_filecontents);
+	string_free(&up_filepath);
 
 	return 0;
 }
