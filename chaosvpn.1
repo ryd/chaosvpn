@@ -1,0 +1,48 @@
+.TH CHAOSVPN 1 "November 2009" "Discordian coreutils" ""
+.SH NAME
+chaosvpn - manage tincd to connect to the chaosvpn
+.SH SYNOPSIS
+.BI chaosvpn
+.SH DESCRIPTION
+.B chaosvpn
+is a utility that simplifies the process of connecting to the
+chaosvpn.
+.PP
+tincd is used to connect to the chaosvpn; the chaosvpn
+utility configures and runs the tinc daemon.
+.PP
+chaosvpn is configured via the configuration file \fBchaosvpn.conf\fP.
+At this time, no command line arguments are accepted, but this is
+on the TODO list.
+.PP
+When run,
+.B chaosvpn
+attempts to download the current configuration of the chaosvpn network
+from a central server which can be configured in \fBchaosvpn.conf\fP.
+If successful, it uses the downloaded information along with the
+settings found in \fBchaosvpn.conf\fP to generate the configuration
+files necessary to run tincd. If a tinc configuration already exists,
+a backup is created in a directory suffixed \fB.old\fP.
+.PP
+After all configuration files have been created, tincd is started. At
+the moment, \fBchaosvpn\fP does not detach itself from the terminal.
+The recommended method to run chaosvpn is in the foreground (since it
+still needs a lot of testing). If you want to run in in production
+mode, use the daemontools suite.
+.PP
+If tincd terminates, it is restarted after a delay which can be
+configured in \fBchaosvpn.conf\fP.
+.SH SEE ALSO
+chaosvpn.conf(1), tincd(8)
+.SH BUGS
+Quite a few, probably. Definitely needs testing. mc.fly needs to
+supply me with a test certificate, for example. ;-)
+.SH SECURITY CONSIDERATIONS
+Not secure at all at the moment. We need to do some serious asymetric
+signature validation.
+.SH TODO
+ * Auto-reretrieve configuration and restart tincd if necessary in the process
+ * Signature verification
+ * Parse command line options
+ * Document chaosvpn.conf
+ * Write a utility to generate keys?
