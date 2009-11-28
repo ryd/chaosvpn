@@ -33,6 +33,7 @@ static int main_init(struct config*);
 static void main_initialize_config(struct config*);
 static int main_parse_config(struct config*, struct buffer*);
 static int main_request_config(struct config*, struct buffer*);
+static void main_unlink_pidfile(void);
 static int main_write_config_hosts(struct config*);
 static int main_write_config_tinc(struct config*);
 static int main_write_config_up(struct config*);
@@ -40,7 +41,6 @@ static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
 static void sigint_holdon(int);
-
 
 
 int
@@ -90,6 +90,7 @@ main (int argc,char *argv[]) {
 	signal(SIGINT, sigint);
 	signal(SIGCHLD, sigchild);
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
+	main_unlink_pidfile();
 	daemon_start(&di_tincd);
 	while(!r_sigterm && !r_sigint) {
 		sleep(2);
@@ -314,9 +315,16 @@ main_create_backup(struct config *config) {
 }
 
 static void
+main_unlink_pidfile(void)
+{
+	(void)unlink(s_pidfile);
+}
+
+static void
 sigchild(int __unused)
 {
 	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
+	main_unlink_pidfile();
 	if (daemon_sigchld(&di_tincd, s_tincd_restart_delay)) {
 		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
 		exit(1);
