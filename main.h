@@ -23,6 +23,9 @@ struct peer_config {
     char *port;
     char *indirectdata;
     char *key;
+    char *cipher;
+    char *compression;
+    char *digest;
 };
 
 struct peer_config_list {

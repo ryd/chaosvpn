@@ -57,6 +57,9 @@ int parser_create_config(char *name){
 	my_config->port = EMPTY;
 	my_config->indirectdata = EMPTY;
 	my_config->key = EMPTY;
+	my_config->cipher = EMPTY;
+	my_config->compression = 0;
+	my_config->digest = EMPTY;
 
 	return 0;
 }
@@ -97,6 +100,12 @@ int parser_parse_line(char *line, struct list_head *configlist) {
 		my_config->port = item;
 	} else if ((item = parser_check_configitem(line, "indirectdata="))) {
 		my_config->indirectdata = item;
+	} else if ((item = parser_check_configitem(line, "cipher="))) {
+		my_config->cipher = item;
+	} else if ((item = parser_check_configitem(line, "compression="))) {
+		my_config->compression = item;
+	} else if ((item = parser_check_configitem(line, "digest="))) {
+		my_config->digest = item;
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
 		my_config->key = calloc(sizeof(char), strlen(line) + 2);
 		memcpy(my_config->key, line, strlen(line));

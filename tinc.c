@@ -16,9 +16,29 @@ tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 	if (string_concat(buffer, peer->gatewayhost)) return 1;
 	if (string_concat(buffer, "\n")) return 1;
 
-	if (string_concat(buffer, "Cipher=blowfish\n")) return 1;
-	if (string_concat(buffer, "Compression=0\n")) return 1;
-	if (string_concat(buffer, "Digest=sha1\n")) return 1;
+	if (string_concat(buffer, "Cipher=")) return 1;
+	if (string_concat(buffer,
+	                strlen(peer->cipher) > 0 ?
+	                peer->cipher :
+	                TINC_DEFAULT_CIPHER
+                )) return 1;
+	if (string_concat(buffer, "\n")) return 1;
+
+	if (string_concat(buffer, "Compression=")) return 1;
+	if (string_concat(buffer,
+	                strlen(peer->compression) > 0 ?
+	                peer->compression :
+	                TINC_DEFAULT_COMPRESSION
+                )) return 1;
+	if (string_concat(buffer, "\n")) return 1;
+
+	if (string_concat(buffer, "Digest=")) return 1;
+	if (string_concat(buffer,
+	                strlen(peer->digest) > 0 ?
+	                peer->digest :
+	                TINC_DEFAULT_DIGEST
+                )) return 1;
+	if (string_concat(buffer, "\n")) return 1;
 
 	if (string_concat(buffer,
 			strlen(peer->indirectdata) == 0 ?
