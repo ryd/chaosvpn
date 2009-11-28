@@ -58,7 +58,7 @@ int parser_create_config(char *name){
 	my_config->indirectdata = EMPTY;
 	my_config->key = EMPTY;
 	my_config->cipher = EMPTY;
-	my_config->compression = 0;
+	my_config->compression = EMPTY;
 	my_config->digest = EMPTY;
 
 	return 0;
