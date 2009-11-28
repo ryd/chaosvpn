@@ -1,4 +1,4 @@
-static int
+int
 pidfile_create_pidfile() {
 	struct string lockfile;
 	int fh_lockfile;
