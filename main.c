@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "fs.h"
 #include "list.h"
@@ -13,16 +15,23 @@
 #include "parser.h"
 #include "tinc.h"
 #include "settings.h"
+#include "daemon.h"
 
 #include "string/string.h"
 
 #define CONFIG_FILE "chaosvpn.conf"
+
+int r_sigterm = 0;
+int r_sigint = 0;
+struct daemon_info di_tincd;
 
 extern FILE *yyin;
 
 static int main_check_root() {
 	return getuid() != 0;
 }
+
+
 
 struct config* main_initialize_config() {
 	struct config *config = malloc(sizeof(config));
@@ -45,6 +54,7 @@ struct config* main_initialize_config() {
 }
 
 int main_init(struct config *config) {
+	struct stat st; 
 	if (main_check_root()) {
 		printf("Error - wrong user - please start as root user\n");
 		return 1;
@@ -83,6 +93,11 @@ int main_init(struct config *config) {
 	}
 	config->networkname = s_networkname;
 
+	if (stat(s_base, &st) & fs_mkdir_p(s_base, 0700)) {
+		fprintf(stderr, "error: unable to mkdir %s\n", s_base);
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -120,11 +135,13 @@ int main_write_config_tinc(struct config *config) {
 	struct string configfilename;
 	struct buffer *tinc_config = malloc(sizeof *tinc_config);
 
+	(void)fputs("Writing global config file:", stdout);
+	(void)fflush(stdout);
 	tinc_generate_config(tinc_config, config);
 
 	string_init(&configfilename, 512, 512);
-	string_concat(&configfilename, config->peerid);
-	string_concat(&configfilename, ".config");
+	string_concat(&configfilename, s_base);
+	string_concat(&configfilename, "/tinc.conf");
 
 	if(fs_writecontents(string_get(&configfilename), tinc_config->text, 
 			strlen(tinc_config->text), 0600)) {
@@ -136,6 +153,8 @@ int main_write_config_tinc(struct config *config) {
 	free(tinc_config);
 	string_free(&configfilename);
 
+	(void)puts(".");
+
 	return 0;
 }
 
@@ -144,7 +163,7 @@ int main_write_config_hosts(struct config *config) {
 	struct string hostfilepath;
 
 	string_init(&hostfilepath, 512, 512);
-	string_concat(&hostfilepath, config->peerid);
+	string_concat(&hostfilepath, s_base);
 	string_concat(&hostfilepath, "/hosts/");
 
 	fs_mkdir_p(string_get(&hostfilepath), 0700);
@@ -200,46 +219,37 @@ int main_create_backup(struct config *config) {
 	return 0;
 }
 
-static int main_create_pidfile() {
-	struct string lockfile;
-	int fh_lockfile;
-	int fh_pidfile;
-	char pidbuf[64];
-	int len;
-	int retval = 0;
-
-	if (s_pidfile == NULL) {
-		fputs("create_pidfile: no PIDFILE is set.\n", stderr);
-		return 2;
+static void
+sigchild(int __unused)
+{
+	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
+	if (s_tincd_restart_delay > 0) {
+		sleep(s_tincd_restart_delay);
 	}
-
-	string_init(&lockfile, 512, 512);
-	string_concat(&lockfile, s_pidfile);
-	string_concat(&lockfile, ".lck");
-    
-	fh_lockfile = open(string_get(&lockfile), O_CREAT | O_EXCL, 0600);
-	if (fh_lockfile == -1) {
-		fputs("create_pidfile: lockfile already exists.\n", stderr);
-		return 111;
+	fputs("\x1B[31;1mrestarting tincd.\x1B[0m\n", stderr);
+	if (daemon_start(&di_tincd)) {
+		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
+		exit(1);
 	}
-	close(fh_lockfile);
-
-	// There's a better way to convert an int into a string.
-	len = snprintf(pidbuf, 64, "%d", getpid());
-	fh_pidfile = open(s_pidfile, O_CREAT | O_WRONLY | O_TRUNC, 0600);
-	if (write(fh_pidfile, pidbuf, len) != len) {
-		retval = 1;
-		goto bail_out;
-	}
-
-bail_out:
-	close(fh_pidfile);
-	if (unlink(string_get(&lockfile))) {
-		fprintf(stderr, "create_pidfile: warning: couldn't remove lockfile %s\n", string_get(&lockfile));
-	}
-	return retval;
 }
 
+static void
+sigterm(int __unused)
+{
+	r_sigterm = 1;
+}
+
+static void
+sigint(int __unused)
+{
+	r_sigint = 1;
+}
+
+static void
+sigint_holdon(int __unused)
+{
+	puts("I'm doing me best, please be patient for a little, will ya?");
+}
 
 int main (int argc,char *argv[]) {
 	struct config *config = main_initialize_config();
@@ -265,8 +275,6 @@ int main (int argc,char *argv[]) {
 	free(http_response);
 
 	puts(".");
-	(void)fputs("Writing global config file:", stdout);
-	(void)fflush(stdout);
 
 	if (main_create_backup(config) ||
 			main_write_config_tinc(config) ||
@@ -274,9 +282,24 @@ int main (int argc,char *argv[]) {
 			main_write_config_up(config)) {
 		return 1;
 	}
-	(void)puts(".");
 
-	if (main_create_pidfile()) return 1;
+	// if (main_create_pidfile()) return 1;
+
+	daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+	signal(SIGTERM, sigterm);
+	signal(SIGINT, sigint);
+	signal(SIGCHLD, sigchild);
+	puts("\x1B[31;1mStarting tincd.\x1B[0m");
+	daemon_start(&di_tincd);
+	while(!r_sigterm && !r_sigint) {
+		sleep(2);
+	}
+	puts("\x1B[31;1mTerminating tincd.\x1B[0m");
+	signal(SIGTERM, SIG_IGN);
+	signal(SIGINT, sigint_holdon);
+	signal(SIGCHLD, SIG_IGN);
+	daemon_stop(&di_tincd, 5);
+	daemon_free(&di_tincd);
 
 	return 0;
 }
