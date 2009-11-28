@@ -86,6 +86,7 @@ daemon_start(struct daemon_info* di)
     case 0:
         setsid();
         (void)execv(di->di_path, di->di_arguments);
+        exit(1);
     case -1:
         return -1;
     default:
