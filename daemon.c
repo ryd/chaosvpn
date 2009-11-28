@@ -22,7 +22,9 @@ daemon_init(struct daemon_info* di, char* path, ...)
     for (numargs = 0; va_arg(ap, char*) != NULL; ++numargs);
     va_end(ap);
 
-    di->di_arguments = (char**)malloc(sizeof(char*) * (numargs + 1));
+    /* append one argument: NULL */
+    ++numargs;
+    di->di_arguments = (char**)malloc(sizeof(char*) * numargs);
     if (di->di_arguments == NULL) {
         goto bail_out;
     }
@@ -81,11 +83,10 @@ int
 daemon_start(struct daemon_info* di)
 {
     pid_t pid;
-    // exect(di->di_path, di->di_arguments, di->di_envp);
     switch(pid = fork()) {
     case 0:
         setsid();
-        (void)execv(di->di_path, di->di_arguments);
+        (void)execve(di->di_path, di->di_arguments, di->di_envp);
         exit(1);
     case -1:
         return -1;
