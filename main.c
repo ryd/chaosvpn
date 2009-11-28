@@ -57,7 +57,7 @@ main (int argc,char *argv[]) {
 
 	struct buffer *http_response = calloc(1, sizeof *http_response);
 	if (http_response == NULL) {
-		printf("Unable to allocate memory.\n");
+		(void)fputs("Unable to allocate memory.\n", stderr);
 		return 1;
 	}
 
@@ -69,14 +69,19 @@ main (int argc,char *argv[]) {
 
 	free(http_response);
 
-	puts(".");
+	(void)fputs(".\n", stderr);
 
-	if (main_create_backup(&config) ||
-			main_write_config_tinc(&config) ||
-			main_write_config_hosts(&config) ||
-			main_write_config_up(&config)) {
+	(void)fputs("Backing up old configs:", stderr);
+	(void)fflush(stderr);
+	if (main_create_backup(&config)) {
+		(void)fputs("unable to complete the backup.\n", stderr);
 		return 1;
 	}
+	(void)fputs(".\n", stderr);
+
+	if (main_write_config_tinc(&config)) return 1;
+	if (main_write_config_hosts(&config)) return 1;
+	if (main_write_config_up(&config)) return 1;
 
 	// if (main_create_pidfile()) return 1;
 
@@ -292,7 +297,14 @@ main_write_config_up(struct config *config) {
 
 static int
 main_create_backup(struct config *config) {
-	// TODO to be implementated
+	struct string base_backup_fn;
+
+	if (string_init(&base_backup_fn, 512, 512)) return 1;
+	if (string_concat(&base_backup_fn, config->base_path)) return 1;
+	if (string_concatb(&base_backup_fn, ".old", 5)) return 1;
+
+	if (fs_cp_r(config->base_path, string_get(&base_backup_fn))) return 1;
+	
 	return 0;
 }
 
