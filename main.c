@@ -212,24 +212,29 @@ main_parse_config(struct config *config, struct buffer *http_response) {
 static int
 main_write_config_tinc(struct config *config) {
 	struct string configfilename;
-	struct buffer *tinc_config = malloc(sizeof *tinc_config);
+	struct string tinc_config;
 
 	(void)fputs("Writing global config file:", stdout);
 	(void)fflush(stdout);
-	tinc_generate_config(tinc_config, config);
+	if (string_init(&tinc_config, 8192, 2048)) return 1;
+	if (tinc_generate_config(&tinc_config, config)) {
+		string_free(&tinc_config);
+		return 1;
+	}
 
 	string_init(&configfilename, 512, 512);
 	string_concat(&configfilename, s_base);
 	string_concat(&configfilename, "/tinc.conf");
 
-	if(fs_writecontents(string_get(&configfilename), tinc_config->text, 
-			strlen(tinc_config->text), 0600)) {
+	if (fs_writecontents(string_get(&configfilename), tinc_config.s,
+			tinc_config._u._s.length, 0600)) {
 		(void)fputs("unable to write tinc config file!\n", stderr);
-		free(tinc_config);
+		string_free(&tinc_config);
+		string_free(&configfilename);
 		return 1;
 	}
 
-	free(tinc_config);
+	string_free(&tinc_config);
 	string_free(&configfilename);
 
 	(void)puts(".");
@@ -249,26 +254,26 @@ main_write_config_hosts(struct config *config) {
 	fs_mkdir_p(string_get(&hostfilepath), 0700);
 
 	list_for_each(p, &config->peer_config) {
-		struct buffer *peer_config;
+		struct string peer_config;
 		struct peer_config_list *i = container_of(p, 
 				struct peer_config_list, list);
 
-		peer_config = malloc(sizeof *peer_config);
+		if (string_init(&peer_config, 2048, 512)) return 1;
 
 		printf("Writing config file for peer %s:", i->peer_config->name);
 		(void)fflush(stdout);
 
-		tinc_generate_peer_config(peer_config, i->peer_config);
+		if (tinc_generate_peer_config(&peer_config, i->peer_config)) return 1;
 
 		if(fs_writecontents_safe(string_get(&hostfilepath), 
-				i->peer_config->name, peer_config->text, 
-				strlen(peer_config->text), 0600)) {
+				i->peer_config->name, peer_config.s, 
+				peer_config._u._s.length, 0600)) {
 			fputs("unable to write host config file.\n", stderr);
-			free(peer_config);
+			string_free(&peer_config);
 			return 1;
 		}
 
-		free(peer_config);
+		string_free(&peer_config);
 		(void)puts(".");
 	}
 
