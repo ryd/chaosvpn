@@ -273,18 +273,19 @@ main_write_config_hosts(struct config *config) {
 
 static int
 main_write_config_up(struct config *config) {
-	struct buffer *up_file = malloc(sizeof(struct buffer));
+	struct string up_file;
 
-	tinc_generate_up(up_file, config);
+	string_init(&up_file, 8192, 2048);
+	tinc_generate_up(&up_file, config);
 
 	// TODO path for up.sh
-	if(fs_writecontents("up.sh", up_file->text, strlen(up_file->text), 0600)) {
+	if(fs_writecontents("up.sh", up_file.s, up_file._u._s.length, 0600)) {
 		(void)fputs("unable to write up file!\n", stderr);
-		free(up_file);
+		string_free(&up_file);
 		return 1;
 	}
 	
-	free(up_file);
+	string_free(&up_file);
 
 	return 0;
 }

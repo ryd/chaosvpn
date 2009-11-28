@@ -109,25 +109,28 @@ int tinc_generate_config(struct buffer *output, struct config *config) {
 	return 0;
 }
 
-int tinc_generate_up(struct buffer *output, struct config *config) {
+int tinc_generate_up(struct string* buffer, struct config *config) {
 	struct list_head *p;
-	char *buffer = calloc(sizeof(char), 1);
 
-	buffer = tinc_extent_string(buffer, "#!/bin/sh\n");
-
-    list_for_each(p, &config->peer_config) {
-        struct peer_config_list *i = container_of(p, struct peer_config_list, list);
-
+	if (config->ifconfig != NULL) {
+		string_concat(buffer, config->ifconfig);
+		string_concatb(buffer, "\n", 1);
+	}
+	if (config->ifconfig6 != NULL) {
+		string_concat(buffer, config->ifconfig6);
+		string_concatb(buffer, "\n", 1);
+	}
+	list_for_each(p, &config->peer_config) {
+	struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 		if (strlen(i->peer_config->gatewayhost) > 0) {
-			buffer = tinc_extent_string(buffer, "/bin/ip -4 route add ");
-			buffer = tinc_extent_string(buffer, i->peer_config->name);
-			buffer = tinc_extent_string(buffer, " dev $INTERFACE\n");
+			string_concat(buffer, "/sbin/ip -4 route add ");
+			string_concat(buffer, i->peer_config->name);
+			string_concat(buffer, " dev $INTERFACE\n");
 		}
 	}
 
 	// TODO still not complete
 
-	output->text = buffer;
 	return 0;
 }
 
