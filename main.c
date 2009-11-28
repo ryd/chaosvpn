@@ -30,7 +30,7 @@ extern FILE *yyin;
 static int main_check_root(void);
 static int main_create_backup(struct config*);
 static int main_init(struct config*);
-static struct config* main_initialize_config(void);
+static void main_initialize_config(struct config*);
 static int main_parse_config(struct config*, struct buffer*);
 static int main_request_config(struct config*, struct buffer*);
 static int main_write_config_hosts(struct config*);
@@ -45,9 +45,11 @@ static void sigint_holdon(int);
 
 int
 main (int argc,char *argv[]) {
-	struct config *config = main_initialize_config();
+	struct config config;
 
-	int err = main_init(config);
+	main_initialize_config(&config);
+
+	int err = main_init(&config);
 	if (err) return err;
 
 	(void)fputs("Fetching information:", stdout);
@@ -59,20 +61,20 @@ main (int argc,char *argv[]) {
 		return 1;
 	}
 
-	err = main_request_config(config, http_response);
+	err = main_request_config(&config, http_response);
 	if (err) return err;
 
-	err = main_parse_config(config, http_response);
+	err = main_parse_config(&config, http_response);
 	if (err) return err;
 
 	free(http_response);
 
 	puts(".");
 
-	if (main_create_backup(config) ||
-			main_write_config_tinc(config) ||
-			main_write_config_hosts(config) ||
-			main_write_config_up(config)) {
+	if (main_create_backup(&config) ||
+			main_write_config_tinc(&config) ||
+			main_write_config_hosts(&config) ||
+			main_write_config_up(&config)) {
 		return 1;
 	}
 
@@ -103,10 +105,8 @@ main_check_root() {
 	return getuid() != 0;
 }
 
-static struct config*
-main_initialize_config() {
-	struct config *config = malloc(sizeof(config));
-
+static void
+main_initialize_config(struct config* config) {
 	config->peerid		= NULL;
 	config->vpn_ip		= NULL;
 	config->vpn_ip6		= NULL;
@@ -120,8 +120,6 @@ main_initialize_config() {
 	config->pidfile		= "/var/run";
 
 	INIT_LIST_HEAD(&config->peer_config);
-
-	return config;
 }
 
 static int
