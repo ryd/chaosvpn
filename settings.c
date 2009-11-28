@@ -20,6 +20,7 @@ char* s_pidfile = NULL;
 char* s_interface = NULL;
 char* s_my_vpn_netmask = NULL;
 int s_tincd_debuglevel = 0;
+int s_tincd_restart_delay = 20;
 
 
 // Note: all settings *must* be strdupped!
