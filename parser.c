@@ -42,6 +42,7 @@ void parser_extent_key(char *line) {
 
 int parser_create_config(char *name){
 	my_config = malloc(sizeof(struct peer_config));
+	memset(my_config, 0, sizeof(struct peer_config));
 
 	INIT_LIST_HEAD(&my_config->network);
 	INIT_LIST_HEAD(&my_config->network6);
