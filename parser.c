@@ -50,17 +50,17 @@ int parser_create_config(char *name){
 	INIT_LIST_HEAD(&my_config->route_network6);
 
 	my_config->name = name;
-	my_config->gatewayhost = EMPTY;
-	my_config->owner = EMPTY;
-	my_config->use_tcp_only = EMPTY;
-	my_config->hidden = EMPTY;
-	my_config->silent = EMPTY;
-	my_config->port = EMPTY;
-	my_config->indirectdata = EMPTY;
-	my_config->key = EMPTY;
-	my_config->cipher = EMPTY;
-	my_config->compression = EMPTY;
-	my_config->digest = EMPTY;
+	my_config->gatewayhost = strdup("");
+	my_config->owner = strdup("");
+	my_config->use_tcp_only = strdup("");
+	my_config->hidden = strdup("");
+	my_config->silent = strdup("");
+	my_config->port = strdup("");
+	my_config->indirectdata = strdup("");
+	my_config->key = strdup("");
+	my_config->cipher = strdup("");
+	my_config->compression = strdup("");
+	my_config->digest = strdup("");
 
 	return 0;
 }
