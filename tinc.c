@@ -111,6 +111,9 @@ int tinc_generate_config(struct buffer *output, struct config *config) {
 
 int tinc_generate_up(struct string* buffer, struct config *config) {
 	struct list_head *p;
+	struct list_head *sp;
+	struct peer_config_list *i;
+	struct string_list *si;
 
 	if (config->ifconfig != NULL) {
 		string_concat(buffer, config->ifconfig);
@@ -121,15 +124,23 @@ int tinc_generate_up(struct string* buffer, struct config *config) {
 		string_concatb(buffer, "\n", 1);
 	}
 	list_for_each(p, &config->peer_config) {
-	struct peer_config_list *i = container_of(p, struct peer_config_list, list);
+		i = container_of(p, struct peer_config_list, list);
+
 		if (strlen(i->peer_config->gatewayhost) > 0) {
-			string_concat(buffer, "/sbin/ip -4 route add ");
-			string_concat(buffer, i->peer_config->name);
-			string_concat(buffer, " dev $INTERFACE\n");
+	        	list_for_each(sp, &i->peer_config->network) {
+		                si = container_of(sp, struct string_list, list);
+				string_concat(buffer, "/sbin/ip -4 route add ");
+		                string_concat(buffer, si->text);
+				string_concat(buffer, " dev $INTERFACE\n");
+		        }
+	        	list_for_each(sp, &i->peer_config->network6) {
+		                si = container_of(sp, struct string_list, list);
+				string_concat(buffer, "/sbin/ip -6 route add ");
+		                string_concat(buffer, si->text);
+				string_concat(buffer, " dev $INTERFACE\n");
+		        }
 		}
 	}
-
-	// TODO still not complete
 
 	return 0;
 }
