@@ -315,15 +315,19 @@ static int
 main_create_backup(struct config *config) {
 	struct string base_backup_fn;
 
-	if (string_init(&base_backup_fn, 512, 512)) return 1;
-	if (string_concat(&base_backup_fn, config->base_path)) return 1;
-	if (string_concatb(&base_backup_fn, ".old", 5)) return 1;
+	if (string_init(&base_backup_fn, 512, 512)) return 1; /* don't goto bail_out here */
+	if (string_concat(&base_backup_fn, config->base_path)) goto bail_out;
+	if (string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
 
-	if (fs_cp_r(config->base_path, string_get(&base_backup_fn))) return 1;
+	if (fs_cp_r(config->base_path, string_get(&base_backup_fn))) goto bail_out;
 
 	string_free(&base_backup_fn);
-	
+
 	return 0;
+
+bail_out:
+	string_free(&base_backup_fn);
+	return 1;
 }
 
 static void
