@@ -5,7 +5,7 @@
 #include "main.h"
 #include "parser.h"
 
-static struct peer_config *my_config;
+static struct peer_config *my_config = NULL;
 static int parse_key_mode;
 
 static char*
@@ -137,7 +137,7 @@ static void
 parser_replace_item(char **var, char *newitem)
 {
 	free(*var);
-	*var = newitem;
+	*var = strdup(newitem);
 }
 
 static int
@@ -160,7 +160,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 		i->peer_config = my_config;
 		list_add_tail(&i->list, configlist);
 		free(item);
-	} else if (my_config != NULL) {
+	} else if (my_config == NULL) {
 		/* we did not start with a [...] header */
 		/* skip until after first valid header initialized a config section */
 		return 0;
