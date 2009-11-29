@@ -60,6 +60,7 @@ int http_request(char *url, struct buffer *response) {
 	response->text = chunk.memory;
 
 	curl_easy_cleanup(curl);
+	curl_global_cleanup();
 
 	return res;
 }
