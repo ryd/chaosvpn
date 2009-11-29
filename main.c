@@ -106,6 +106,8 @@ main (int argc,char *argv[]) {
 	daemon_stop(&di_tincd, 5);
 	daemon_free(&di_tincd);
 
+	settings_free_all();
+
 	return 0;
 }
 

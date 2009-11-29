@@ -30,3 +30,23 @@ settings_init_defaults(void)
     s_interface = strdup("eth0");
     s_my_vpn_netmask = strdup("255.255.255.0");
 }
+
+void
+settings_free_all(void)
+{
+	free(s_my_peerid);
+	free(s_my_vpn_ip);
+	free(s_my_vpn_ip6);
+	free(s_my_password);
+	free(s_my_ip);
+	free(s_networkname);
+	free(s_tincd_bin);
+	free(s_ip_bin);
+	free(s_ifconfig);
+	free(s_ifconfig6);
+	free(s_master_url);
+	free(s_base);
+	free(s_pidfile);
+	free(s_interface);
+	free(s_my_vpn_netmask);
+}

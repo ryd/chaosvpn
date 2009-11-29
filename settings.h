@@ -21,5 +21,6 @@ extern int s_tincd_restart_delay;
 
 int yyparse(void);
 void settings_init_defaults(void);
+void settings_free_all(void);
 
 #endif
