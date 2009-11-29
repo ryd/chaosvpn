@@ -101,17 +101,17 @@ main (int argc,char *argv[]) {
 		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, NULL);
 	} else {
 		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+		signal(SIGTERM, sigterm);
+		signal(SIGINT, sigint);
+		signal(SIGCHLD, sigchild);
 	}
-	signal(SIGTERM, sigterm);
-	signal(SIGINT, sigint);
-	signal(SIGCHLD, sigchild);
-	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (DONOTFORK) {
 		main_terminate_old_tincd();
 	} else {
 		main_unlink_pidfile();
 	}
 
+	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (daemon_start(&di_tincd)) {
 		(void)fputs("\x1B[31;1merror: unable to run tincd.\x1B[0m\n", stderr);
 		exit(1);
@@ -137,7 +137,31 @@ main (int argc,char *argv[]) {
 static void
 main_terminate_old_tincd(void)
 {
-	// TODO: kill the pid found in the specified PIDFILE.
+	int pidfile;
+	char pidbuf[32];
+	int len;
+	long readpid;
+	pid_t pid;
+	
+
+	pidfile = open(s_pidfile, O_RDONLY);
+	if (pidfile == -1) {
+		(void)fputs("notice: unable to open pidfile; assuming an old tincd is not running\n", stderr);
+		return;
+	}
+	len = read(pidfile, pidbuf, 31);
+	close(pidfile);
+	pidbuf[len] = 0;
+	readpid = strtol(pidbuf, NULL, 10);
+	pid = (pid_t) readpid;
+	(void)fprintf(stderr, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
+	kill(pid, SIGTERM);
+	sleep(2);
+	if (kill(pid, SIGKILL) == 0) {
+		(void)fputs("warning: tincd needed SIGKILL; unlinking its pidfile.\n", stderr);
+		// SIGKILL succeeded; hence, we must manually unlink the old pidfile.
+		main_unlink_pidfile();
+	}
 }
 
 static void
