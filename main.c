@@ -114,11 +114,7 @@ main (int argc,char *argv[]) {
 
 static int
 main_check_root() {
-	/*
-	disable "am I root" check for now, while debugging
 	return getuid() != 0;
-	*/
-	return 0;
 }
 
 static void
