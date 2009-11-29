@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -19,13 +20,15 @@
 
 #include "string/string.h"
 
-#define CONFIG_FILE "chaosvpn.conf"
-
 int r_sigterm = 0;
 int r_sigint = 0;
 struct daemon_info di_tincd;
 
 extern FILE *yyin;
+
+/* getopt switches */
+static char* CONFIG_FILE = "chaosvpn.conf";
+static int DONOTFORK = 0;
 
 static int main_check_root(void);
 static int main_create_backup(struct config*);
@@ -33,7 +36,9 @@ static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static void main_initialize_config(struct config*);
 static int main_parse_config(struct config*, struct buffer*);
+static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct buffer*);
+static void main_terminate_old_tincd(void);
 static void main_unlink_pidfile(void);
 static int main_write_config_hosts(struct config*);
 static int main_write_config_tinc(struct config*);
@@ -42,11 +47,14 @@ static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
 static void sigint_holdon(int);
+static void usage(void);
 
 
 int
 main (int argc,char *argv[]) {
 	struct config config;
+
+	main_parse_opts(argc, argv);
 
 	main_initialize_config(&config);
 
@@ -89,28 +97,87 @@ main (int argc,char *argv[]) {
 
 	// if (main_create_pidfile()) return 1;
 
-	daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+	if (DONOTFORK) {
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, NULL);
+	} else {
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+	}
 	signal(SIGTERM, sigterm);
 	signal(SIGINT, sigint);
 	signal(SIGCHLD, sigchild);
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
-	main_unlink_pidfile();
-	daemon_start(&di_tincd);
-	while(!r_sigterm && !r_sigint) {
-		sleep(2);
+	if (DONOTFORK) {
+		main_terminate_old_tincd();
+	} else {
+		main_unlink_pidfile();
 	}
-	puts("\x1B[31;1mTerminating tincd.\x1B[0m");
-	signal(SIGTERM, SIG_IGN);
-	signal(SIGINT, sigint_holdon);
-	signal(SIGCHLD, SIG_IGN);
-	daemon_stop(&di_tincd, 5);
-	daemon_free(&di_tincd);
+
+	if (daemon_start(&di_tincd)) {
+		(void)fputs("\x1B[31;1merror: unable to run tincd.\x1B[0m\n", stderr);
+		exit(1);
+	}
+
+	if (!DONOTFORK) {
+		while(!r_sigterm && !r_sigint) {
+			sleep(2);
+		}
+		puts("\x1B[31;1mTerminating tincd.\x1B[0m");
+		signal(SIGTERM, SIG_IGN);
+		signal(SIGINT, sigint_holdon);
+		signal(SIGCHLD, SIG_IGN);
+		daemon_stop(&di_tincd, 5);
+		daemon_free(&di_tincd);
+	}
 
 	settings_free_all();
 
 	return 0;
 }
 
+static void
+main_terminate_old_tincd(void)
+{
+	// TODO: kill the pid found in the specified PIDFILE.
+}
+
+static void
+main_parse_opts(int argc, char** argv)
+{
+	int c;
+
+	opterr = 0;
+	while ((c = getopt(argc, argv, "c:af")) != -1) {
+		switch (c) {
+		case 'c':
+			CONFIG_FILE = optarg;
+			break;
+
+		case 'a':
+			DONOTFORK = 1;
+			break;
+
+		case 'f':
+			DONOTFORK = 0;
+			break;;
+
+		default:
+			usage();
+		}
+	}
+}
+
+static void
+usage(void)
+{
+	(void)fputs("chaosvpn - connect to the chaos vpn.\n"
+	       "Usage: chaosvpn [OPTION...]\n\n"
+	       "  -c FILE                 use this user configuration file\n"
+	       "  -a                      do not control tincd; leave it to itself\n"
+	       "  -f                      control tincd (default)\n"
+	       "\n",
+		stderr);
+	exit(1);
+}
 
 static int
 main_check_root() {
@@ -149,7 +216,7 @@ main_init(struct config *config) {
 
 	yyin = fopen(CONFIG_FILE, "r");
 	if (!yyin) {
-		fputs("Error: unable to open chaosvpn.conf!\n", stderr);
+		(void)fprintf(stderr, "Error: unable to open %s\n", CONFIG_FILE);
 		return 1;
 	}
 	yyparse();
