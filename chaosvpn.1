@@ -2,7 +2,7 @@
 .SH NAME
 chaosvpn - manage tincd to connect to the chaosvpn
 .SH SYNOPSIS
-.BI chaosvpn
+.BI chaosvpn [-c CONFIGFILE] [-a] [-f]
 .SH DESCRIPTION
 .B chaosvpn
 is a utility that simplifies the process of connecting to the
@@ -31,7 +31,23 @@ still needs a lot of testing). If you want to run in in production
 mode, use the daemontools suite.
 .PP
 If tincd terminates, it is restarted after a delay which can be
-configured in \fBchaosvpn.conf\fP.
+configured in \fBchaosvpn.conf\fP. If desired, \fBchaosvpn\fP can be
+used in 'legacy mode': try to kill the old tincd if it is running, and
+terminate ourselves after we successfully launched a new tincd
+instance.
+.PP
+\fBchaosvpn\fP supports the following options:
+.TP
+\fB-c CONFIGFULE\fP Use CONFIGFILE as configuration file instead of ./chaosvpn.conf
+.TP
+\fB-a\fP Legacy mode. After configuration files are updated, try to
+kill an already running tincd by reading its pid from the PIDFILE
+specified in chaosvpn.conf. After a new tincd is launched, terminate
+the chaosvpn utility instead of controlling tincd.
+.TP
+\fB-f\fP Control tincd. (default) tincd is started in the background
+and automatically restarted if it crashes, or if the configuration has
+changed.
 .SH SEE ALSO
 chaosvpn.conf(1), tincd(8)
 .SH BUGS
