@@ -8,30 +8,41 @@
 static struct peer_config *my_config;
 static int parse_key_mode;
 
-static char *parser_check_new_item(char *token) {
+static char*
+parser_check_new_item(char *token)
+{
+	int len;
 	char *name = NULL;
-	if (!strncmp(token, "[", 1) &&
-			!strncmp(token + strlen(token) - 1, "]", 1)) {
-		name = calloc(sizeof(char), strlen(token) - 1);
-		memcpy(name, token + 1, strlen(token) - 2);
+
+	len = strlen(token);
+	if ((*token == '[') && (token[len - 1] == ']')) {
+		name = calloc(sizeof(char), len - 1);
+		memcpy(name, token + 1, len - 2);
+        token[len - 2] = 0;
 	}
 	return name;
 }
 
-static char *parser_check_configitem(char *line, char *config) {
-	if (!strncmp(line, config, strlen(config))) {
-		return line + strlen(config);
+static char*
+parser_check_configitem(char *line, char *config) {
+	int len;
+
+	len = strlen(config);
+	if (!strncmp(line, config, len)) {
+		return line + len;
 	}
 	return NULL;
 }
 
-static struct list_head *parser_stringlist (char *item) {
+static struct list_head*
+parser_stringlist(char *item) {
 	struct string_list *i = malloc(sizeof(struct string_list));
 	i->text = item;
 	return &i->list;
 }
 
-static void parser_extent_key(char *line) {
+static void
+parser_extent_key(char *line) {
 	my_config->key = realloc(
 			my_config->key, 
 			strlen(my_config->key) + strlen(line) + 2
@@ -40,8 +51,12 @@ static void parser_extent_key(char *line) {
 	strcat(my_config->key, "\n");
 }
 
-static int parser_create_config(char *name){
+static int
+parser_create_config(char *name)
+{
 	my_config = malloc(sizeof(struct peer_config));
+	if (my_config == NULL) return 1;
+
 	memset(my_config, 0, sizeof(struct peer_config));
 
 	INIT_LIST_HEAD(&my_config->network);
@@ -65,43 +80,75 @@ static int parser_create_config(char *name){
 	return 0;
 }
 
-/*
-TODO: not sure where to put this, to cleanup our memory handling we need
-something like this soon
+static void
+parser_delete_string_list(struct list_head* list)
+{
+	struct list_head* i;
+	struct list_head* tmp;
+	struct string_list* item;
 
-static void parser_free_config(struct peer_config *config) {
-	if (!config) {
-		// TODO: also free sublists if allocated
-		free(config->name);
-		free(config->gatewayhost);
-		free(config->owner);
-		free(config->use_tcp_only);
-		free(config->hidden);
-		free(config->silent);
-		free(config->port);
-		free(config->indirectdata);
-		free(config->key);
-		free(config->cipher);
-		free(config->compression);
-		free(config->digest);
-		free(config);
+	list_for_each_safe(i, tmp, list) {
+		item = container_of(i, struct string_list, list);
+		free(item->text);
+		list_del(i);
+		free(item);
 	}
 }
-*/
 
-static void parser_replace_item(char **var, char *newitem) {
+static void
+parser_free_peer_config(struct peer_config *config)
+{
+	free(config->name);
+	free(config->gatewayhost);
+	free(config->owner);
+	free(config->use_tcp_only);
+	free(config->hidden);
+	free(config->silent);
+	free(config->port);
+	free(config->indirectdata);
+	free(config->key);
+	free(config->cipher);
+	free(config->compression);
+	free(config->digest);
+    parser_delete_string_list(&config->network);
+    parser_delete_string_list(&config->network6);
+    parser_delete_string_list(&config->route_network);
+    parser_delete_string_list(&config->route_network6);
+}
+
+void
+parser_free_config(struct list_head* configlist)
+{
+	struct list_head* i;
+	struct list_head* tmp;
+	struct peer_config_list* item;
+
+	list_for_each_safe(i, tmp, configlist) {
+		item = container_of(i, struct peer_config_list, list);
+		parser_free_peer_config(item->peer_config);
+		free(item->peer_config);
+		list_del(i);
+		free(item);
+	}
+}
+
+static void
+parser_replace_item(char **var, char *newitem)
+{
 	free(*var);
 	*var = newitem;
 }
 
-static int parser_parse_line(char *line, struct list_head *configlist) {
+static int
+parser_parse_line(char *line, struct list_head *configlist)
+{
 	char *item = parser_check_new_item(line);
 
 	if (item) {
 		struct peer_config_list *i;
 		parse_key_mode = 0;
 
-		i = malloc(sizeof *i);
+		i = malloc(sizeof(struct peer_config_list));
 		if (i == NULL) {
 			free(my_config);
 			return 0;
@@ -161,7 +208,8 @@ static int parser_parse_line(char *line, struct list_head *configlist) {
 	return 0;
 }
 
-int parser_parse_config (char *data, struct list_head *config_list) {
+int
+parser_parse_config (char *data, struct list_head *config_list) {
 	char *token;
 	char *search = "\n";
 
