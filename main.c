@@ -126,9 +126,9 @@ main (int argc,char *argv[]) {
 		signal(SIGINT, sigint_holdon);
 		signal(SIGCHLD, SIG_IGN);
 		daemon_stop(&di_tincd, 5);
-		daemon_free(&di_tincd);
 	}
 
+	daemon_free(&di_tincd);
 	settings_free_all();
 
 	return 0;
