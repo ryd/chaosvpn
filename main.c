@@ -29,6 +29,7 @@ extern FILE *yyin;
 
 static int main_check_root(void);
 static int main_create_backup(struct config*);
+static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static void main_initialize_config(struct config*);
 static int main_parse_config(struct config*, struct buffer*);
@@ -83,6 +84,8 @@ main (int argc,char *argv[]) {
 	if (main_write_config_tinc(&config)) return 1;
 	if (main_write_config_hosts(&config)) return 1;
 	if (main_write_config_up(&config)) return 1;
+
+	main_free_parsed_info(&config);
 
 	// if (main_create_pidfile()) return 1;
 
@@ -212,6 +215,12 @@ main_parse_config(struct config *config, struct buffer *http_response) {
 	}
 
 	return 0;
+}
+
+static void
+main_free_parsed_info(struct config* config)
+{
+	parser_free_config(&config->peer_config);
 }
 
 static int

@@ -110,10 +110,10 @@ parser_free_peer_config(struct peer_config *config)
 	free(config->cipher);
 	free(config->compression);
 	free(config->digest);
-    parser_delete_string_list(&config->network);
-    parser_delete_string_list(&config->network6);
-    parser_delete_string_list(&config->route_network);
-    parser_delete_string_list(&config->route_network6);
+	parser_delete_string_list(&config->network);
+	parser_delete_string_list(&config->network6);
+	parser_delete_string_list(&config->route_network);
+	parser_delete_string_list(&config->route_network6);
 }
 
 void
