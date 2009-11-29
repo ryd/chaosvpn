@@ -9,21 +9,6 @@ static struct peer_config *my_config = NULL;
 static int parse_key_mode;
 
 static char*
-parser_check_new_item(char *token)
-{
-	int len;
-	char *name = NULL;
-
-	len = strlen(token);
-	if ((*token == '[') && (token[len - 1] == ']')) {
-		name = calloc(sizeof(char), len - 1);
-		memcpy(name, token + 1, len - 2);
-		token[len - 2] = 0;
-	}
-	return name;
-}
-
-static char*
 parser_check_configitem(char *line, char *config) {
 	int len;
 
@@ -37,6 +22,7 @@ parser_check_configitem(char *line, char *config) {
 static struct list_head*
 parser_stringlist(char *item) {
 	struct string_list *i = malloc(sizeof(struct string_list));
+	if (i == NULL) return NULL;
 	i->text = strdup(item);
 	return &i->list;
 }
@@ -143,17 +129,29 @@ parser_replace_item(char **var, char *newitem)
 static int
 parser_parse_line(char *line, struct list_head *configlist)
 {
-	char *item = parser_check_new_item(line);
+	int len;
+	char *item;
 
-	if (item) {
+	len = strlen(line);
+	if ((*line == '[') && (line[len - 1] == ']')) {
 		struct peer_config_list *i;
 		parse_key_mode = 0;
+
+		item = calloc(sizeof(char), len - 1);
+		if (item == NULL) {
+			free(my_config);
+			my_config = NULL;
+			return 1;
+		}
+		memcpy(item, line + 1, len - 2);
+		item[len - 2] = 0;
 
 		i = malloc(sizeof(struct peer_config_list));
 		if (i == NULL) {
 			free(my_config);
+			my_config = NULL;
 			free(item);
-			return 0;
+			return 1;
 		}
 
 		parser_create_config(item);
@@ -162,6 +160,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 		free(item);
 	} else if (my_config == NULL) {
 		/* we did not start with a [...] header */
+		/* and my_config is not allocated+initialized yet */
 		/* skip until after first valid header initialized a config section */
 		return 0;
 	} else if ((item = parser_check_configitem(line, "gatewayhost="))) {
