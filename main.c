@@ -67,6 +67,7 @@ main (int argc,char *argv[]) {
 	err = main_parse_config(&config, http_response);
 	if (err) return err;
 
+	free(http_response->text);
 	free(http_response);
 
 	(void)fputs(".\n", stderr);
@@ -319,6 +320,8 @@ main_create_backup(struct config *config) {
 	if (string_concatb(&base_backup_fn, ".old", 5)) return 1;
 
 	if (fs_cp_r(config->base_path, string_get(&base_backup_fn))) return 1;
+
+	string_free(&base_backup_fn);
 	
 	return 0;
 }
