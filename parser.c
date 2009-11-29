@@ -5,8 +5,8 @@
 #include "main.h"
 #include "parser.h"
 
-struct peer_config *my_config;
-int parse_key_mode;
+static struct peer_config *my_config;
+static int parse_key_mode;
 
 static char *parser_check_new_item(char *token) {
 	char *name = NULL;
