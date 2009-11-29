@@ -157,6 +157,7 @@ main_init(struct config *config) {
 		return 1;
 	}
 	yyparse();
+	fclose(yyin);
 
 	// optional params
 	if (s_master_url != NULL)	config->master_url	= s_master_url;
