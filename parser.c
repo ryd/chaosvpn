@@ -125,7 +125,6 @@ parser_free_config(struct list_head* configlist)
 
 	list_for_each_safe(i, tmp, configlist) {
 		item = container_of(i, struct peer_config_list, list);
-		printf("Deleting item %s.\n", item->peer_config->name);
 		parser_free_peer_config(item->peer_config);
 		free(item->peer_config);
 		list_del(i);
