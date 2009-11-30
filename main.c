@@ -27,7 +27,7 @@ struct daemon_info di_tincd;
 extern FILE *yyin;
 
 /* getopt switches */
-static char* CONFIG_FILE = "chaosvpn.conf";
+static char* CONFIG_FILE = "/etc/tinc/chaosvpn.conf";
 static int DONOTFORK = 0;
 
 static int main_check_root(void);
