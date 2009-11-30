@@ -14,13 +14,13 @@ int string_concat_sprintf(struct string* s, const char *msg, ...)
     va_start(args, msg);
     for (;*msg;msg++) {
         if (*msg == '%') {
-            switch(*msg) {
+            switch(*++msg) {
             case 's':
                 a_s = va_arg(args, char*);
                 if (string_concat(s, a_s)) return 1;
                 break;
 
-            case 'i':
+            case 'd':
                 a_i = va_arg(args, int);
                 if (string_putint(s, a_i)) return 1;
                 break;
