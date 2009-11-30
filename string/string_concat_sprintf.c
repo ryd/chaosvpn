@@ -8,29 +8,33 @@
 int string_concat_sprintf(struct string* s, const char *msg, ...)
 {
     va_list args;
-    char* buffer;
+    char* a_s;
+    int a_i;
 
-    buffer = malloc(4096);
-    if (!buffer) return 1;
-    
     va_start(args, msg);
-    // TODO: reimplement vsnprintf to directly use string_concatb
-    vsnprintf(buffer, 4096, msg, args);
-    va_end(args);
-    
-    if (string_concatb(s, buffer, strlen(buffer))) {
-        goto bail_out;
-        return 1;
-    }
-    if (string_concatb(s, "\0", 1)) {
-        goto bail_out;
-        return 1;
-    }
-    s->_u._s.length--;
-    free(buffer);
-    return 0;
+    for (;*msg;msg++) {
+        if (*msg == '%') {
+            switch(*msg) {
+            case 's':
+                a_s = va_arg(args, char*);
+                if (string_concat(s, a_s)) return 1;
+                break;
 
-bail_out:
-    free(buffer);
-    return 1;
+            case 'i':
+                a_i = va_arg(args, int);
+                if (string_putint(s, a_i)) return 1;
+                break;
+
+            default:
+                (void)fprintf(stderr, "Debug: Format entity %%%c not defined yet, implement it, please!\n", *msg);
+                exit(1);
+            }
+        } else {
+            if (string_putc(s, *msg)) return 1;
+        }
+    }
+
+    if (string_putc(s, 0)) return 1;
+
+    return 0;
 }
