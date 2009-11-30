@@ -12,7 +12,7 @@ int string_putint(struct string* s, int i)
     char buf[MAXSTRINGLEN];
     int len;
 
-    len = snprintf(buf, 32, "%d", i);
+    len = snprintf(buf, MAXSTRINGLEN, "%d", i);
 
     if (len >= (MAXSTRINGLEN - 1)) {
         (void)fputs("error: increase MAXSTRINGLEN in string_putint\n", stderr);

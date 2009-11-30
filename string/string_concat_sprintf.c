@@ -33,6 +33,7 @@ int string_concat_sprintf(struct string* s, const char *msg, ...)
             if (string_putc(s, *msg)) return 1;
         }
     }
+    va_end(args);
 
     if (string_putc(s, 0)) return 1;
     --s->_u._s.length;
