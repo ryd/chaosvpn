@@ -15,6 +15,7 @@ struct string {
 void string_clear(struct string*);
 int string_concat(struct string*, const char*);
 int string_concatb(struct string*, const char*, int);
+int string_concat_sprintf(struct string* s, const char *msg, ...);
 void string_free(struct string*);
 char* string_get(struct string*);
 int string_init(struct string*, int, int);
