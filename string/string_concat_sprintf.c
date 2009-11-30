@@ -13,7 +13,6 @@ defprintf(struct string* s, const char const* fmt, va_list exactlyonearg)
     char buf[4096];
     int len;
 
-printf("DEFPRINTF called: %s\n", fmt);
     len = vsnprintf(buf, 4096, fmt, exactlyonearg);
     return string_concatb(s, buf, len);
 }
