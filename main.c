@@ -280,11 +280,8 @@ main_request_config(struct config *config, struct buffer *http_response) {
 	struct string httpurl;
 
 	string_init(&httpurl, 512, 512);
-	string_concat(&httpurl, config->master_url);
-	string_concat(&httpurl, "?id=");
-	string_concat(&httpurl, config->peerid);
-	//string_concat(&httpurl, "&password=");
-	//string_concat(&httpurl, config->password);
+	string_concat_sprintf(&httpurl, "%s?id=%s",
+		config->master_url, config->peerid);
 
 	if (http_request(string_get(&httpurl), http_response)) {
 		printf("Unable to fetch %s - maybe server is down\n", config->master_url);
