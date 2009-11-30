@@ -3,9 +3,10 @@
 
 #include "string.h"
 
-int string_concatb(struct string* s, const char* sta, int len)
+int
+string_concatb(struct string* s, const char* sta, size_t len)
 {
-    int growby;
+    size_t growby;
     char* buf;
 
     if (len > (s->_u._s.size - s->_u._s.length)) {
