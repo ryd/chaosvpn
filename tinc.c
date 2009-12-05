@@ -10,15 +10,14 @@
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
 #define CONCAT_DF(buffer, format, value, default_value)	if (string_concat_sprintf(buffer, format, strlen(value) > 0 ? value : default_value)) return 1
 #define CONCAT_YN(buffer, format, value)	if (string_concat_sprintf(buffer, format, strlen(value) == 0 ? "no" : "yes")) return 1
+#define CONCAT_SN(buffer, value)	if (tinc_add_subnet(buffer, value)) return 1
 
 static int tinc_add_subnet(struct string*, struct list_head*);
 
 int
 tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 {
-	if (strlen(peer->gatewayhost) > 0) {
-		CONCAT_F(buffer, "Address=%s\n", peer->gatewayhost);
-	}
+	CONCAT_DF(buffer, "Address=%s\n", peer->gatewayhost, "");
 
 	CONCAT_DF(buffer, "Cipher=%s\n", peer->cipher, TINC_DEFAULT_CIPHER);
 	CONCAT_DF(buffer, "Compression=%s\n", peer->compression, TINC_DEFAULT_COMPRESSION);
@@ -26,8 +25,8 @@ tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 	CONCAT_YN(buffer, "IndirectData=%s\n", peer->indirectdata);
 	CONCAT_DF(buffer, "Port=%s\n", peer->port, TINC_DEFAULT_PORT);
 
-	if (tinc_add_subnet(buffer, &peer->network) ||
-			tinc_add_subnet(buffer, &peer->network6)) return 1;
+	CONCAT_SN(buffer, &peer->network);
+	CONCAT_SN(buffer, &peer->network6);
 
 	CONCAT_YN(buffer, "TCPonly=%s\n", peer->use_tcp_only);
 	CONCAT_F(buffer, "%s\n", peer->key);	
