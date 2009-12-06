@@ -5,6 +5,7 @@
 #include "main.h"
 #include "list.h"
 #include "tinc.h"
+#include "settings.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
@@ -85,16 +86,18 @@ tinc_generate_up(struct string* buffer, struct config *config)
 	list_for_each(p, &config->peer_config) {
 		i = container_of(p, struct peer_config_list, list);
 
+		if (!strcmp(i->peer_config->name, s_my_peerid)) {
+			continue;
+		}
 		if (strlen(i->peer_config->gatewayhost) > 0) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
 				CONCAT_F(buffer, "/sbin/ip -4 route add %s dev $INTERFACE\n", si->text);
-	        }
-
+			}
 			list_for_each(sp, &i->peer_config->network6) {
 				si = container_of(sp, struct string_list, list);
 				CONCAT_F(buffer, "/sbin/ip -6 route add %s dev $INTERFACE\n", si->text);
-	        }
+	        	}
 		}
 	}
 
