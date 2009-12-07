@@ -55,7 +55,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 
 	list_for_each(p, &config->peer_config) {
 		struct peer_config_list *i = container_of(p, struct peer_config_list, list);
-		if (!strcmp(i->peer_config->name, s_my_peerid)) {
+		if (!strcmp(i->peer_config->name, config->peerid)) {
 			continue;
 		}
 		if (strlen(i->peer_config->gatewayhost) > 0 &&
