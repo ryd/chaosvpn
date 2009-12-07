@@ -28,7 +28,6 @@ void
 settings_init_defaults(void)
 {
     s_interface = strdup("eth0");
-    s_my_vpn_netmask = strdup("255.255.255.0");
 }
 
 void
