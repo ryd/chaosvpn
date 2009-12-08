@@ -1,32 +1,20 @@
 #include "curl/curl.h"
-#include <string.h>
-#include <stdlib.h>
-#include "main.h"
-#include "http.h"
+#include "string/string.h"
 
-
-static size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data) {
+static size_t http_callback(void *ptr, size_t size, size_t nmemb, void *data) {
 	size_t realsize = size * nmemb;
-	struct MemoryStruct *mem = (struct MemoryStruct *)data;
+	struct string *body = (struct string *)data;
 
-	mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-	if (mem->memory) {
-		memcpy(&(mem->memory[mem->size]), ptr, realsize);
-		mem->size += realsize;
-		mem->memory[mem->size] = 0;
-	}
+	string_concatb(body, ptr, realsize);
+
 	return realsize;
 }
 
-int http_request(char *url, struct buffer *response) {
+int http_request(char *url, struct string *response) {
 	CURL *curl;
 	CURLcode res;
-	struct MemoryStruct chunk;
 	long code;
 	char curlerror[CURL_ERROR_SIZE];
-
-	chunk.memory=NULL;
-	chunk.size = 0;
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
@@ -38,8 +26,8 @@ int http_request(char *url, struct buffer *response) {
 
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(curl, CURLOPT_URL, url);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_callback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "ChaosVPNclient/2.0");
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlerror);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -56,8 +44,6 @@ int http_request(char *url, struct buffer *response) {
 		printf("Request deliver wrong response code - %ld\n", code);
 		return 1;
 	}
-
-	response->text = chunk.memory;
 
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();

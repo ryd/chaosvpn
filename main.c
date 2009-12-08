@@ -17,7 +17,6 @@
 #include "tinc.h"
 #include "settings.h"
 #include "daemon.h"
-
 #include "string/string.h"
 
 int r_sigterm = 0;
@@ -35,9 +34,9 @@ static int main_create_backup(struct config*);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static void main_initialize_config(struct config*);
-static int main_parse_config(struct config*, struct buffer*);
+static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(int, char**);
-static int main_request_config(struct config*, struct buffer*);
+static int main_request_config(struct config*, struct string*);
 static void main_terminate_old_tincd(void);
 static void main_unlink_pidfile(void);
 static int main_write_config_hosts(struct config*);
@@ -64,20 +63,16 @@ main (int argc,char *argv[]) {
 	(void)fputs("Fetching information:", stdout);
 	(void)fflush(stdout);
 
-	struct buffer *http_response = calloc(1, sizeof *http_response);
-	if (http_response == NULL) {
-		(void)fputs("Unable to allocate memory.\n", stderr);
-		return 1;
-	}
+	struct string http_response;
+	string_init(&http_response, 4096, 512);
 
-	err = main_request_config(&config, http_response);
+	err = main_request_config(&config, &http_response);
 	if (err) return err;
 
-	err = main_parse_config(&config, http_response);
+	err = main_parse_config(&config, &http_response);
 	if (err) return err;
 
-	free(http_response->text);
-	free(http_response);
+	string_free(&http_response);
 
 	(void)fputs(".\n", stderr);
 
@@ -276,7 +271,7 @@ main_init(struct config *config) {
 }
 
 static int
-main_request_config(struct config *config, struct buffer *http_response) {
+main_request_config(struct config *config, struct string *http_response) {
 	struct string httpurl;
 
 	string_init(&httpurl, 512, 512);
@@ -295,8 +290,8 @@ main_request_config(struct config *config, struct buffer *http_response) {
 }
 
 static int
-main_parse_config(struct config *config, struct buffer *http_response) {
-	if (parser_parse_config(http_response->text, &config->peer_config)) {
+main_parse_config(struct config *config, struct string *http_response) {
+	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
 		printf("Unable to parse config\n");
 		return 1;
 	}
