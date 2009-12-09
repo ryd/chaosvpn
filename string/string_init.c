@@ -7,7 +7,7 @@ string_init(struct string* s, size_t size, size_t growby)
 {
     s->_u._s.length = 0;
     s->s = malloc(size);
-    if (!s->s) return 1;
+    if (!s->s) { s->_u._s.size = 0; s->_u._s.growby = growby; }
     s->_u._s.size = size;
     s->_u._s.growby = growby;
     return 0;
