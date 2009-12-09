@@ -177,7 +177,6 @@ handledir(struct string* src, struct string* dst)
 			dstdirlen = dst->_u._s.length;
 			if (string_concat(dst, dirent->d_name)) goto bail_out;
 			if (fs_ensure_z(dst)) goto bail_out;
-			printf("Copy %s to %s.\n", dirent->d_name, string_get(dst));
 			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
 			if (utimes(string_get(dst), tv)) {
 				(void)fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
