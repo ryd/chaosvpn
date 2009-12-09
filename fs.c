@@ -8,9 +8,16 @@
 #include <stdlib.h>
 #include <fts.h>
 #include <stdio.h>
+#include <dirent.h>
 
 #include "string/string.h"
 #include "fs.h"
+
+
+static int fs_ensure_suffix(struct string*);
+static int handledir(struct string*, struct string*);
+static int fs_ensure_z(struct string* s);
+
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
@@ -43,25 +50,6 @@ int fs_mkdir_p( char *path, mode_t mode ) {
 	}
 
 	return err;
-}
-
-static int
-fs_fts_compare(const FTSENT** a, const FTSENT** b)
-{
-	int fts_info_a;
-	int fts_info_b;
-
-	fts_info_a = (*a)->fts_info;
-	if (fts_info_a == FTS_ERR) return 0;
-	if (fts_info_a == FTS_NS) return 0;
-	if (fts_info_a == FTS_DNR) return 0;
-	fts_info_b = (*b)->fts_info;
-	if (fts_info_b == FTS_ERR) return 0;
-	if (fts_info_b == FTS_NS) return 0;
-	if (fts_info_b == FTS_DNR) return 0;
-	if (fts_info_a == FTS_D) return -1;
-	if (fts_info_b == FTS_D) return 1;
-	return 0;
 }
 
 int
@@ -137,71 +125,115 @@ fs_cp_file(const char const* src, const char const* dst)
 	return 0;
 }
 
+static int
+handledir(struct string* src, struct string* dst)
+{
+	DIR* dir;
+	struct dirent* dirent;
+	size_t srcdirlen;
+	size_t dstdirlen;
+	struct stat st;
+	struct timeval tv[2];
+	int retval = 1;
+
+	if (fs_ensure_z(src)) return 1;
+	if (fs_ensure_z(dst)) return 1;
+
+	if (stat(string_get(src), &st)) return 1;
+	(void)mkdir(string_get(dst), st.st_mode & 07777);
+
+	if (chdir(string_get(src))) return 1;
+	dir = opendir(string_get(src));
+	if (!dir) return 1;
+
+	tv[0].tv_usec = 0;
+	tv[1].tv_usec = 0;
+
+	while ((dirent = readdir(dir))) {
+		if (stat(dirent->d_name, &st)) continue;
+		if ((*dirent->d_name == '.') &&
+			((dirent->d_name[1] == 0) ||
+				((dirent->d_name[1] == '.') &&
+				(dirent->d_name[2] == 0)))) continue;
+		tv[0].tv_sec = st.st_atime;
+		tv[1].tv_sec = st.st_mtime;
+		if (S_ISDIR(st.st_mode)) {
+			srcdirlen = src->_u._s.length;
+			dstdirlen = dst->_u._s.length;
+			if (string_concat(src, dirent->d_name)) goto bail_out;
+			if (fs_ensure_suffix(src)) goto bail_out;
+			if (string_concat(dst, dirent->d_name)) goto bail_out;
+			if (fs_ensure_suffix(dst)) goto bail_out;
+			if (handledir(src, dst)) goto bail_out;
+			if (utimes(string_get(dst), tv)) {
+				(void)fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+			}
+			src->_u._s.length = srcdirlen;
+			dst->_u._s.length = dstdirlen;
+			(void)fs_ensure_z(src);
+			(void)fs_ensure_z(dst);
+			if (chdir(string_get(src))) goto bail_out;
+		} else if (S_ISREG(st.st_mode)) {
+			dstdirlen = dst->_u._s.length;
+			if (string_concat(dst, dirent->d_name)) goto bail_out;
+			if (fs_ensure_z(dst)) goto bail_out;
+			printf("Copy %s to %s.\n", dirent->d_name, string_get(dst));
+			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
+			if (utimes(string_get(dst), tv)) {
+				(void)fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+			}
+			dst->_u._s.length = dstdirlen;
+		}
+	}
+	retval = 0;
+	/* fallthrough */
+bail_out:
+	closedir(dir);
+	return retval;
+}
+
+static int
+fs_ensure_z(struct string* s)
+{
+	if (string_putc(s, 0)) return 1;
+	--s->_u._s.length;
+	return 0;
+}
+
+static int
+fs_ensure_suffix(struct string* s)
+{
+	if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
+	if (string_putc(s, '/')) return 1;
+	return fs_ensure_z(s);
+}
 
 int
 fs_cp_r(char* src, char* dest)
 {
-	FTS* fts;
-	FTSENT* entry;
-	char* srces[2];
-	struct stat sb;
-	struct timeval tv[2];
+	struct string source;
+	struct string destination;
+	int retval = 1;
 
-	char* srcpath;
-	struct string dstpath;
-	int splen;
-	int dplen;
-	int dpslash;
+	(void)string_init(&source, 512, 512);
+	(void)string_init(&destination, 512, 512);
 
-	if (stat(src, &sb)) return 1;
-	/* This routine only accepts directories as source */
-	if (!S_ISDIR(sb.st_mode)) return 1;
+	if (*src != '/') if (fs_get_cwd(&source)) goto bail_out;
+	if (string_concat(&source, src)) goto bail_out;
+	if (fs_ensure_suffix(&source)) goto bail_out;
+	if (*dest != '/') if (fs_get_cwd(&destination)) goto bail_out;
+	if (string_concat(&destination, dest)) goto bail_out;
+	if (fs_ensure_suffix(&destination)) goto bail_out;
 
-	srces[0] = src;
-	srces[1] = NULL;
-	fts = fts_open(srces, FTS_XDEV | FTS_NOCHDIR, fs_fts_compare);
-	if (!fts) return 1;
 
-	splen = strlen(src);
-	if (src[splen - 1] != '/') ++splen;
-	dplen = strlen(dest);
-	dpslash = (dest[dplen - 1] == '/');
+	retval = handledir(&source, &destination);
+printf("FOO: %d [%d]\n", retval, errno);
 
-	string_init(&dstpath, 512, 512);
-	while((entry = fts_read(fts))) {
-		if (entry->fts_path[splen - 1] == 0) {
-			srcpath = entry->fts_path + splen - 1;
-		} else {
-			srcpath = entry->fts_path + splen;
-		}
-		string_clear(&dstpath);
-		string_concatb(&dstpath, dest, dplen);
-		if (!dpslash) string_concatb(&dstpath, "/", 1);
-		string_concat(&dstpath, srcpath);
-		tv[0].tv_usec = 0;
-		tv[1].tv_usec = 0;
-		tv[0].tv_sec = entry->fts_statp->st_atime;
-		tv[1].tv_sec = entry->fts_statp->st_mtime;
-		if (entry->fts_info & FTS_D) {
-			mkdir(string_get(&dstpath), entry->fts_statp->st_mode & 07777);
-		} else if (entry->fts_info & FTS_DC) {
-			if (utimes(string_get(&dstpath), tv)) {
-				fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(&dstpath));
-			}
-		} else if (entry->fts_info & FTS_F) {
-			if (fs_cp_file(entry->fts_path, string_get(&dstpath))) {
-				string_free(&dstpath);
-				return 1;
-			}
-			if (utimes(string_get(&dstpath), tv)) {
-				fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(&dstpath));
-			}
-		}
-	}
-	fts_close(fts);
-	string_free(&dstpath);
-
-	return 0;
+	/* fallthrough */
+bail_out:
+	string_free(&source);
+	string_free(&destination);
+	return retval;
 }
 
 int
