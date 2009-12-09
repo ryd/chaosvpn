@@ -211,11 +211,14 @@ fs_cp_r(char* src, char* dest)
 {
 	struct string source;
 	struct string destination;
+	struct string curwd;
 	int retval = 1;
 
 	(void)string_init(&source, 512, 512);
 	(void)string_init(&destination, 512, 512);
+	(void)string_init(&curwd, 512, 512);
 
+	if (fs_get_cwd(&curwd)) goto nrcwd_bail_out;
 	if (*src != '/') if (fs_get_cwd(&source)) goto bail_out;
 	if (string_concat(&source, src)) goto bail_out;
 	if (fs_ensure_suffix(&source)) goto bail_out;
@@ -228,8 +231,13 @@ fs_cp_r(char* src, char* dest)
 
 	/* fallthrough */
 bail_out:
+	if(chdir(string_get(&curwd))) {
+		(void)fprintf(stderr, "fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
+	}
+nrcwd_bail_out:
 	string_free(&source);
 	string_free(&destination);
+    string_free(&curwd);
 	return retval;
 }
 
