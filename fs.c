@@ -74,7 +74,9 @@ fs_get_cwd(struct string* s)
 
 	path = stack;
 	if (getcwd(path, 128) != NULL) {
-		return string_concat(s, path);
+		if (string_concat(s, path)) return 1;
+		if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
+		return string_putc(s, '/');
 	}
 	if (errno != ERANGE) return 1;
 	for (bta = 4096; bta < 65536; bta+=4096) {
@@ -82,7 +84,9 @@ fs_get_cwd(struct string* s)
 		if (getcwd(path, bta) != NULL) {
 			retval = string_concat(s, path);
 			free(path);
-			return retval;
+			if (retval) return retval;
+			if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
+			return string_putc(s, '/');
 		}
 		free(path);
 		if (errno != ERANGE) return 1;
