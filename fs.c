@@ -65,6 +65,32 @@ fs_fts_compare(const FTSENT** a, const FTSENT** b)
 }
 
 int
+fs_get_cwd(struct string* s)
+{
+	char stack[128];
+	char* path;
+	size_t bta;
+	int retval;
+
+	path = stack;
+	if (getcwd(path, 128) != NULL) {
+		return string_concat(s, path);
+	}
+	if (errno != ERANGE) return 1;
+	for (bta = 4096; bta < 65536; bta+=4096) {
+		path = malloc(bta);
+		if (getcwd(path, bta) != NULL) {
+			retval = string_concat(s, path);
+			free(path);
+			return retval;
+		}
+		free(path);
+		if (errno != ERANGE) return 1;
+	}
+	return 0;
+}
+
+int
 fs_cp_file(const char const* src, const char const* dst)
 {
 	int fh_source;
