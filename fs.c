@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <fts.h>
 #include <stdio.h>
 #include <dirent.h>
 
@@ -226,7 +225,6 @@ fs_cp_r(char* src, char* dest)
 
 
 	retval = handledir(&source, &destination);
-printf("FOO: %d [%d]\n", retval, errno);
 
 	/* fallthrough */
 bail_out:
