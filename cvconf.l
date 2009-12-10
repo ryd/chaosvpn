@@ -5,6 +5,7 @@
 int yycurline = 1;
 %}
 %Start PV SS
+%option noyywrap
 %%
 \$my_peerid   {yylval.pval = &s_my_peerid; return KEYWORD_S;}
 \$my_vpn_ip   {yylval.pval = &s_my_vpn_ip; return KEYWORD_S;}

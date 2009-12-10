@@ -1,6 +1,6 @@
 CC = gcc
 COPT = -O2 -Wall -g
-LIB = -lcurl -ll
+LIB = -lcurl
 LEX=flex
 YACC=yacc
 
