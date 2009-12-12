@@ -1,0 +1,25 @@
+Source: chaosvpn
+Section: net
+Priority: extra
+Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
+Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7.0.50~), libcurl4-openssl-dev
+Standards-Version: 3.8.3
+Homepage: http://github.com/ryd/chaosvpn
+
+Package: chaosvpn
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: tinc (>= 1.0.11)
+Description: Client to setup connection to ChaosVPN
+ This VPN is also known as KrautVPN. It is intended to replace
+ the "old" ChaosVPN from 2006.
+ .
+ The ChaosVPN is a intended VPN to connect Chaos. First services
+ that will use it will be the warzone project and ChaosPhone.
+ .
+ You will find some more information at: (German)
+ http://wiki.hamburg.ccc.de/index.php/ChaosVPN#ChaosVPN_2.0
+ .
+ Further information will come.
+ .
+ Go to 26c3 Congress

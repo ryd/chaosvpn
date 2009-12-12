@@ -27,7 +27,14 @@ lex.yy.c: cvconf.l
 	$(LEX) cvconf.l
 
 clean:
-	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o $(NAME) 
+	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o $(NAME)
+
+changelog:
+	[ -e .git/HEAD ] && git log >changelog
+
+install:
+	install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/
+	install -m 0755 chaosvpn $(DESTDIR)/usr/sbin/
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
