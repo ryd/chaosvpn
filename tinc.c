@@ -93,11 +93,11 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		if (strlen(i->peer_config->gatewayhost) > 0) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
-				CONCAT_F(buffer, "/sbin/ip -4 route add %s dev $INTERFACE\n", si->text);
+				if (string_concat_sprintf(buffer, "%s -4 route add %s dev $INTERFACE\n", config->ip_bin, si->text)) return 1;
 			}
 			list_for_each(sp, &i->peer_config->network6) {
 				si = container_of(sp, struct string_list, list);
-				CONCAT_F(buffer, "/sbin/ip -6 route add %s dev $INTERFACE\n", si->text);
+				if (string_concat_sprintf(buffer, "%s -6 route add %s dev $INTERFACE\n", config->ip_bin, si->text)) return 1;
 	        	}
 		}
 	}
