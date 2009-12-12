@@ -1,0 +1,6 @@
+files
+chaosvpn.debhelper.log
+chaosvpn.postinst.debhelper
+chaosvpn.postrm.debhelper
+chaosvpn.prerm.debhelper
+chaosvpn.substvars
