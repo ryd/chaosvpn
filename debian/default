@@ -1,0 +1,14 @@
+# Defaults for chaosvpn initscript
+# sourced by /etc/init.d/chaosvpn
+# installed at /etc/default/chaosvpn by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS="-a"
+# -a == do not run as daemon, do not control tincd
+
+# should we start automatically at boot?
+RUN="yes"
