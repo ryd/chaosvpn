@@ -15,12 +15,12 @@
 # running $(MAKE) changelog in clean target to have changelog as part
 # of the generated debian source package
 override_dh_clean:
-	-$(MAKE) changelog
+	-$(MAKE) CHANGES
 	dh_clean
 
 override_dh_installchangelogs:
-	if [ -e changelog ] ; then \
-		dh_installchangelogs changelog ; \
+	if [ -e CHANGES ] ; then \
+		dh_installchangelogs CHANGES ; \
 	else \
 		dh_installchangelogs ; \
 	fi

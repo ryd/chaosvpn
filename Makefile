@@ -29,8 +29,8 @@ lex.yy.c: cvconf.l
 clean:
 	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o $(NAME)
 
-changelog:
-	[ -e .git/HEAD ] && git log >changelog
+CHANGES:
+	[ -e .git/HEAD ] && git log >CHANGES
 
 install:
 	install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/
