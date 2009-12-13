@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+die "this perl file is obsolete, only still here for reference purposes!\n";
+
 use constant VERSION => "0.12";
 
 # 0.12 20081003 haegar@ccc.de
