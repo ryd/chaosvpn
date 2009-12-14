@@ -53,15 +53,19 @@ tinc_generate_config(struct string* buffer, struct config *config)
 		CONCAT_F(buffer, "BindToAddress=%s\n", config->vpn_ip);
 	}
 
-	// TODO - fix required
+	if (strcmp(config->my_peer->silent, "1") == 0) {
+			return 0; //no ConnectTo lines
+	}
+
 	list_for_each(p, &config->peer_config) {
 		struct peer_config_list *i = container_of(p, struct peer_config_list, list);
+
 		if (!strcmp(i->peer_config->name, config->peerid)) {
 			continue;
 		}
+
 		if (strlen(i->peer_config->gatewayhost) > 0 &&
-				strlen(i->peer_config->hidden) == 0 &&
-				strlen(i->peer_config->silent) == 0) {
+				strlen(i->peer_config->hidden) == 0) {
 			CONCAT_F(buffer, "ConnectTo=%s\n", i->peer_config->name);
 		}
 	}

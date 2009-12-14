@@ -216,6 +216,7 @@ main_initialize_config(struct config* config) {
 	config->master_url	= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 	config->base_path	= "/etc/tinc";
 	config->pidfile		= "/var/run";
+	config->my_peer		= NULL;
 
 	INIT_LIST_HEAD(&config->peer_config);
 }
@@ -291,9 +292,19 @@ main_request_config(struct config *config, struct string *http_response) {
 
 static int
 main_parse_config(struct config *config, struct string *http_response) {
+	struct list_head *p = NULL;
+
 	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
 		printf("Unable to parse config\n");
 		return 1;
+	}
+
+	list_for_each(p, &config->peer_config) {
+		struct peer_config_list *i = container_of(p,
+				struct peer_config_list, list);
+		if (strcmp(i->peer_config->name, config->peerid) == 0) {
+				config->my_peer = i->peer_config;
+		}
 	}
 
 	return 0;

@@ -45,6 +45,7 @@ struct config {
 	char *master_url;
 	char *base_path;
 	char *pidfile;
+	struct peer_config *my_peer;
 	struct list_head peer_config;
 };
 
