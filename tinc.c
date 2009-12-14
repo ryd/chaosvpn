@@ -10,7 +10,7 @@
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
 #define CONCAT_DF(buffer, format, value, default_value)	if (string_concat_sprintf(buffer, format, strlen(value) > 0 ? value : default_value)) return 1
-#define CONCAT_YN(buffer, format, value)	if (string_concat_sprintf(buffer, format, strlen(value) == 0 ? "no" : "yes")) return 1
+#define CONCAT_YN(buffer, format, value)    if (string_concat_sprintf(buffer, format, strcmp(value, "1") ? "no" : "yes")) return 1
 #define CONCAT_SN(buffer, value)	if (tinc_add_subnet(buffer, value)) return 1
 
 static int tinc_add_subnet(struct string*, struct list_head*);
@@ -53,6 +53,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 		CONCAT_F(buffer, "BindToAddress=%s\n", config->vpn_ip);
 	}
 
+	// TODO - fix required
 	list_for_each(p, &config->peer_config) {
 		struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 		if (!strcmp(i->peer_config->name, config->peerid)) {
