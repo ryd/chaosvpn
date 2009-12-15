@@ -231,6 +231,7 @@ fs_cp_r(char* src, char* dest)
 
 	/* fallthrough */
 bail_out:
+    if (fs_ensure_z(&curwd)) return 1;
 	if(chdir(string_get(&curwd))) {
 		(void)fprintf(stderr, "fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
