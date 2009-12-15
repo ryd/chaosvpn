@@ -295,7 +295,7 @@ main_parse_config(struct config *config, struct string *http_response) {
 	struct list_head *p = NULL;
 
 	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
-		printf("Unable to parse config\n");
+		printf("\nUnable to parse config\n");
 		return 1;
 	}
 
@@ -305,6 +305,11 @@ main_parse_config(struct config *config, struct string *http_response) {
 		if (strcmp(i->peer_config->name, config->peerid) == 0) {
 				config->my_peer = i->peer_config;
 		}
+	}
+
+	if (config->my_peer == NULL) {
+		printf("i\nUnable to find %s in config.\n", config->peerid);
+		return 1;
 	}
 
 	return 0;
