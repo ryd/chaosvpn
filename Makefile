@@ -33,8 +33,10 @@ CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
 
 install:
-	install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/
 	install -m 0755 chaosvpn $(DESTDIR)/usr/sbin/
+	if [ ! -e $(DESTDIR)/etc/tinc/chaosvpn.conf ] ; then \
+		install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/ ; \
+	fi
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
