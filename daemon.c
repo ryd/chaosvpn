@@ -1,4 +1,3 @@
-#include <error.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>

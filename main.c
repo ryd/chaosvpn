@@ -1,3 +1,4 @@
+#include <sys/param.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,7 +48,6 @@ static void sigterm(int);
 static void sigint(int);
 static void sigint_holdon(int);
 static void usage(void);
-
 
 int
 main (int argc,char *argv[]) {
@@ -229,10 +229,12 @@ main_init(struct config *config) {
 		return 1;
 	}
 
+#ifndef BSD
 	if (tun_check_or_create()) {
 		printf("Error - unable to create tun device\n");
 		return 1;
 	}
+#endif
 
 	yyin = fopen(CONFIG_FILE, "r");
 	if (!yyin) {
@@ -444,7 +446,7 @@ main_unlink_pidfile(void)
 }
 
 static void
-sigchild(int __unused)
+sigchild(int sig /*__unused*/)
 {
 	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
 	main_unlink_pidfile();
@@ -455,19 +457,19 @@ sigchild(int __unused)
 }
 
 static void
-sigterm(int __unused)
+sigterm(int sig /*__unused*/)
 {
 	r_sigterm = 1;
 }
 
 static void
-sigint(int __unused)
+sigint(int sig /*__unused*/)
 {
 	r_sigint = 1;
 }
 
 static void
-sigint_holdon(int __unused)
+sigint_holdon(int sig /*__unused*/)
 {
 	puts("I'm doing me best, please be patient for a little, will ya?");
 }

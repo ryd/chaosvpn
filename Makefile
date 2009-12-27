@@ -1,6 +1,8 @@
-CC = gcc
-COPT = -O2 -Wall -g
-LIB = -lcurl
+CC=gcc
+INCLUDES=-I/usr/local/include
+LIBDIRS=-L/usr/local/lib
+CFLAGS=-O2 -Wall -g $(INCLUDES)
+LIB=-lcurl
 LEX=flex
 YACC=yacc
 
@@ -10,7 +12,7 @@ OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o daemo
 NAME = chaosvpn
 
 $(NAME): $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LIB)
+	$(CC) -o $@ $(OBJ) $(LIB) $(LIBDIRS)
 
 $(STRINGOBJ):
 	cd string && make
