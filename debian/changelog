@@ -1,3 +1,9 @@
+chaosvpn (2.0~rc5-0.0) unstable; urgency=low
+
+  * 2.0-rc5
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 27 Dec 2009 23:41:46 +0100
+
 chaosvpn (2.0~rc3-0.0) unstable; urgency=low
 
   * Initial Release.
