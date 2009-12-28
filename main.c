@@ -210,7 +210,8 @@ main_initialize_config(struct config* config) {
 	config->vpn_ip6		= NULL;
 	config->networkname = NULL;
 	config->tincd_bin	= "/usr/sbin/tincd";
-	config->ip_bin		= "/sbin/ip";
+	config->routeadd	= NULL;
+	config->routeadd6	= NULL;
 	config->ifconfig	= "/sbin/ifconfig";
 	config->ifconfig6	= NULL; // not required
 	config->master_url	= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
@@ -247,9 +248,10 @@ main_init(struct config *config) {
 	// optional params
 	if (s_master_url != NULL)	config->master_url	= s_master_url;
 	if (s_tincd_bin != NULL)	config->tincd_bin	= s_tincd_bin;
-	if (s_ip_bin != NULL)		config->ip_bin		= s_ip_bin;
+	if (s_routeadd != NULL)		config->routeadd	= s_routeadd;
+	if (s_routeadd6 != NULL)	config->routeadd6	= s_routeadd6;
 	if (s_ifconfig != NULL)		config->ifconfig	= s_ifconfig;
-	if (s_base != NULL)			config->base_path	= s_base;
+	if (s_base != NULL)		config->base_path	= s_base;
 	if (s_pidfile != NULL)		config->pidfile		= s_pidfile;
 
 	//require params
