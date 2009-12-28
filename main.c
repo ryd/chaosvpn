@@ -139,9 +139,12 @@ main_terminate_old_tincd(void)
 	pid_t pid;
 	
 
+	if (s_pidfile == NULL)
+		return;
+
 	pidfile = open(s_pidfile, O_RDONLY);
 	if (pidfile == -1) {
-		(void)fputs("notice: unable to open pidfile; assuming an old tincd is not running\n", stderr);
+		(void)fprintf(stderr, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", s_pidfile);
 		return;
 	}
 	len = read(pidfile, pidbuf, 31);
