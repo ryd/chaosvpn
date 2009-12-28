@@ -24,3 +24,7 @@ override_dh_installchangelogs:
 	else \
 		dh_installchangelogs ; \
 	fi
+
+override_dh_installinit:
+	dh_installinit --error-handler=invokerc_error
+
