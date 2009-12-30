@@ -52,6 +52,7 @@ static void usage(void);
 int
 main (int argc,char *argv[]) {
 	struct config config;
+	char tincd_debugparam[32];
 
 	main_parse_opts(argc, argv);
 
@@ -92,10 +93,12 @@ main (int argc,char *argv[]) {
 
 	// if (main_create_pidfile()) return 1;
 
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
+	
 	if (DONOTFORK) {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, NULL);
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, NULL);
 	} else {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, "-D", NULL);
 		signal(SIGTERM, sigterm);
 		signal(SIGINT, sigint);
 		signal(SIGCHLD, sigchild);
