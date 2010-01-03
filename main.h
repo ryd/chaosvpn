@@ -39,7 +39,8 @@ struct config {
 	char *vpn_ip6;
 	char *networkname;
 	char *tincd_bin;
-	char *ip_bin;
+	char *routeadd;
+	char *routeadd6;
 	char *ifconfig;
 	char *ifconfig6;
 	char *master_url;

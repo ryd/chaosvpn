@@ -1,3 +1,4 @@
+#include <sys/param.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,10 +49,10 @@ static void sigint(int);
 static void sigint_holdon(int);
 static void usage(void);
 
-
 int
 main (int argc,char *argv[]) {
 	struct config config;
+	char tincd_debugparam[32];
 
 	main_parse_opts(argc, argv);
 
@@ -92,10 +93,12 @@ main (int argc,char *argv[]) {
 
 	// if (main_create_pidfile()) return 1;
 
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
+	
 	if (DONOTFORK) {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, NULL);
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, NULL);
 	} else {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, "-D", NULL);
+		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, "-D", NULL);
 		signal(SIGTERM, sigterm);
 		signal(SIGINT, sigint);
 		signal(SIGCHLD, sigchild);
@@ -139,9 +142,12 @@ main_terminate_old_tincd(void)
 	pid_t pid;
 	
 
+	if (s_pidfile == NULL)
+		return;
+
 	pidfile = open(s_pidfile, O_RDONLY);
 	if (pidfile == -1) {
-		(void)fputs("notice: unable to open pidfile; assuming an old tincd is not running\n", stderr);
+		(void)fprintf(stderr, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", s_pidfile);
 		return;
 	}
 	len = read(pidfile, pidbuf, 31);
@@ -210,7 +216,8 @@ main_initialize_config(struct config* config) {
 	config->vpn_ip6		= NULL;
 	config->networkname = NULL;
 	config->tincd_bin	= "/usr/sbin/tincd";
-	config->ip_bin		= "/sbin/ip";
+	config->routeadd	= NULL;
+	config->routeadd6	= NULL;
 	config->ifconfig	= "/sbin/ifconfig";
 	config->ifconfig6	= NULL; // not required
 	config->master_url	= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
@@ -229,10 +236,12 @@ main_init(struct config *config) {
 		return 1;
 	}
 
+#ifndef BSD
 	if (tun_check_or_create()) {
 		printf("Error - unable to create tun device\n");
 		return 1;
 	}
+#endif
 
 	yyin = fopen(CONFIG_FILE, "r");
 	if (!yyin) {
@@ -245,9 +254,10 @@ main_init(struct config *config) {
 	// optional params
 	if (s_master_url != NULL)	config->master_url	= s_master_url;
 	if (s_tincd_bin != NULL)	config->tincd_bin	= s_tincd_bin;
-	if (s_ip_bin != NULL)		config->ip_bin		= s_ip_bin;
+	if (s_routeadd != NULL)		config->routeadd	= s_routeadd;
+	if (s_routeadd6 != NULL)	config->routeadd6	= s_routeadd6;
 	if (s_ifconfig != NULL)		config->ifconfig	= s_ifconfig;
-	if (s_base != NULL)			config->base_path	= s_base;
+	if (s_base != NULL)		config->base_path	= s_base;
 	if (s_pidfile != NULL)		config->pidfile		= s_pidfile;
 
 	//require params
@@ -444,7 +454,7 @@ main_unlink_pidfile(void)
 }
 
 static void
-sigchild(int __unused)
+sigchild(int sig /*__unused*/)
 {
 	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
 	main_unlink_pidfile();
@@ -455,19 +465,19 @@ sigchild(int __unused)
 }
 
 static void
-sigterm(int __unused)
+sigterm(int sig /*__unused*/)
 {
 	r_sigterm = 1;
 }
 
 static void
-sigint(int __unused)
+sigint(int sig /*__unused*/)
 {
 	r_sigint = 1;
 }
 
 static void
-sigint_holdon(int __unused)
+sigint_holdon(int sig /*__unused*/)
 {
 	puts("I'm doing me best, please be patient for a little, will ya?");
 }

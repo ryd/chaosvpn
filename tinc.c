@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "main.h"
 #include "list.h"
@@ -41,9 +42,12 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	struct list_head *p;
 
 	CONCAT(buffer, "AddressFamily=ipv4\n");
-	CONCAT(buffer, "Device=/dev/net/tun\n\n");
 
+#ifndef BSD
+	CONCAT(buffer, "Device=/dev/net/tun\n\n");
 	CONCAT_F(buffer, "Interface=%s_vpn\n", config->networkname);
+#endif
+
 	CONCAT(buffer, "Mode=router\n");
 	CONCAT_F(buffer, "Name=%s\n", config->peerid);
 	CONCAT(buffer, "Hostnames=yes\n");
@@ -96,14 +100,20 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			continue;
 		}
 		if (strlen(i->peer_config->gatewayhost) > 0) {
-			list_for_each(sp, &i->peer_config->network) {
-				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, "%s -4 route add %s dev $INTERFACE\n", config->ip_bin, si->text)) return 1;
+			if (config->routeadd != NULL) {
+				list_for_each(sp, &i->peer_config->network) {
+					si = container_of(sp, struct string_list, list);
+					if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
+					string_putc(buffer, '\n');
+				}
 			}
-			list_for_each(sp, &i->peer_config->network6) {
-				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, "%s -6 route add %s dev $INTERFACE\n", config->ip_bin, si->text)) return 1;
-	        	}
+			if (config->routeadd6 != NULL) {
+				list_for_each(sp, &i->peer_config->network6) {
+					si = container_of(sp, struct string_list, list);
+					if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;
+					string_putc(buffer, '\n');
+				}
+			}
 		}
 	}
 

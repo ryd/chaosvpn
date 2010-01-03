@@ -5,10 +5,10 @@ $my_peerid		= "foobartest";
 # lokale ips dieses rechners/gateways
 # eins von beidem kann auch leergelassen werden, wenn man nur
 # ipv4 oder nur ipv6 sprechen moechte
-$my_vpn_ip		= "192.168.147.1";
-$my_vpn_netmask		= "255.255.255.255";
+$my_vpn_ip		= "x.x.x.x";
+$my_vpn_netmask		= "255.255.255.0";
 
-$my_vpn_ip6		= "2001::1";
+#$my_vpn_ip6		= "2001::1";
 
 $my_password		= ""; # unused
 $my_ip			= ""; # unused for now
@@ -27,14 +27,12 @@ $my_ip			= ""; # unused for now
 # at least not for linux and chaosvpn
 
 $networkname		= "chaos";
-$tincd_bin		= "/usr/sbin/tincd";
-$routeadd		= "/sbin/ip -4 route add %s dev \$INTERFACE";
-$routeadd6		= "/sbin/ip -6 route add %s dev \$INTERFACE";
+$tincd_bin		= "/usr/local/sbin/tincd";
+$routeadd		= "/sbin/route add -net %s -interface \$INTERFACE";
 $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask $my_vpn_netmask";
-$ifconfig6		= "/sbin/ip addr add $my_vpn_ip6/128 dev \$INTERFACE";
 
 $master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
-$base			= "/etc/tinc/$networkname";
+$base			= "/usr/local/etc/tinc/$networkname";
 $pidfile		= "/var/run/tinc.$networkname.pid";
 $tincd_debuglevel	= 3;
 
