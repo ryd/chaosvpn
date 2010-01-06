@@ -34,7 +34,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 			printf '0.0%s%s' -g $head
 		fi
 	else
-		echo "$desc" | awk -F- '{printf("%s~%s-0", $(1), $(2)'
+		echo "$desc" | awk -F- '{printf("%s~%s", $(1), $(2)'
 	fi
 
 	# Is this git on svn?
@@ -50,6 +50,8 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 	    | read dummy; then
 		printf '%s' -dirty
 	fi
+
+	printf '%s' -0.0
 
 	# All done with git
 	exit
