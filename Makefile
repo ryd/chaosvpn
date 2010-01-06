@@ -46,5 +46,6 @@ splint:
 
 deb:
 	debchange --force-distribution --noquery --preserve --newversion $(GITVERSION) "Compiled GIT snapshot."
-	debuild
+	debuild --no-tgz-check
+
 	
