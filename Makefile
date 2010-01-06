@@ -10,6 +10,7 @@ STRINGOBJ=string/string_clear.o string/string_concatb.o string/string_concat_spr
 OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o daemon.o $(STRINGOBJ)
 
 NAME = chaosvpn
+GITVERSION=$(shell scripts/setlocalversion )
 
 $(NAME): $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LIB) $(LIBDIRS)
@@ -42,3 +43,8 @@ install:
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
+
+deb:
+	debchange --force-distribution --noquery --preserve --newversion $(GITVERSION) "Compiled GIT snapshot."
+	debuild
+	
