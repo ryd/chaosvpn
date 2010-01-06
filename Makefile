@@ -45,7 +45,12 @@ splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
 
 deb:
+	[ -n "$(GITVERSION)" ] # check if gitversion is set
+	if git status debian/changelog >/dev/null 2>/dev/null ; then \
+		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
+		exit 1 ; \
+	fi
 	debchange --force-distribution --noquery --preserve --newversion $(GITVERSION) "Compiled GIT snapshot."
-	debuild --no-tgz-check
+	debuild --no-tgz-check || true
 	git checkout debian/changelog
 	
