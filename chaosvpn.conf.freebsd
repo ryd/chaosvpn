@@ -1,25 +1,26 @@
 
-# name dieses rechners:
+# name of this node:
+
 $my_peerid		= "foobartest";
 
-# lokale ips dieses rechners/gateways
-# eins von beidem kann auch leergelassen werden, wenn man nur
-# ipv4 oder nur ipv6 sprechen moechte
+# Local IP address(es) of this node/gateway.
+# If you want to use IPv4 only, you can leave the IPv6 field empty.
+
 $my_vpn_ip		= "x.x.x.x";
 $my_vpn_netmask		= "255.255.255.0";
 
 #$my_vpn_ip6		= "2001::1";
 
+
 $my_password		= ""; # unused
 $my_ip			= ""; # unused for now
 
-# ueber diese einstellung koennen gewisse gegenstellen
-# bei chaosvpn-links ignoriert werden (sie werden vom eigenen rechner
-# behandelt als waehren sie nicht teil des chaosvpns)
-# dies ist z.b. nuetzlich wenn zu diesen gegenstellen schon eine
-# anderweitige vpn-verbindung besteht
-# im normalfall einfach ()
-@exclude		= (); # links zu gewissen peer-ids nicht aufbauen
+
+# The exclude parameter can contain a list of node names. A VPN connection
+# will not established to them. You may want to use it if you have another
+# VPN, or direct connection to these nodes.
+
+@exclude		= ();
 
 
 # ============================================================================
