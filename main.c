@@ -215,6 +215,7 @@ main_initialize_config(struct config* config) {
 	config->vpn_ip		= NULL;
 	config->vpn_ip6		= NULL;
 	config->networkname	= NULL;
+	config->my_ip		= NULL;
 	config->tincd_bin	= "/usr/sbin/tincd";
 	config->routeadd	= NULL;
 	config->routeadd6	= NULL;
@@ -254,6 +255,7 @@ main_init(struct config *config) {
 	// optional params
 	if (s_master_url != NULL)	config->master_url	= s_master_url;
 	if (s_tincd_bin != NULL)	config->tincd_bin	= s_tincd_bin;
+	if (s_my_ip != NULL)		config->my_ip		= s_my_ip;
 	if (s_routeadd != NULL)		config->routeadd	= s_routeadd;
 	if (s_routeadd6 != NULL)	config->routeadd6	= s_routeadd6;
 	if (s_ifconfig != NULL)		config->ifconfig	= s_ifconfig;

@@ -13,7 +13,7 @@ $my_vpn_netmask		= "255.255.255.0";
 
 
 $my_password		= ""; # unused
-$my_ip			= ""; # unused for now
+$my_ip			= ""; # address for tincd to listen on, empty for 0.0.0.0
 
 
 # The exclude parameter can contain a list of node names. A VPN connection

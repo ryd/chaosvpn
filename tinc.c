@@ -52,9 +52,10 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT_F(buffer, "Name=%s\n", config->peerid);
 	CONCAT(buffer, "Hostnames=yes\n");
 
-	if (config->vpn_ip && strlen(config->vpn_ip) > 0 && 
-			!strcmp(config->vpn_ip, "127.0.0.1")) {
-		CONCAT_F(buffer, "BindToAddress=%s\n", config->vpn_ip);
+	if (config->my_ip && (strlen(config->my_ip) > 0) && 
+			strcmp(config->my_ip, "127.0.0.1") &&
+			strcmp(config->my_ip, "0.0.0.0")) {
+		CONCAT_F(buffer, "BindToAddress=%s\n", config->my_ip);
 	}
 
 	if (strcmp(config->my_peer->silent, "1") == 0) {

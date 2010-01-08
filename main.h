@@ -38,6 +38,7 @@ struct config {
 	char *vpn_ip;
 	char *vpn_ip6;
 	char *networkname;
+	char *my_ip;
 	char *tincd_bin;
 	char *routeadd;
 	char *routeadd6;
