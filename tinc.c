@@ -85,6 +85,8 @@ tinc_generate_up(struct string* buffer, struct config *config)
 	struct peer_config_list *i;
 	struct string_list *si;
 
+	CONCAT(buffer, "#!/bin/sh\n\n");
+
 	if (config->ifconfig != NULL) {
 		CONCAT_F(buffer, "%s\n", config->ifconfig);
 	}
