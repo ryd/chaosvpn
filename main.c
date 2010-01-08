@@ -257,6 +257,7 @@ main_init(struct config *config) {
 	if (s_routeadd != NULL)		config->routeadd	= s_routeadd;
 	if (s_routeadd6 != NULL)	config->routeadd6	= s_routeadd6;
 	if (s_ifconfig != NULL)		config->ifconfig	= s_ifconfig;
+	if (s_ifconfig6 != NULL)	config->ifconfig6	= s_ifconfig6;
 	if (s_base != NULL)		config->base_path	= s_base;
 	if (s_pidfile != NULL)		config->pidfile		= s_pidfile;
 
