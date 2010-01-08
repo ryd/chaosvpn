@@ -9,7 +9,7 @@ $my_peerid		= "foobartest";
 $my_vpn_ip		= "x.x.x.x";
 $my_vpn_netmask		= "255.255.255.0";
 
-#$my_vpn_ip6		= "2001::1";
+$my_vpn_ip6		= "";
 
 
 $my_password		= ""; # unused
