@@ -44,7 +44,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "AddressFamily=ipv4\n");
 
 #ifndef BSD
-	CONCAT(buffer, "Device=/dev/net/tun\n\n");
+	CONCAT(buffer, "Device=/dev/net/tun\n");
 	CONCAT_F(buffer, "Interface=%s_vpn\n", config->networkname);
 #endif
 
