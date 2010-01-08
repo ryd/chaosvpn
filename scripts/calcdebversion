@@ -56,7 +56,19 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 		printf '%s' -dirty
 	fi
 
-	printf '%s' -0.0
+	# make package version numbers compiled for a released debian
+	# version smaller than packages for debian testing/unstable or
+	# newer releases
+	# this is better when upgrading the system from one debian
+	# release to the next.
+	# note that this may not work for ubuntu, we treet any
+	# ubuntu version like debian testing or unstable.
+	debian_version=$( cat /etc/debian_version 2>/dev/null | sed -e 's/\.//g; s/[^0-9]//g' | cut -c 1-2 )
+	if [ -n "$debian_version" ] ; then
+		printf '-0.0~deb%s' $debian_version
+	else
+		printf '%s' -0.0
+	fi
 
 	# All done with git
 	exit
