@@ -78,7 +78,7 @@ main (int argc,char *argv[]) {
 	(void)fputs(".\n", stdout);
 
 	(void)fputs("Backing up old configs:", stdout);
-	(void)fflush(stderr);
+	(void)fflush(stdout);
 	if (main_create_backup(&config)) {
 		(void)fputs("unable to complete config backup.\n", stderr);
 		return 1;
