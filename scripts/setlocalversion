@@ -9,6 +9,11 @@
 #
 #
 
+
+# note: needs git 1.6.x to correctly get the last tag,
+#       1.5.x as of debian lenny does it wrong.
+
+
 usage() {
 	echo "Usage: $0 [srctree]" >&2
 	exit 1
