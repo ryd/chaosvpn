@@ -218,7 +218,7 @@ main_initialize_config(struct config* config) {
 	config->tincd_bin	= "/usr/sbin/tincd";
 	config->routeadd	= NULL;
 	config->routeadd6	= NULL;
-	config->ifconfig	= "/sbin/ifconfig";
+	config->ifconfig	= NULL;
 	config->ifconfig6	= NULL; // not required
 	config->master_url	= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 	config->base_path	= "/etc/tinc";
