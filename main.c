@@ -80,7 +80,7 @@ main (int argc,char *argv[]) {
 	(void)fputs("Backing up old configs:", stdout);
 	(void)fflush(stdout);
 	if (main_create_backup(&config)) {
-		(void)fputs("unable to complete config backup.\n", stderr);
+		(void)fputs("Unable to complete config backup.\n", stderr);
 		return 1;
 	}
 	(void)fputs(".\n", stdout);
@@ -321,7 +321,7 @@ main_parse_config(struct config *config, struct string *http_response) {
 	}
 
 	if (config->my_peer == NULL) {
-		fprintf(stderr, "i\nUnable to find %s in config.\n", config->peerid);
+		fprintf(stderr, "\nUnable to find %s in config.\n", config->peerid);
 		return 1;
 	}
 
