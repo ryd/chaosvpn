@@ -10,7 +10,7 @@ STRINGOBJ=string/string_clear.o string/string_concatb.o string/string_concat_spr
 OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o daemon.o $(STRINGOBJ)
 
 NAME = chaosvpn
-GITVERSION=$(shell scripts/calcdebversion )
+GITDEBVERSION=$(shell debian/scripts/calcdebversion )
 
 $(NAME): $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LIB) $(LIBDIRS)
@@ -45,12 +45,12 @@ splint:
 	splint +posixlib +allglobals -type -mayaliasunique *.[ch]
 
 deb:
-	[ -n "$(GITVERSION)" ] # check if gitversion is set
+	[ -n "$(GITDEBVERSION)" ] # check if gitversion is set
 	if git status debian/changelog >/dev/null 2>/dev/null ; then \
 		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
 		exit 1 ; \
 	fi
-	debchange --force-distribution --noquery --preserve --newversion $(GITVERSION) "Compiled GIT snapshot."
+	debchange --force-distribution --noquery --preserve --newversion $(GITDEBVERSION) "Compiled GIT snapshot."
 	debuild --no-tgz-check || true
 	git checkout debian/changelog
 	
