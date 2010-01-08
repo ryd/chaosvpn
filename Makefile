@@ -19,8 +19,8 @@ $(STRINGOBJ):
 	cd string && make
 
 %.o: %.c
-	$(CC) $(COPT) -c $<
-       
+	$(CC) $(CFLAGS) $(COPT) -c $<
+
 lex.yy.o: lex.yy.c y.tab.h
 
 y.tab.c y.tab.h: cvconf.y

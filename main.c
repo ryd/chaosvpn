@@ -34,11 +34,11 @@ static int main_check_root(void);
 static int main_create_backup(struct config*);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
-static void main_initialize_config(struct config*);
+static struct config* main_initialize_config(void);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct string*);
-static void main_terminate_old_tincd(void);
+static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(void);
 static int main_write_config_hosts(struct config*);
 static int main_write_config_tinc(struct config*);
@@ -51,14 +51,18 @@ static void usage(void);
 
 int
 main (int argc,char *argv[]) {
-	struct config config;
+	struct config *config;
 	char tincd_debugparam[32];
 
 	main_parse_opts(argc, argv);
 
-	main_initialize_config(&config);
+	config = main_initialize_config();
+	if (config == NULL) {
+		fprintf(stderr, "config malloc error\n");
+		exit(1);
+	}
 
-	int err = main_init(&config);
+	int err = main_init(config);
 	if (err) return err;
 
 	(void)fputs("Fetching information:", stdout);
@@ -67,10 +71,10 @@ main (int argc,char *argv[]) {
 	struct string http_response;
 	string_init(&http_response, 4096, 512);
 
-	err = main_request_config(&config, &http_response);
+	err = main_request_config(config, &http_response);
 	if (err) return err;
 
-	err = main_parse_config(&config, &http_response);
+	err = main_parse_config(config, &http_response);
 	if (err) return err;
 
 	string_free(&http_response);
@@ -79,35 +83,35 @@ main (int argc,char *argv[]) {
 
 	(void)fputs("Backing up old configs:", stdout);
 	(void)fflush(stdout);
-	if (main_create_backup(&config)) {
+	if (main_create_backup(config)) {
 		(void)fputs("Unable to complete config backup.\n", stderr);
 		return 1;
 	}
 	(void)fputs(".\n", stdout);
 
-	if (main_write_config_tinc(&config)) return 1;
-	if (main_write_config_hosts(&config)) return 1;
-	if (main_write_config_up(&config)) return 1;
-
-	main_free_parsed_info(&config);
+	if (main_write_config_tinc(config)) return 1;
+	if (main_write_config_hosts(config)) return 1;
+	if (main_write_config_up(config)) return 1;
 
 	// if (main_create_pidfile()) return 1;
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
 	
 	if (DONOTFORK) {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, NULL);
+		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
-		daemon_init(&di_tincd, s_tincd_bin, s_tincd_bin, "-n", s_networkname, tincd_debugparam, "-D", NULL);
+		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
 		signal(SIGTERM, sigterm);
 		signal(SIGINT, sigint);
 		signal(SIGCHLD, sigchild);
 	}
 	if (DONOTFORK) {
-		main_terminate_old_tincd();
+		main_terminate_old_tincd(config);
 	} else {
 		main_unlink_pidfile();
 	}
+
+	main_free_parsed_info(config);
 
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (daemon_start(&di_tincd)) {
@@ -133,7 +137,7 @@ main (int argc,char *argv[]) {
 }
 
 static void
-main_terminate_old_tincd(void)
+main_terminate_old_tincd(struct config *config)
 {
 	int pidfile;
 	char pidbuf[32];
@@ -142,12 +146,12 @@ main_terminate_old_tincd(void)
 	pid_t pid;
 	
 
-	if (s_pidfile == NULL)
+	if (config->pidfile == NULL)
 		return;
 
-	pidfile = open(s_pidfile, O_RDONLY);
+	pidfile = open(config->pidfile, O_RDONLY);
 	if (pidfile == -1) {
-		(void)fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", s_pidfile);
+		(void)fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
 		return;
 	}
 	len = read(pidfile, pidbuf, 31);
@@ -209,8 +213,13 @@ main_check_root() {
 	return getuid() != 0;
 }
 
-static void
-main_initialize_config(struct config* config) {
+static struct config*
+main_initialize_config(void) {
+	struct config *config;
+
+	config = calloc(1, sizeof(struct config));
+	if (config == NULL) return NULL;
+
 	config->peerid		= NULL;
 	config->vpn_ip		= NULL;
 	config->vpn_ip6		= NULL;
@@ -227,6 +236,8 @@ main_initialize_config(struct config* config) {
 	config->my_peer		= NULL;
 
 	INIT_LIST_HEAD(&config->peer_config);
+
+	return config;
 }
 
 static int
@@ -354,7 +365,7 @@ main_write_config_tinc(struct config *config) {
 	}
 
 	string_init(&configfilename, 512, 512);
-	string_concat(&configfilename, s_base);
+	string_concat(&configfilename, config->base_path);
 	string_concat(&configfilename, "/tinc.conf");
 
 	if (fs_writecontents(string_get(&configfilename), tinc_config.s,
@@ -379,7 +390,7 @@ main_write_config_hosts(struct config *config) {
 	struct string hostfilepath;
 
 	string_init(&hostfilepath, 512, 512);
-	string_concat(&hostfilepath, s_base);
+	string_concat(&hostfilepath, config->base_path);
 	string_concat(&hostfilepath, "/hosts/");
 
 	fs_mkdir_p(string_get(&hostfilepath), 0700);

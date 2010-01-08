@@ -6,7 +6,6 @@
 #include "main.h"
 #include "list.h"
 #include "tinc.h"
-#include "settings.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
