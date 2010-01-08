@@ -36,7 +36,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 
 		# If we don't have a tag at all we print 0.0-g{commitish}.
 		else
-			printf '0.0%s%s' -g $head
+			printf '0%s%s' -g $head
 		fi
 	else
 		echo "$desc" | awk -F- '{printf("%s~%s", $(1), $(2)'
@@ -65,7 +65,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 	# ubuntu version like debian testing or unstable.
 	debian_version=$( cat /etc/debian_version 2>/dev/null | sed -e 's/\.//g; s/[^0-9]//g' | cut -c 1-2 )
 	if [ -n "$debian_version" ] ; then
-		printf '-0.0~deb%s' $debian_version
+		printf -- '-0.0~deb%s' $debian_version
 	else
 		printf '%s' -0.0
 	fi
