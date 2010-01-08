@@ -8,7 +8,8 @@
 
 # Additional options that are passed to the Daemon.
 DAEMON_OPTS="-a"
-# -a == do not run as daemon, do not control tincd
+# -a == do not run as daemon, onetime fetch+update of config and tincd
+#       restart
 
 # should we start automatically at boot?
 RUN="yes"

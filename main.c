@@ -196,9 +196,9 @@ usage(void)
 {
 	(void)fputs("chaosvpn - connect to the chaos vpn.\n"
 	       "Usage: chaosvpn [OPTION...]\n\n"
-	       "  -c FILE                 use this user configuration file\n"
-	       "  -a                      do not control tincd; leave it to itself\n"
-	       "  -f                      control tincd (default)\n"
+	       "  -c FILE  use this user configuration file\n"
+	       "  -a       do not fork, onetime update and tincd restart\n"
+	       "  -f       fork into background to be daemon, control tincd (default)\n"
 	       "\n",
 		stderr);
 	exit(1);
