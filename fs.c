@@ -254,6 +254,7 @@ fs_writecontents(const char const* fn, const char const* cnt, const size_t len, 
 	/* ABABAB: should throw proper error here */
 	bw = write(fh, cnt, len);
 	(void)close(fh);
+	(void)chmod(fn, mode);
 	return (len != bw);
 }
 
