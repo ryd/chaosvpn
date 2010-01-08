@@ -380,12 +380,15 @@ main_write_config_hosts(struct config *config) {
 		struct peer_config_list *i = container_of(p, 
 				struct peer_config_list, list);
 
-		if (string_init(&peer_config, 2048, 512)) return 1;
-
 		printf("Writing config file for peer %s:", i->peer_config->name);
 		(void)fflush(stdout);
 
-		if (tinc_generate_peer_config(&peer_config, i->peer_config)) return 1;
+		if (string_init(&peer_config, 2048, 512)) return 1;
+
+		if (tinc_generate_peer_config(&peer_config, i->peer_config)) {
+			string_free(&peer_config);
+			return 1;
+		}
 
 		if(fs_writecontents_safe(string_get(&hostfilepath), 
 				i->peer_config->name, peer_config.s, 
