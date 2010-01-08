@@ -214,7 +214,7 @@ main_initialize_config(struct config* config) {
 	config->peerid		= NULL;
 	config->vpn_ip		= NULL;
 	config->vpn_ip6		= NULL;
-	config->networkname = NULL;
+	config->networkname	= NULL;
 	config->tincd_bin	= "/usr/sbin/tincd";
 	config->routeadd	= NULL;
 	config->routeadd6	= NULL;
