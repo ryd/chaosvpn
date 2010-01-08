@@ -50,6 +50,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "Mode=router\n");
 	CONCAT_F(buffer, "Name=%s\n", config->peerid);
 	CONCAT(buffer, "Hostnames=yes\n");
+	CONCAT(buffer, "TunnelServer=yes\n");
 
 	if (config->my_ip && (strlen(config->my_ip) > 0) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
