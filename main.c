@@ -418,7 +418,7 @@ main_write_config_up(struct config *config) {
 	string_init(&up_filepath, 512, 512);
 	string_concat(&up_filepath, config->base_path);
 	string_concat(&up_filepath, "/tinc-up");
-	if(fs_writecontents(string_get(&up_filepath), up_filecontents.s, up_filecontents._u._s.length, 0750)) {
+	if(fs_writecontents(string_get(&up_filepath), up_filecontents.s, up_filecontents._u._s.length, 0700)) {
 		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&up_filepath));
 		string_free(&up_filecontents);
 		string_free(&up_filepath);
