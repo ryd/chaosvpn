@@ -75,15 +75,15 @@ main (int argc,char *argv[]) {
 
 	string_free(&http_response);
 
-	(void)fputs(".\n", stderr);
+	(void)fputs(".\n", stdout);
 
-	(void)fputs("Backing up old configs:", stderr);
+	(void)fputs("Backing up old configs:", stdout);
 	(void)fflush(stderr);
 	if (main_create_backup(&config)) {
-		(void)fputs("unable to complete the backup.\n", stderr);
+		(void)fputs("unable to complete config backup.\n", stderr);
 		return 1;
 	}
-	(void)fputs(".\n", stderr);
+	(void)fputs(".\n", stdout);
 
 	if (main_write_config_tinc(&config)) return 1;
 	if (main_write_config_hosts(&config)) return 1;
@@ -147,7 +147,7 @@ main_terminate_old_tincd(void)
 
 	pidfile = open(s_pidfile, O_RDONLY);
 	if (pidfile == -1) {
-		(void)fprintf(stderr, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", s_pidfile);
+		(void)fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", s_pidfile);
 		return;
 	}
 	len = read(pidfile, pidbuf, 31);
@@ -155,7 +155,7 @@ main_terminate_old_tincd(void)
 	pidbuf[len] = 0;
 	readpid = strtol(pidbuf, NULL, 10);
 	pid = (pid_t) readpid;
-	(void)fprintf(stderr, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
+	(void)fprintf(stdout, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
 	kill(pid, SIGTERM);
 	sleep(2);
 	if (kill(pid, SIGKILL) == 0) {
@@ -232,13 +232,13 @@ static int
 main_init(struct config *config) {
 	struct stat st; 
 	if (main_check_root()) {
-		printf("Error - wrong user - please start as root user\n");
+		fprintf(stderr, "Error - wrong user - please start as root user\n");
 		return 1;
 	}
 
 #ifndef BSD
 	if (tun_check_or_create()) {
-		printf("Error - unable to create tun device\n");
+		fprintf(stderr, "Error - unable to create tun device\n");
 		return 1;
 	}
 #endif
@@ -262,13 +262,13 @@ main_init(struct config *config) {
 
 	//require params
 	if (s_my_peerid == NULL) {
-		printf("peerid is missing in %s\n", CONFIG_FILE);
+		fprintf(stderr, "peerid is missing in %s\n", CONFIG_FILE);
 		return 1;
 	}
 	config->peerid = s_my_peerid;
 
 	if (s_networkname == NULL) {
-		printf("networkname is missing in %s\n", CONFIG_FILE);
+		fprintf(stderr, "networkname is missing in %s\n", CONFIG_FILE);
 		return 1;
 	}
 	config->networkname = s_networkname;
@@ -290,7 +290,7 @@ main_request_config(struct config *config, struct string *http_response) {
 		config->master_url, config->peerid);
 
 	if (http_request(string_get(&httpurl), http_response)) {
-		printf("Unable to fetch %s - maybe server is down\n", config->master_url);
+		fprintf(stderr, "Unable to fetch %s - maybe server is down\n", config->master_url);
 		string_free(&httpurl);
 		return 1;
 	}
@@ -305,7 +305,7 @@ main_parse_config(struct config *config, struct string *http_response) {
 	struct list_head *p = NULL;
 
 	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
-		printf("\nUnable to parse config\n");
+		fprintf(stderr, "\nUnable to parse config\n");
 		return 1;
 	}
 
@@ -318,7 +318,7 @@ main_parse_config(struct config *config, struct string *http_response) {
 	}
 
 	if (config->my_peer == NULL) {
-		printf("i\nUnable to find %s in config.\n", config->peerid);
+		fprintf(stderr, "i\nUnable to find %s in config.\n", config->peerid);
 		return 1;
 	}
 
