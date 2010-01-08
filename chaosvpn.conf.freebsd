@@ -35,7 +35,7 @@ $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask $my_vpn_netmask";
 $master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 $base			= "/usr/local/etc/tinc/$networkname";
 $pidfile		= "/var/run/tinc.$networkname.pid";
-$tincd_debuglevel	= 3;
+$tincd_debuglevel	= 2;
 
 # Number of seconds to wait before tincd is restarted after it has
 # unexpectedly terminated
