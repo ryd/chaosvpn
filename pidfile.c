@@ -1,3 +1,5 @@
+/* UNUSED! */
+
 int
 pidfile_create_pidfile() {
 	struct string lockfile;
