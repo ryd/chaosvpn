@@ -88,11 +88,11 @@ tinc_generate_up(struct string* buffer, struct config *config)
 
 	CONCAT(buffer, "#!/bin/sh\n\n");
 
-	if (config->ifconfig != NULL) {
+	if (config->ifconfig != NULL && config->vpn_ip != NULL && strlen(config->vpn_ip)>0) {
 		CONCAT_F(buffer, "%s\n", config->ifconfig);
 	}
 
-	if (config->ifconfig6 != NULL) {
+	if (config->ifconfig6 != NULL && config->vpn_ip6 != NULL && strlen(config->vpn_ip6)>0) {
 		CONCAT_F(buffer, "%s\n", config->ifconfig6);
 	}
 
