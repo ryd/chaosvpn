@@ -18,8 +18,10 @@ string_concatb(struct string* s, const char* sta, size_t len)
         buf = malloc(s->_u._s.size + growby);
         if (!buf) return 1;
         s->_u._s.size += growby;
-        memcpy(buf, s->s, s->_u._s.length);
-        free(s->s);
+        if (s->s != NULL) {
+            memcpy(buf, s->s, s->_u._s.length);
+            free(s->s);
+        }
         s->s = buf;
     }
     memcpy(s->s + s->_u._s.length, sta, len);
