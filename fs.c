@@ -231,14 +231,83 @@ fs_cp_r(char* src, char* dest)
 
 	/* fallthrough */
 bail_out:
-	if (fs_ensure_z(&curwd)) return 1;
-	if(chdir(string_get(&curwd))) {
+	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
+	if (chdir(string_get(&curwd))) {
 		(void)fprintf(stderr, "fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
 
 nrcwd_bail_out:
 	string_free(&source);
 	string_free(&destination);
+	string_free(&curwd);
+	return retval;
+}
+
+/* unlinks all regular files in a specified directory */
+/* does not use recursion! does not touch symlinks! */
+int
+fs_empty_dir(char* dest)
+{
+	struct string dst;
+	size_t dstdirlen;
+	struct string curwd;
+	DIR* dir;
+	struct dirent* dirent;
+	struct stat st;
+	int retval = 1;
+
+	(void)string_init(&dst, 512, 512);
+	(void)string_init(&curwd, 512, 512);
+
+	if (fs_get_cwd(&curwd)) goto nrcwd_bail_out;
+	if (*dest != '/') if (fs_get_cwd(&dst)) goto bail_out;
+	if (string_concat(&dst, dest)) goto bail_out;
+
+	if (fs_ensure_z(&dst)) goto bail_out;
+
+	if (stat(string_get(&dst), &st)) {
+		retval = 0; /* non-existance is not an error reason! */
+		goto bail_out;
+	}
+	if (!S_ISDIR(st.st_mode)) goto bail_out;
+
+	if (fs_ensure_suffix(&dst)) goto bail_out;
+	if (chdir(string_get(&dst))) goto bail_out;
+
+	dir = opendir(string_get(&dst));
+	if (!dir) goto bail_out;
+
+	while ((dirent = readdir(dir))) {
+		if (stat(dirent->d_name, &st)) continue;
+		if ((*dirent->d_name == '.') &&
+			((dirent->d_name[1] == 0) ||
+				((dirent->d_name[1] == '.') &&
+				(dirent->d_name[2] == 0)))) continue;
+
+		if (S_ISREG(st.st_mode)) {
+			dstdirlen = dst._u._s.length;
+			if (string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
+			if (unlink(string_get(&dst))) {
+				fprintf(stderr, "fs_empty_dir: failed to unlink %s\n", string_get(&dst));
+			}
+			dst._u._s.length = dstdirlen;
+		}
+	}
+
+	retval = 0;
+
+	/* fallthrough */
+bail_out_closedir:
+	closedir(dir);
+
+bail_out:
+	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
+	if (chdir(string_get(&curwd))) {
+		(void)fprintf(stderr, "fs_empty_dir: couldn't restore old cwd %s\n", string_get(&curwd));
+	}
+
+nrcwd_bail_out:
+	string_free(&dst);
 	string_free(&curwd);
 	return retval;
 }

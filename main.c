@@ -32,6 +32,7 @@ static int DONOTFORK = 0;
 
 static int main_check_root(void);
 static int main_create_backup(struct config*);
+static int main_cleanup_hosts_subdir(struct config*);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static struct config* main_initialize_config(void);
@@ -85,6 +86,14 @@ main (int argc,char *argv[]) {
 	(void)fflush(stdout);
 	if (main_create_backup(config)) {
 		(void)fputs("Unable to complete config backup.\n", stderr);
+		return 1;
+	}
+	(void)fputs(".\n", stdout);
+
+	(void)fputs("Cleanup previous host entries:", stdout);
+	(void)fflush(stdout);
+	if (main_cleanup_hosts_subdir(config)) {
+		(void)fputs("Unable to remove previous host subconfigs.\n", stderr);
 		return 1;
 	}
 	(void)fputs(".\n", stdout);
@@ -453,21 +462,36 @@ main_write_config_up(struct config *config) {
 
 static int
 main_create_backup(struct config *config) {
+	int retval = 1;
 	struct string base_backup_fn;
 
 	if (string_init(&base_backup_fn, 512, 512)) return 1; /* don't goto bail_out here */
 	if (string_concat(&base_backup_fn, config->base_path)) goto bail_out;
 	if (string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
 
-	if (fs_cp_r(config->base_path, string_get(&base_backup_fn))) goto bail_out;
+	retval = fs_cp_r(config->base_path, string_get(&base_backup_fn));
 
-	string_free(&base_backup_fn);
-
-	return 0;
-
+	/* fall through */
 bail_out:
 	string_free(&base_backup_fn);
-	return 1;
+	return retval;
+}
+
+static int
+main_cleanup_hosts_subdir(struct config *config) {
+	int retval = 1;
+	struct string hosts_dir;
+	
+	if (string_init(&hosts_dir, 512, 512)) return 1; /* don't goto bail_out here */
+	if (string_concat(&hosts_dir, config->base_path)) goto bail_out;
+	if (string_concat(&hosts_dir, "/hosts")) goto bail_out;
+
+	retval = fs_empty_dir(string_get(&hosts_dir));
+
+	/* fall through */
+bail_out:
+	string_free(&hosts_dir);
+	return retval;
 }
 
 static void
