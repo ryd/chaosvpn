@@ -377,8 +377,8 @@ main_write_config_tinc(struct config *config) {
 	string_concat(&configfilename, config->base_path);
 	string_concat(&configfilename, "/tinc.conf");
 
-	if (fs_writecontents(string_get(&configfilename), tinc_config.s,
-			tinc_config._u._s.length, 0600)) {
+	if (fs_writecontents(string_get(&configfilename), string_get(&tinc_config),
+			string_length(&tinc_config), 0600)) {
 		(void)fputs("unable to write tinc config file!\n", stderr);
 		string_free(&tinc_config);
 		string_free(&configfilename);
@@ -420,8 +420,8 @@ main_write_config_hosts(struct config *config) {
 		}
 
 		if(fs_writecontents_safe(string_get(&hostfilepath), 
-				i->peer_config->name, peer_config.s, 
-				peer_config._u._s.length, 0600)) {
+				i->peer_config->name, string_get(&peer_config),
+				string_length(&peer_config), 0600)) {
 			fputs("unable to write host config file.\n", stderr);
 			string_free(&peer_config);
 			return 1;
@@ -447,7 +447,7 @@ main_write_config_up(struct config *config) {
 	string_init(&up_filepath, 512, 512);
 	string_concat(&up_filepath, config->base_path);
 	string_concat(&up_filepath, "/tinc-up");
-	if(fs_writecontents(string_get(&up_filepath), up_filecontents.s, up_filecontents._u._s.length, 0700)) {
+	if(fs_writecontents(string_get(&up_filepath), string_get(up_filecontents), string_length(up_filecontents), 0700)) {
 		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&up_filepath));
 		string_free(&up_filecontents);
 		string_free(&up_filepath);
