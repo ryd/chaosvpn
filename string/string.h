@@ -24,4 +24,9 @@ int string_putint(struct string*, int);
 void string_free(struct string*);
 char* string_get(struct string*);
 int string_init(struct string*, size_t, size_t);
+
+static inline size_t string_length(struct string *s) {
+    return s->_u._s.length;
+}
+
 #endif
