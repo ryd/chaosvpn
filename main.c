@@ -244,7 +244,7 @@ main_initialize_config(void) {
 	config->base_path		= "/etc/tinc";
 	config->pidfile			= "/var/run";
 	config->my_peer			= NULL;
-	config->configdata_signkey	= NULL;
+	config->masterdata_signkey	= NULL;
 
 	INIT_LIST_HEAD(&config->peer_config);
 
@@ -287,7 +287,7 @@ main_init(struct config *config) {
 	if (s_ifconfig6 != NULL)		config->ifconfig6		= s_ifconfig6;
 	if (s_master_url != NULL)		config->master_url		= s_master_url;
 	if (s_base != NULL)			config->base_path		= s_base;
-	if (s_configdata_signkey != NULL)	config->configdata_signkey	= s_configdata_signkey;
+	if (s_masterdata_signkey != NULL)	config->masterdata_signkey	= s_masterdata_signkey;
 	if (s_pidfile != NULL)			config->pidfile			= s_pidfile;
 
 	// then check required params
@@ -336,7 +336,7 @@ main_request_config(struct config *config, struct string *http_response) {
 	//(void)fputs(".\n", stdout);
 
 
-	if (config->configdata_signkey == NULL || strlen(config->configdata_signkey)==0) {
+	if (config->masterdata_signkey == NULL || strlen(config->masterdata_signkey)==0) {
 		/* no public key defined, nothing to verify against */
 		/* return success */
 		retval = 0;
@@ -360,7 +360,7 @@ main_request_config(struct config *config, struct string *http_response) {
 
 
 	/* verify signature */
-	retval = verify_signature(http_response, &signature, config->configdata_signkey);
+	retval = verify_signature(http_response, &signature, config->masterdata_signkey);
 
 
 bail_out_signature:

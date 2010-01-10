@@ -14,7 +14,7 @@ extern char* s_ifconfig;
 extern char* s_ifconfig6;
 extern char* s_master_url;
 extern char* s_base;
-extern char* s_configdata_signkey;
+extern char* s_masterdata_signkey;
 extern char* s_pidfile;
 extern char* s_interface;
 extern char* s_my_vpn_netmask;

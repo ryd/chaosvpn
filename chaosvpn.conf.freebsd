@@ -34,7 +34,7 @@ $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask $my_vpn_netmask";
 
 $master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 # public key of key used to sign the file at $master_url:
-$configdata_signkey	= "-----BEGIN PUBLIC KEY-----
+$masterdata_signkey	= "-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnSHWfoa9hYgiMrTU4QTS
 uwsspcy7Ml7xVLN8AUtSvb5ORLDR9MfhuVargGxe4CMQ/VLx5gQ064l+P9Zr4fCQ
 Smgwjpza6hbSb++3EfN75QenolvfFLI0X2WAmCs8cgh3B6Li8Ia66xt7/cNDAvQm
