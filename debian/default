@@ -6,10 +6,9 @@
 # This is a POSIX shell fragment
 #
 
-# Additional options that are passed to the Daemon.
-DAEMON_OPTS="-a"
-# -a == do not run as daemon, onetime fetch+update of config and tincd
-#       restart
+# which networks to startup, each one needs its own config file
+# put them in /etc/tinc and specify their names here seperated by whitespaces
+CONFIGS="chaosvpn.conf"
 
 # should we start automatically at boot?
 RUN="yes"
