@@ -11,5 +11,6 @@ extern int fs_mkdir_p(char *, mode_t);
 extern int fs_cp_r(char*, char*);
 extern int fs_empty_dir(char*);
 extern int fs_get_cwd(struct string*);
+extern int fs_read_file(struct string *buffer, char *fname);
 
 #endif

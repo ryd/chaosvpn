@@ -352,3 +352,25 @@ fs_writecontents_safe(const char const* dir, const char const* fn, const char co
 	return res;
 }
 
+/* read file into struct string */
+/* note: not NULL terminated! binary clean */
+int
+fs_read_file(struct string *buffer, char *fname) {
+	int retval = 1;
+	FILE *fp;
+	char chunk[4096];
+	size_t read_size;
+
+	fp = fopen(fname, "r");
+	if (fp==NULL) return 1;
+
+	while ((read_size = fread(&chunk, 1, sizeof(chunk), fp)) > 0) {
+		if (string_concatb(buffer, chunk, read_size)) goto bail_out;
+	}
+
+	retval = 0;
+
+bail_out:
+	fclose(fp);
+	return retval;
+}
