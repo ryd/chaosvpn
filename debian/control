@@ -8,7 +8,7 @@ Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, perl-base
 Recommends: tinc (>= 1.0.11)
 Description: Client to setup connection to ChaosVPN
  This VPN is also known as KrautVPN. It is intended to replace
