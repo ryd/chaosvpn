@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "string/string.h"
 #include "fs.h"
 #include "list.h"
 #include "main.h"
@@ -18,7 +19,7 @@
 #include "tinc.h"
 #include "settings.h"
 #include "daemon.h"
-#include "string/string.h"
+#include "verify.h"
 
 int r_sigterm = 0;
 int r_sigint = 0;
@@ -229,20 +230,21 @@ main_initialize_config(void) {
 	config = calloc(1, sizeof(struct config));
 	if (config == NULL) return NULL;
 
-	config->peerid		= NULL;
-	config->vpn_ip		= NULL;
-	config->vpn_ip6		= NULL;
-	config->networkname	= NULL;
-	config->my_ip		= NULL;
-	config->tincd_bin	= "/usr/sbin/tincd";
-	config->routeadd	= NULL;
-	config->routeadd6	= NULL;
-	config->ifconfig	= NULL;
-	config->ifconfig6	= NULL; // not required
-	config->master_url	= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
-	config->base_path	= "/etc/tinc";
-	config->pidfile		= "/var/run";
-	config->my_peer		= NULL;
+	config->peerid			= NULL;
+	config->vpn_ip			= NULL;
+	config->vpn_ip6			= NULL;
+	config->networkname		= NULL;
+	config->my_ip			= NULL;
+	config->tincd_bin		= "/usr/sbin/tincd";
+	config->routeadd		= NULL;
+	config->routeadd6		= NULL;
+	config->ifconfig		= NULL;
+	config->ifconfig6		= NULL; // not required
+	config->master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
+	config->base_path		= "/etc/tinc";
+	config->pidfile			= "/var/run";
+	config->my_peer			= NULL;
+	config->configdata_signkey	= NULL;
 
 	INIT_LIST_HEAD(&config->peer_config);
 
@@ -273,19 +275,20 @@ main_init(struct config *config) {
 	fclose(yyin);
 
 	// first copy all parsed params into config structure
-	if (s_my_peerid != NULL)	config->peerid		= s_my_peerid;
-	if (s_my_vpn_ip != NULL)	config->vpn_ip		= s_my_vpn_ip;
-	if (s_my_vpn_ip6 != NULL)	config->vpn_ip6		= s_my_vpn_ip6;
-	if (s_networkname != NULL)	config->networkname	= s_networkname;
-	if (s_my_ip != NULL)		config->my_ip		= s_my_ip;
-	if (s_tincd_bin != NULL)	config->tincd_bin	= s_tincd_bin;
-	if (s_routeadd != NULL)		config->routeadd	= s_routeadd;
-	if (s_routeadd6 != NULL)	config->routeadd6	= s_routeadd6;
-	if (s_ifconfig != NULL)		config->ifconfig	= s_ifconfig;
-	if (s_ifconfig6 != NULL)	config->ifconfig6	= s_ifconfig6;
-	if (s_master_url != NULL)	config->master_url	= s_master_url;
-	if (s_base != NULL)		config->base_path	= s_base;
-	if (s_pidfile != NULL)		config->pidfile		= s_pidfile;
+	if (s_my_peerid != NULL)		config->peerid			= s_my_peerid;
+	if (s_my_vpn_ip != NULL)		config->vpn_ip			= s_my_vpn_ip;
+	if (s_my_vpn_ip6 != NULL)		config->vpn_ip6			= s_my_vpn_ip6;
+	if (s_networkname != NULL)		config->networkname		= s_networkname;
+	if (s_my_ip != NULL)			config->my_ip			= s_my_ip;
+	if (s_tincd_bin != NULL)		config->tincd_bin		= s_tincd_bin;
+	if (s_routeadd != NULL)			config->routeadd		= s_routeadd;
+	if (s_routeadd6 != NULL)		config->routeadd6		= s_routeadd6;
+	if (s_ifconfig != NULL)			config->ifconfig		= s_ifconfig;
+	if (s_ifconfig6 != NULL)		config->ifconfig6		= s_ifconfig6;
+	if (s_master_url != NULL)		config->master_url		= s_master_url;
+	if (s_base != NULL)			config->base_path		= s_base;
+	if (s_configdata_signkey != NULL)	config->configdata_signkey	= s_configdata_signkey;
+	if (s_pidfile != NULL)			config->pidfile			= s_pidfile;
 
 	// then check required params
 	#define reqparam(paramfield, label) if (config->paramfield == NULL) { \
@@ -312,21 +315,59 @@ main_init(struct config *config) {
 
 static int
 main_request_config(struct config *config, struct string *http_response) {
+	int retval = 1;
 	struct string httpurl;
+	struct string signature;
 
+	/* fetch main configfile */
+
+	//(void)fputs("Fetching information:", stdout);
+	//void)fflush(stdout);
 	string_init(&httpurl, 512, 512);
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
 	if (http_request(string_get(&httpurl), http_response)) {
 		fprintf(stderr, "Unable to fetch %s - maybe server is down\n", config->master_url);
-		string_free(&httpurl);
-		return 1;
+		goto bail_out;
 	}
 
 	string_free(&httpurl);
+	//(void)fputs(".\n", stdout);
 
-	return 0;
+
+	if (config->configdata_signkey == NULL || strlen(config->configdata_signkey)==0) {
+		/* no public key defined, nothing to verify against */
+		/* return success */
+		retval = 0;
+		goto bail_out;
+	}
+
+
+	/* fetch signature */
+
+	//(void)fputs("Fetching signature:", stdout);
+	//(void)fflush(stdout);
+	string_init(&httpurl, 512, 512);
+	string_concat_sprintf(&httpurl, "%s.sig?id=%s",
+		config->master_url, config->peerid);
+	string_init(&signature, 512, 512);
+	if (http_request(string_get(&httpurl), &signature)) {
+		fprintf(stderr, "Unable to fetch signature for %s - maybe server is down\n", config->master_url);
+		goto bail_out_signature;
+	}
+	//(void)fputs(".\n", stdout);
+
+
+	/* verify signature */
+	retval = verify_signature(http_response, &signature, config->configdata_signkey);
+
+
+bail_out_signature:
+	string_free(&signature);
+bail_out:
+	string_free(&httpurl);
+	return retval;
 }
 
 static int

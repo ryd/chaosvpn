@@ -1,25 +1,24 @@
 CC=gcc
 INCLUDES=-I/usr/local/include
 LIBDIRS=-L/usr/local/lib
-CFLAGS=-O2 -Wall -g $(INCLUDES)
-LIB=-lcurl
+CFLAGS=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
+LIB=-lcurl -lcrypto
 LEX=flex
 YACC=yacc
 
-STRINGOBJ=string/string_clear.o string/string_concatb.o string/string_concat_sprintf.o string/string_putc.o string/string_putint.o string/string_concat.o string/string_free.o string/string_get.o string/string_init.o
-OBJ = tinc.o fs.o parser.o tun.o http.o main.o y.tab.o lex.yy.o settings.o daemon.o $(STRINGOBJ)
+STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c
+SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC)
+STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
+OBJ=$(patsubst %.c,%.o,$(SRC))
 
 NAME = chaosvpn
 GITDEBVERSION=$(shell debian/scripts/calcdebversion )
 
-$(NAME): $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LIB) $(LIBDIRS)
-
-$(STRINGOBJ):
-	cd string && make
+$(NAME): main.o $(OBJ)
+	$(CC) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(COPT) -c $<
+	$(CC) $(CFLAGS) $(COPT) -o $(patsubst %.c,%.o,$<) -c $<
 
 lex.yy.o: lex.yy.c y.tab.h
 

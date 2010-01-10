@@ -17,6 +17,7 @@ char* s_ifconfig = NULL;
 char* s_ifconfig6 = NULL;
 char* s_master_url = NULL;
 char* s_base = NULL;
+char* s_configdata_signkey = NULL;
 char* s_pidfile = NULL;
 char* s_interface = NULL;
 char* s_my_vpn_netmask = NULL;
@@ -47,6 +48,7 @@ settings_free_all(void)
 	free(s_ifconfig6);
 	free(s_master_url);
 	free(s_base);
+	free(s_configdata_signkey);
 	free(s_pidfile);
 	free(s_interface);
 	free(s_my_vpn_netmask);

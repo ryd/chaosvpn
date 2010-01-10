@@ -19,6 +19,7 @@ int yycurline = 1;
 \$ifconfig   {yylval.pval = &s_ifconfig; return KEYWORD_S;}
 \$ifconfig6   {yylval.pval = &s_ifconfig6; return KEYWORD_S;}
 \$master_url   {yylval.pval = &s_master_url; return KEYWORD_S;}
+\$configdata_signkey   {yylval.pval = &s_configdata_signkey; return KEYWORD_S;}
 \$base   {yylval.pval = &s_base; return KEYWORD_S;}
 \$pidfile   {yylval.pval = &s_pidfile; return KEYWORD_S;}
 \$tincd_debuglevel   {yylval.pval = &s_tincd_debuglevel; return KEYWORD_I;}
@@ -38,7 +39,7 @@ int yycurline = 1;
 <PV>\"	{ BEGIN SS; return STRINGMARKER; }
 <SS>\"	{ BEGIN 0; return STRINGMARKER; }
 <SS>\\\$ {yylval.sval = strdup("$"); return STRING;}
-<SS>[^"\\\$\n]* {yylval.sval = strdup(yytext); return STRING;}
+<SS>[^"\\\$]* {yylval.sval = strdup(yytext); return STRING;}
 ;	{ return SEPARATOR; }
 #.*
 [ \t]*
