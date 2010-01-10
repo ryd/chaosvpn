@@ -46,6 +46,7 @@ splint:
 
 deb:
 	[ -n "$(GITDEBVERSION)" ] # check if gitversion is set
+	dpkg-checkbuilddeps
 	if git status debian/changelog >/dev/null 2>/dev/null ; then \
 		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
 		exit 1 ; \
