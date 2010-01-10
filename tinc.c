@@ -52,7 +52,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "Hostnames=yes\n");
 	CONCAT(buffer, "TunnelServer=yes\n");
 
-	if (config->my_ip && (strlen(config->my_ip) > 0) && 
+	if (config->my_ip!=NULL && (strlen(config->my_ip) > 0) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
 			strcmp(config->my_ip, "0.0.0.0")) {
 		CONCAT_F(buffer, "BindToAddress=%s\n", config->my_ip);
