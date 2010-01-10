@@ -1,7 +1,8 @@
 #
-# Regular cron jobs for the chaosvpn package
+# /etc/cron.d/chaosvpn: crontab entries for the chaosvpn package
 #
-0 4,11	* * *	root	[ -x /etc/init.d/chaosvpn ] && invoke-rc.d chaosvpn reload
+23 4,16	* * *	root	[ -x /etc/init.d/chaosvpn ] && sleep $[ $RANDOM / 36 ] && invoke-rc.d chaosvpn reload
 
-# TODO: do not run at a fixed some, add some random to avoid
-#       all clients hitting the server at the same time
+# sleeps a random amount of seconds up to around 15 minutes after
+# the cronjob starts to avoid all clients hitting the server at
+# the same time
