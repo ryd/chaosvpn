@@ -91,37 +91,39 @@ fs_cp_file(const char const* src, const char const* dst)
 	ssize_t readbytes;
 	ssize_t writtenbytes;
 	char* buf;
+	int retval = 1;
 
 	if (stat(src, &stat_source)) return 1;
 	fh_source = open(src, O_RDONLY);
 	if (fh_source == -1) return 1;
 	fh_destination = open(dst, O_CREAT | O_WRONLY, stat_source.st_mode & 07777);
 	if (fh_destination == -1) {
-		close(fh_source);
-		return 1;
+		goto bail_out_close_source;
 	}
 	filesize = stat_source.st_size;
 	buf = malloc(stat_source.st_blksize);
 	if (!buf) {
-		close(fh_source);
-		close(fh_destination);
-		return 1;
+		goto bail_out_close_dest;
 	}
 	while (filesize > 0) {
 		readbytes = read(fh_source, buf, stat_source.st_blksize);
 		writtenbytes = write(fh_destination, buf, readbytes);
 		if (writtenbytes != readbytes) {
-			close(fh_source);
-			close(fh_destination);
-			free(buf);
-			return 1;
+			goto bail_out_free_buf;
 		}
 		filesize -= writtenbytes;
 	}
-	close(fh_source);
-	close(fh_destination);
-	free(buf);
-	return 0;
+
+	retval = 0;
+
+bail_out_free_buf:
+	(void)free(buf);
+bail_out_close_dest:
+	(void)close(fh_destination);
+bail_out_close_source:
+	(void)close(fh_source);
+
+	return retval;
 }
 
 static int
@@ -186,7 +188,7 @@ handledir(struct string* src, struct string* dst)
 	retval = 0;
 	/* fallthrough */
 bail_out:
-	closedir(dir);
+	(void)closedir(dir);
 	return retval;
 }
 
@@ -298,7 +300,7 @@ fs_empty_dir(char* dest)
 
 	/* fallthrough */
 bail_out_closedir:
-	closedir(dir);
+	(void)closedir(dir);
 
 bail_out:
 	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;

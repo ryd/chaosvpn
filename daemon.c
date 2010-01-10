@@ -52,15 +52,18 @@ daemon_init(struct daemon_info* di, char* path, ...)
 bail_out:
     if (di->di_path != NULL) {
         free(di->di_path);
+        di->di_path = NULL;
     }
     if (di->di_arguments != NULL) {
         for(i = 0; di->di_arguments[i] != NULL; i++) {
             free(di->di_arguments[i]);
         }
         free(di->di_arguments);
+        di->di_arguments = NULL;
     }
     /* XXX: for now */
     free(di->di_envp);
+    di->di_envp = NULL;
     return 1;
 }
 
@@ -73,8 +76,12 @@ daemon_free(struct daemon_info* di)
         free(di->di_arguments[i]);
     }
     free(di->di_arguments);
+    di->di_arguments = NULL;
+    
     /* XXX: for now */
     free(di->di_envp);
+    di->di_envp = NULL;
+    
     di->di_pid = -1;
 }
 
@@ -84,9 +91,9 @@ daemon_start(struct daemon_info* di)
     pid_t pid;
     switch(pid = fork()) {
     case 0:
-        setsid();
+        (void)setsid();
         (void)execve(di->di_path, di->di_arguments, di->di_envp);
-        exit(1);
+        exit(EXIT_FAILURE);
     case -1:
         return -1;
     default:
@@ -113,7 +120,7 @@ daemon_stop(struct daemon_info* di, unsigned int sleepdelay)
         /* no sigkill at all */
         return 0;
     }
-    sleep(sleepdelay);
+    (void)sleep(sleepdelay);
     (void)kill(pgid, SIGKILL);
     return 0;
 }
@@ -126,7 +133,7 @@ daemon_sigchld(struct daemon_info* di, unsigned int waitbeforerestart)
 
     pid = waitpid(di->di_pid, &status, 0);
     if (waitbeforerestart != 0) {
-        sleep(waitbeforerestart);
+        (void)sleep(waitbeforerestart);
     }
     return daemon_start(di);
 }

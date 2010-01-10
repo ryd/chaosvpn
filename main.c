@@ -36,7 +36,7 @@ static int main_create_backup(struct config*);
 static int main_cleanup_hosts_subdir(struct config*);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
-static struct config* main_initialize_config(void);
+/*@null@*/ static struct config* main_initialize_config(void);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct string*);
@@ -55,22 +55,23 @@ int
 main (int argc,char *argv[]) {
 	struct config *config;
 	char tincd_debugparam[32];
+	int err;
+	struct string http_response;
 
 	main_parse_opts(argc, argv);
 
 	config = main_initialize_config();
 	if (config == NULL) {
 		fprintf(stderr, "config malloc error\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
-	int err = main_init(config);
+	err = main_init(config);
 	if (err) return err;
 
 	(void)fputs("Fetching information:", stdout);
 	(void)fflush(stdout);
 
-	struct string http_response;
 	string_init(&http_response, 4096, 512);
 
 	err = main_request_config(config, &http_response);
@@ -111,9 +112,9 @@ main (int argc,char *argv[]) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
-		signal(SIGTERM, sigterm);
-		signal(SIGINT, sigint);
-		signal(SIGCHLD, sigchild);
+		(void)signal(SIGTERM, sigterm);
+		(void)signal(SIGINT, sigint);
+		(void)signal(SIGCHLD, sigchild);
 	}
 	if (DONOTFORK) {
 		main_terminate_old_tincd(config);
@@ -126,17 +127,17 @@ main (int argc,char *argv[]) {
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (daemon_start(&di_tincd)) {
 		(void)fputs("\x1B[31;1merror: unable to run tincd.\x1B[0m\n", stderr);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!DONOTFORK) {
-		while(!r_sigterm && !r_sigint) {
-			sleep(2);
+		while (!r_sigterm && !r_sigint) {
+			(void)sleep(2);
 		}
 		puts("\x1B[31;1mTerminating tincd.\x1B[0m");
-		signal(SIGTERM, SIG_IGN);
-		signal(SIGINT, sigint_holdon);
-		signal(SIGCHLD, SIG_IGN);
+		(void)signal(SIGTERM, SIG_IGN);
+		(void)signal(SIGINT, sigint_holdon);
+		(void)signal(SIGCHLD, SIG_IGN);
 		daemon_stop(&di_tincd, 5);
 	}
 
@@ -170,8 +171,8 @@ main_terminate_old_tincd(struct config *config)
 	readpid = strtol(pidbuf, NULL, 10);
 	pid = (pid_t) readpid;
 	(void)fprintf(stdout, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
-	kill(pid, SIGTERM);
-	sleep(2);
+	(void)kill(pid, SIGTERM);
+	(void)sleep(2);
 	if (kill(pid, SIGKILL) == 0) {
 		(void)fputs("warning: tincd needed SIGKILL; unlinking its pidfile.\n", stderr);
 		// SIGKILL succeeded; hence, we must manually unlink the old pidfile.
@@ -197,7 +198,7 @@ main_parse_opts(int argc, char** argv)
 
 		case 'f':
 			DONOTFORK = 0;
-			break;;
+			break;
 
 		default:
 			usage();
@@ -215,7 +216,7 @@ usage(void)
 	       "  -f       fork into background to be daemon, control tincd (default)\n"
 	       "\n",
 		stderr);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 static int
@@ -223,12 +224,13 @@ main_check_root() {
 	return getuid() != 0;
 }
 
-static struct config*
+/*@null@*/ static struct config*
 main_initialize_config(void) {
 	struct config *config;
 
-	config = calloc(1, sizeof(struct config));
+	config = malloc(sizeof(struct config));
 	if (config == NULL) return NULL;
+	memset(config, 0, sizeof(struct config));
 
 	config->peerid			= NULL;
 	config->vpn_ip			= NULL;
@@ -242,7 +244,7 @@ main_initialize_config(void) {
 	config->ifconfig6		= NULL; // not required
 	config->master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 	config->base_path		= "/etc/tinc";
-	config->pidfile			= "/var/run";
+	config->pidfile			= "/var/run/chaosvpn.default.pid";
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
 
@@ -548,7 +550,7 @@ sigchild(int sig /*__unused*/)
 	main_unlink_pidfile();
 	if (daemon_sigchld(&di_tincd, s_tincd_restart_delay)) {
 		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 }
 

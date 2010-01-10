@@ -21,8 +21,8 @@ char* s_masterdata_signkey = NULL;
 char* s_pidfile = NULL;
 char* s_interface = NULL;
 char* s_my_vpn_netmask = NULL;
-int s_tincd_debuglevel = 3;
-int s_tincd_restart_delay = 20;
+unsigned int s_tincd_debuglevel = 3;
+unsigned int s_tincd_restart_delay = 20;
 
 
 // Note: all settings *must* be strdupped!

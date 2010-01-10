@@ -19,7 +19,7 @@ int http_request(char *url, struct string *response) {
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
 
-	if(!curl) {
+	if (!curl) {
 		printf("unable to load libcurl\n");
 		return 1;
 	}
@@ -36,18 +36,19 @@ int http_request(char *url, struct string *response) {
 	res = curl_easy_perform(curl);
 	if (res) {
 		printf("Unable to request URL - %s\n", curlerror);
-		return res;
+		goto bail_out;
 	}
 
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	if (code != 200) {
 		printf("Request deliver wrong response code - %ld\n", code);
-		return 1;
+		res = 1;
+		goto bail_out;
 	}
 
+bail_out:
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
-
 	return res;
 }
 
