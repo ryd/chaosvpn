@@ -2,7 +2,7 @@ Source: chaosvpn
 Section: net
 Priority: extra
 Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
-Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7.0.50~), libcurl4-openssl-dev
+Build-Depends: quilt (>= 0.46-7~), debhelper (>= 7.0.50~), libssl-dev (>= 0.9.8), libcurl4-openssl-dev
 Standards-Version: 3.8.3
 Homepage: http://github.com/ryd/chaosvpn
 
@@ -21,5 +21,3 @@ Description: Client to setup connection to ChaosVPN
  http://wiki.hamburg.ccc.de/index.php/ChaosVPN#ChaosVPN_2.0
  .
  Further information will come.
- .
- Go to 26c3 Congress
