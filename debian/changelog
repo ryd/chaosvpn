@@ -1,3 +1,10 @@
+chaosvpn (2.0~rc6-0.0) unstable; urgency=low
+
+  * The major TODO of verifying a signature on the central configfile
+    is finished, and lots of more changes.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Mon, 18 Jan 2010 22:48:04 +0100
+
 chaosvpn (2.0~rc5-0.0) unstable; urgency=low
 
   * 2.0-rc5
