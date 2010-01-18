@@ -247,6 +247,7 @@ main_initialize_config(void) {
 	config->pidfile			= "/var/run/chaosvpn.default.pid";
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
+	config->tincd_graphdumpfile	= NULL;
 
 	INIT_LIST_HEAD(&config->peer_config);
 
@@ -290,6 +291,7 @@ main_init(struct config *config) {
 	if (s_master_url != NULL)		config->master_url		= s_master_url;
 	if (s_base != NULL)			config->base_path		= s_base;
 	if (s_masterdata_signkey != NULL)	config->masterdata_signkey	= s_masterdata_signkey;
+	if (s_tincd_graphdumpfile != NULL)	config->tincd_graphdumpfile	= s_tincd_graphdumpfile;
 	if (s_pidfile != NULL)			config->pidfile			= s_pidfile;
 
 	// then check required params

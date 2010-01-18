@@ -21,6 +21,7 @@ char* s_masterdata_signkey = NULL;
 char* s_pidfile = NULL;
 char* s_interface = NULL;
 char* s_my_vpn_netmask = NULL;
+char* s_tincd_graphdumpfile = NULL;
 unsigned int s_tincd_debuglevel = 3;
 unsigned int s_tincd_restart_delay = 20;
 
@@ -52,4 +53,5 @@ settings_free_all(void)
 	free(s_pidfile);
 	free(s_interface);
 	free(s_my_vpn_netmask);
+	free(s_tincd_graphdumpfile);
 }

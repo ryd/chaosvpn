@@ -52,6 +52,10 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "Hostnames=yes\n");
 	CONCAT(buffer, "TunnelServer=yes\n");
 
+	if (config->tincd_graphdumpfile!=NULL && (strlen(config->tincd_graphdumpfile) > 0)) {
+		CONCAT_F(buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
+	}
+
 	if (config->my_ip!=NULL && (strlen(config->my_ip) > 0) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
 			strcmp(config->my_ip, "0.0.0.0")) {

@@ -52,6 +52,7 @@ JVw7sWohWm4buu0iKlfPWIsCAwEAAQ==
 $base			= "/usr/local/etc/tinc/$networkname";
 $pidfile		= "/var/run/tinc.$networkname.pid";
 $tincd_debuglevel	= 2;
+$tincd_graphdumpfile	= "";
 
 # Number of seconds to wait before tincd is restarted after it has
 # unexpectedly terminated

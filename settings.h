@@ -18,6 +18,7 @@ extern char* s_masterdata_signkey;
 extern char* s_pidfile;
 extern char* s_interface;
 extern char* s_my_vpn_netmask;
+extern char* s_tincd_graphdumpfile;
 extern unsigned int s_tincd_debuglevel;
 extern unsigned int s_tincd_restart_delay;
 
