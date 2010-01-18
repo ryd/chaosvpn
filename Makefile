@@ -51,7 +51,7 @@ deb:
 		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
 		exit 1 ; \
 	fi
-	debchange --force-distribution --noquery --preserve --force-bad-version --newversion $(GITDEBVERSION) "Compiled GIT snapshot."
+	debchange --noquery --preserve --force-bad-version --newversion $(GITDEBVERSION) "Compiled GIT snapshot."
 	debuild --no-tgz-check || true
 	git checkout debian/changelog
 	
