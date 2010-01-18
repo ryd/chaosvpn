@@ -1,4 +1,4 @@
-chaosvpn (2.0~rc6-0.0) unstable; urgency=low
+chaosvpn (2.0~rc7-0.0) unstable; urgency=low
 
   * The major TODO of verifying a signature on the central configfile
     is finished, and lots of more changes.
