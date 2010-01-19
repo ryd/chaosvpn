@@ -1,7 +1,9 @@
-chaosvpn (2.0~rc7-0.0) unstable; urgency=low
+chaosvpn (2.0~rc8-0.0) unstable; urgency=low
 
   * The major TODO of verifying a signature on the central configfile
     is finished, and lots of more changes.
+  * The debian package buildscripts shouldn't need debhelper and quilt
+    backports anymore, Lenny is enough.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Mon, 18 Jan 2010 22:48:04 +0100
 
