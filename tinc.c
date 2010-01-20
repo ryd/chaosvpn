@@ -107,7 +107,7 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			continue;
 		}
 
-		if ((strlen(config->vpn_ip) > 0) && (config->routeadd != NULL)) {
+		if (config->vpn_ip != NULL && (strlen(config->vpn_ip) > 0) && (config->routeadd != NULL)) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
 				if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
@@ -115,7 +115,7 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			}
 		}
 		
-		if ((strlen(config->vpn_ip6) > 0) && (config->routeadd6 != NULL)) {
+		if (config->vpn_ip6 != NULL && (strlen(config->vpn_ip6) > 0) && (config->routeadd6 != NULL)) {
 			list_for_each(sp, &i->peer_config->network6) {
 				si = container_of(sp, struct string_list, list);
 				if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;
