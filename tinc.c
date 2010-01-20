@@ -18,7 +18,9 @@ static int tinc_add_subnet(struct string*, struct list_head*);
 int
 tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 {
-	CONCAT_DF(buffer, "Address=%s\n", peer->gatewayhost, "");
+	if (str_is_nonempty(peer->gatewayhost)) {
+		CONCAT_F(buffer, "Address=%s\n", peer->gatewayhost);
+	}
 
 	CONCAT_DF(buffer, "Cipher=%s\n", peer->cipher, TINC_DEFAULT_CIPHER);
 	CONCAT_DF(buffer, "Compression=%s\n", peer->compression, TINC_DEFAULT_COMPRESSION);
