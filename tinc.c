@@ -106,20 +106,20 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		if (!strcmp(i->peer_config->name, config->peerid)) {
 			continue;
 		}
-		if (strlen(i->peer_config->gatewayhost) > 0) {
-			if (config->routeadd != NULL) {
-				list_for_each(sp, &i->peer_config->network) {
-					si = container_of(sp, struct string_list, list);
-					if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
-					string_putc(buffer, '\n');
-				}
+
+		if ((strlen(config->vpn_ip) > 0) && (config->routeadd != NULL)) {
+			list_for_each(sp, &i->peer_config->network) {
+				si = container_of(sp, struct string_list, list);
+				if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
+				string_putc(buffer, '\n');
 			}
-			if (config->routeadd6 != NULL) {
-				list_for_each(sp, &i->peer_config->network6) {
-					si = container_of(sp, struct string_list, list);
-					if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;
-					string_putc(buffer, '\n');
-				}
+		}
+		
+		if ((strlen(config->vpn_ip6) > 0) && (config->routeadd6 != NULL)) {
+			list_for_each(sp, &i->peer_config->network6) {
+				si = container_of(sp, struct string_list, list);
+				if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;
+				string_putc(buffer, '\n');
 			}
 		}
 	}
