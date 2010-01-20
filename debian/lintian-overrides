@@ -1,0 +1,1 @@
+postrm-contains-additional-updaterc.d-calls /etc/init.d/remove
