@@ -4,13 +4,14 @@
 #include <sys/param.h>
 
 #include "main.h"
+#include "string/string.h"
 #include "list.h"
 #include "tinc.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
-#define CONCAT_DF(buffer, format, value, default_value)	if (string_concat_sprintf(buffer, format, strlen(value) > 0 ? value : default_value)) return 1
-#define CONCAT_YN(buffer, format, value)    if (string_concat_sprintf(buffer, format, strcmp(value, "1") ? "no" : "yes")) return 1
+#define CONCAT_DF(buffer, format, value, default_value)	if (string_concat_sprintf(buffer, format, str_is_nonempty(value) ? value : default_value)) return 1
+#define CONCAT_YN(buffer, format, value, default_value)    if (string_concat_sprintf(buffer, format, str_is_true(value, default_value) ? "yes" : "no")) return 1
 #define CONCAT_SN(buffer, value)	if (tinc_add_subnet(buffer, value)) return 1
 
 static int tinc_add_subnet(struct string*, struct list_head*);
@@ -25,13 +26,13 @@ tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 	CONCAT_DF(buffer, "Cipher=%s\n", peer->cipher, TINC_DEFAULT_CIPHER);
 	CONCAT_DF(buffer, "Compression=%s\n", peer->compression, TINC_DEFAULT_COMPRESSION);
 	CONCAT_DF(buffer, "Digest=%s\n", peer->digest, TINC_DEFAULT_DIGEST);
-	CONCAT_YN(buffer, "IndirectData=%s\n", peer->indirectdata);
+	CONCAT_YN(buffer, "IndirectData=%s\n", peer->indirectdata, false);
 	CONCAT_DF(buffer, "Port=%s\n", peer->port, TINC_DEFAULT_PORT);
 
 	CONCAT_SN(buffer, &peer->network);
 	CONCAT_SN(buffer, &peer->network6);
 
-	CONCAT_YN(buffer, "TCPonly=%s\n", peer->use_tcp_only);
+	CONCAT_YN(buffer, "TCPonly=%s\n", peer->use_tcp_only, false);
 	CONCAT_F(buffer, "%s\n", peer->key);	
 
 	return 0;
