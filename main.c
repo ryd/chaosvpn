@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "daemon.h"
 #include "crypto.h"
+#include "ar.h"
 
 int r_sigterm = 0;
 int r_sigint = 0;
@@ -321,9 +322,12 @@ static int
 main_request_config(struct config *config, struct string *http_response) {
 	int retval = 1;
 	struct string httpurl;
+	struct string archive;
 	struct string signature;
 
 	/* fetch main configfile */
+
+	string_init(&archive, 8192, 8192);
 
 	//(void)fputs("Fetching information:", stdout);
 	//void)fflush(stdout);
@@ -331,15 +335,18 @@ main_request_config(struct config *config, struct string *http_response) {
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
-	if (http_request(string_get(&httpurl), http_response)) {
-		fprintf(stderr, "Unable to fetch %s - maybe server is down\n", config->master_url);
+	if (http_request(string_get(&httpurl), &archive)) {
+		fprintf(stderr, "Unable to fetch %s - maybe server is down or your peerid is not registered yet\n", config->master_url);
 		goto bail_out;
 	}
 
 	string_free(&httpurl);
 	//(void)fputs(".\n", stdout);
 
-
+	if (ar_extract(&archive, "cleartext", http_response)) {
+		fprintf(stderr, "cleartext part missing - cant work with this config\n");
+		goto bail_out;
+	}
 	if (str_is_empty(config->masterdata_signkey)) {
 		/* no public key defined, nothing to verify against */
 		/* return success */
@@ -350,17 +357,11 @@ main_request_config(struct config *config, struct string *http_response) {
 
 	/* fetch signature */
 
-	//(void)fputs("Fetching signature:", stdout);
-	//(void)fflush(stdout);
-	string_init(&httpurl, 512, 512);
-	string_concat_sprintf(&httpurl, "%s.sig?id=%s",
-		config->master_url, config->peerid);
 	string_init(&signature, 512, 512);
-	if (http_request(string_get(&httpurl), &signature)) {
-		fprintf(stderr, "Unable to fetch signature for %s - maybe server is down\n", config->master_url);
+	if (ar_extract(&archive, "signature", &signature)) {
+		fprintf(stderr, "signature part in data from %s missing\n", config->master_url);
 		goto bail_out_signature;
 	}
-	//(void)fputs(".\n", stdout);
 
 
 	/* verify signature */
@@ -371,6 +372,12 @@ bail_out_signature:
 	string_free(&signature);
 bail_out:
 	string_free(&httpurl);
+	string_free(&archive);
+
+	// make sure result is null-terminated
+	// ar_extract() does not guarantee this!
+	string_putc(http_response, '\0');
+
 	return retval;
 }
 

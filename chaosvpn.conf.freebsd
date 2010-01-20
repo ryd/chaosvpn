@@ -32,7 +32,7 @@ $tincd_bin		= "/usr/local/sbin/tincd";
 $routeadd		= "/sbin/route add -net %s -interface \$INTERFACE";
 $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask $my_vpn_netmask";
 
-$master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
+$master_url		= "https://www.vpn.hamburg.ccc.de/chaosvpn-data/$my_peerid.dat";
 # public key of key used to sign the file at $master_url:
 $masterdata_signkey	= "-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnSHWfoa9hYgiMrTU4QTS
