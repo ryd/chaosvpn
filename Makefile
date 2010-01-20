@@ -51,7 +51,11 @@ deb:
 		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
 		exit 1 ; \
 	fi
+	if git status version.h >/dev/null 2>/dev/null ; then \
+		echo -e "\nERROR: uncommited changes in version.h!\n       either commit or revert with 'git checkout version.h'\n" ; \
+		exit 1 ; \
+	fi
 	debchange --noquery --preserve --force-bad-version --newversion $(GITDEBVERSION) "Compiled GIT snapshot."
+	echo "#define VERSION \"$(GITDEBVERSION)\"" >version.h
 	debuild --no-tgz-check || true
-	git checkout debian/changelog
-	
+	git checkout -- debian/changelog version.h
