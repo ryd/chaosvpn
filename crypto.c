@@ -43,7 +43,7 @@ openssl dgst \
 */
 
 int
-verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
+crypto_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
 {
 	char *tmpname;
 	int err;
@@ -61,18 +61,18 @@ verify_signature(struct string *databuffer, struct string *signature, const char
         pubkeyfd = mkstemp(tmpname);
         free(tmpname);
         if (pubkeyfd == -1) {
-            fprintf(stderr, "verify_signature: error creating tempfile\n");
+            fprintf(stderr, "crypto_verify_signature: error creating tempfile\n");
             return 1;
         }
         if (write(pubkeyfd, pubkey, strlen(pubkey)) != strlen(pubkey)) {
             close(pubkeyfd);
-            fprintf(stderr, "verify_signature: tempfile write error\n");
+            fprintf(stderr, "crypto_verify_signature: tempfile write error\n");
             return 1;
         }
         pubkeyfp = fdopen(pubkeyfd, "rw");
         if (pubkeyfp == NULL) {
             close(pubkeyfd);
-            fprintf(stderr, "verify_signature: tempfile fdopen() failed\n");
+            fprintf(stderr, "crypto_verify_signature: tempfile fdopen() failed\n");
             return 1;
         }
         fseek(pubkeyfp, 0, SEEK_SET);
@@ -81,14 +81,14 @@ verify_signature(struct string *databuffer, struct string *signature, const char
         pkey = PEM_read_PUBKEY(pubkeyfp, NULL, NULL, NULL);
         fclose(pubkeyfp);
         if (pkey == NULL) {
-            fprintf(stderr, "verify_signature: loading and parsing public key failed\n");
+            fprintf(stderr, "crypto_verify_signature: loading and parsing public key failed\n");
             ERR_print_errors_fp(stderr);
             return 1;
         }
         
         /* Verify the signature */
         if (EVP_VerifyInit(&md_ctx, EVP_sha512()) != 1) {
-            fprintf(stderr, "verify_signature: libcrypto verify init failed\n");
+            fprintf(stderr, "crypto_verify_signature: libcrypto verify init failed\n");
             EVP_PKEY_free(pkey);
             return 1;
         }
@@ -97,7 +97,7 @@ verify_signature(struct string *databuffer, struct string *signature, const char
         EVP_PKEY_free(pkey);
         
         if (err != 1) {
-            fprintf(stderr, "verify_signature: signature verify failed, received bogus data from backend.\n");
+            fprintf(stderr, "crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
             ERR_print_errors_fp(stderr);
             return 1;
         }

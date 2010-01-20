@@ -19,7 +19,7 @@
 #include "tinc.h"
 #include "settings.h"
 #include "daemon.h"
-#include "verify.h"
+#include "crypto.h"
 
 int r_sigterm = 0;
 int r_sigint = 0;
@@ -364,7 +364,7 @@ main_request_config(struct config *config, struct string *http_response) {
 
 
 	/* verify signature */
-	retval = verify_signature(http_response, &signature, config->masterdata_signkey);
+	retval = crypto_verify_signature(http_response, &signature, config->masterdata_signkey);
 
 
 bail_out_signature:
