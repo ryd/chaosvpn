@@ -21,6 +21,7 @@
 #include "daemon.h"
 #include "crypto.h"
 #include "ar.h"
+#include "version.h"
 
 int r_sigterm = 0;
 int r_sigint = 0;
@@ -58,6 +59,8 @@ main (int argc,char *argv[]) {
 	char tincd_debugparam[32];
 	int err;
 	struct string http_response;
+
+	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
 	main_parse_opts(argc, argv);
 
