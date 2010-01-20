@@ -52,17 +52,17 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "Hostnames=yes\n");
 	CONCAT(buffer, "TunnelServer=yes\n");
 
-	if (config->tincd_graphdumpfile!=NULL && (strlen(config->tincd_graphdumpfile) > 0)) {
+	if (str_is_nonempty(config->tincd_graphdumpfile)) {
 		CONCAT_F(buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
 	}
 
-	if (config->my_ip!=NULL && (strlen(config->my_ip) > 0) && 
+	if (str_is_nonempty(config->my_ip) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
 			strcmp(config->my_ip, "0.0.0.0")) {
 		CONCAT_F(buffer, "BindToAddress=%s\n", config->my_ip);
 	}
 
-	if (strcmp(config->my_peer->silent, "1") == 0) {
+	if (str_is_true(config->my_peer->silent, false)) {
 			return 0; //no ConnectTo lines
 	}
 
@@ -73,8 +73,8 @@ tinc_generate_config(struct string* buffer, struct config *config)
 			continue;
 		}
 
-		if (strlen(i->peer_config->gatewayhost) > 0 &&
-				strlen(i->peer_config->hidden) == 0) {
+		if (str_is_nonempty(i->peer_config->gatewayhost) &&
+				!str_is_true(i->peer_config->hidden, false)) {
 			CONCAT_F(buffer, "ConnectTo=%s\n", i->peer_config->name);
 		}
 	}
@@ -92,11 +92,11 @@ tinc_generate_up(struct string* buffer, struct config *config)
 
 	CONCAT(buffer, "#!/bin/sh\n\n");
 
-	if (config->ifconfig != NULL && config->vpn_ip != NULL && strlen(config->vpn_ip)>0) {
+	if (str_is_nonempty(config->ifconfig) && str_is_nonempty(config->vpn_ip)) {
 		CONCAT_F(buffer, "%s\n", config->ifconfig);
 	}
 
-	if (config->ifconfig6 != NULL && config->vpn_ip6 != NULL && strlen(config->vpn_ip6)>0) {
+	if (str_is_nonempty(config->ifconfig6) && str_is_nonempty(config->vpn_ip6)) {
 		CONCAT_F(buffer, "%s\n", config->ifconfig6);
 	}
 
@@ -107,7 +107,7 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			continue;
 		}
 
-		if (config->vpn_ip != NULL && (strlen(config->vpn_ip) > 0) && (config->routeadd != NULL)) {
+		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routeadd)) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
 				if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
@@ -115,7 +115,7 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			}
 		}
 		
-		if (config->vpn_ip6 != NULL && (strlen(config->vpn_ip6) > 0) && (config->routeadd6 != NULL)) {
+		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(config->routeadd6)) {
 			list_for_each(sp, &i->peer_config->network6) {
 				si = container_of(sp, struct string_list, list);
 				if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;

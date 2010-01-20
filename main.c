@@ -157,7 +157,7 @@ main_terminate_old_tincd(struct config *config)
 	pid_t pid;
 	
 
-	if (config->pidfile == NULL)
+	if (str_is_empty(config->pidfile))
 		return;
 
 	pidfile = open(config->pidfile, O_RDONLY);
@@ -295,8 +295,8 @@ main_init(struct config *config) {
 	if (s_pidfile != NULL)			config->pidfile			= s_pidfile;
 
 	// then check required params
-	#define reqparam(paramfield, label) if (config->paramfield == NULL) { \
-		fprintf(stderr, "%s is missing in %s\n", label, CONFIG_FILE); \
+	#define reqparam(paramfield, label) if (str_is_empty(config->paramfield)) { \
+		fprintf(stderr, "%s is missing or empty in %s\n", label, CONFIG_FILE); \
 		return 1; \
 		}
 
@@ -340,7 +340,7 @@ main_request_config(struct config *config, struct string *http_response) {
 	//(void)fputs(".\n", stdout);
 
 
-	if (config->masterdata_signkey == NULL || strlen(config->masterdata_signkey)==0) {
+	if (str_is_empty(config->masterdata_signkey)) {
 		/* no public key defined, nothing to verify against */
 		/* return success */
 		retval = 0;
@@ -464,7 +464,7 @@ main_write_config_hosts(struct config *config) {
 			return 1;
 		}
 
-		if(fs_writecontents_safe(string_get(&hostfilepath), 
+		if (fs_writecontents_safe(string_get(&hostfilepath), 
 				i->peer_config->name, string_get(&peer_config),
 				string_length(&peer_config), 0600)) {
 			fputs("unable to write host config file.\n", stderr);
@@ -492,7 +492,7 @@ main_write_config_up(struct config *config) {
 	string_init(&up_filepath, 512, 512);
 	string_concat(&up_filepath, config->base_path);
 	string_concat(&up_filepath, "/tinc-up");
-	if(fs_writecontents(string_get(&up_filepath), string_get(&up_filecontents), string_length(&up_filecontents), 0700)) {
+	if (fs_writecontents(string_get(&up_filepath), string_get(&up_filecontents), string_length(&up_filecontents), 0700)) {
 		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&up_filepath));
 		string_free(&up_filecontents);
 		string_free(&up_filepath);

@@ -9,7 +9,7 @@ pidfile_create_pidfile() {
 	int len;
 	int retval = 0;
 
-	if (s_pidfile == NULL) {
+	if (str_is_empty(s_pidfile) {
 		fputs("create_pidfile: no PIDFILE is set.\n", stderr);
 		return 2;
 	}

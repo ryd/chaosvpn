@@ -1,7 +1,13 @@
 #ifndef __STRING_H__
 #define __STRING_H__
 
+#include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
+
+/* FUNCTIONS WORKING WITH struct string */
+/* ------------------------------------ */
 
 struct string {
     union __u__ {
@@ -27,6 +33,39 @@ int string_init(struct string*, size_t, size_t);
 
 static inline size_t string_length(struct string *s) {
     return s->_u._s.length;
+}
+
+
+/* FUNCTIONS WORKING WITH PLAIN char* */
+/* ---------------------------------- */
+
+static inline bool str_is_empty(char *s) {
+    if (s != NULL && strlen(s) > 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+static inline bool str_is_nonempty(char *s) {
+    if (s != NULL && strlen(s) > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static inline bool str_is_true(char *s, bool def) {
+    if (str_is_nonempty(s)) {
+        if (strcasecmp(s, "0")==0 || strcasecmp(s,"no")==0) {
+            return false;
+        } else if (strcasecmp(s, "1")==0 || strcasecmp(s,"yes")==0) {
+            return true;
+        } else {
+            return def; /* TODO: something better needed */
+        }
+    } else {
+        return def;
+    }
 }
 
 #endif
