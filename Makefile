@@ -7,15 +7,15 @@ LEX=flex
 YACC=yacc
 
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c
-SRC = main.c tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC)
+SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC)
 STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
 OBJ=$(patsubst %.c,%.o,$(SRC))
 
 NAME = chaosvpn
 GITDEBVERSION=$(shell debian/scripts/calcdebversion )
 
-$(NAME): $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LIB) $(LIBDIRS)
+$(NAME): main.o $(OBJ)
+	$(CC) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $(patsubst %.c,%.o,$<) -c $<
@@ -42,7 +42,7 @@ install:
 
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique -predboolint \
-		-retvalint $(CFLAGS) $(SRC)
+		-retvalint $(CFLAGS) main.c $(SRC)
 
 deb:
 	[ -n "$(GITDEBVERSION)" ] # check if gitversion is set
