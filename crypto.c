@@ -99,10 +99,16 @@ crypto_verify_signature(struct string *databuffer, struct string *signature, con
         if (err != 1) {
             fprintf(stderr, "crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
             ERR_print_errors_fp(stderr);
-            return 1;
+            err = 1;
+            goto bailout_ctx_cleanup;
         }
 
+        err = 0;
+
+bailout_ctx_cleanup:
+        EVP_MD_CTX_cleanup(&md_ctx);
+
         //printf ("Signature Verified Ok.\n");
-	return 0;
+	return err;
 }
     
