@@ -27,6 +27,7 @@ daemon_init(struct daemon_info* di, char* path, ...)
     if (di->di_arguments == NULL) {
         goto bail_out;
     }
+    di->di_numarguments = numargs;
     va_start(ap, path);
     for (i = 0; i < numargs; i++) {
         di->di_arguments[i] = va_arg(ap, char*);
@@ -65,6 +66,25 @@ bail_out:
     free(di->di_envp);
     di->di_envp = NULL;
     return 1;
+}
+
+int
+daemon_addparam(struct daemon_info* di, const char* param)
+{
+    int numargs;
+    char** tmp;
+    char* dparam;
+
+    numargs = di->di_numarguments + 1;
+    tmp = (char**)realloc(di->di_arguments, sizeof(char*) * numargs);
+    if (tmp == NULL) return 1;
+    dparam = strdup(param);
+    if (dparam == NULL) return 1;
+    di->di_arguments = tmp;
+    ++di->di_numarguments;
+    di->di_arguments[numargs - 2] = dparam;
+    di->di_arguments[numargs - 1] = NULL;
+    return 0;
 }
 
 void
