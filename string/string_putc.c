@@ -6,7 +6,7 @@
 int
 string_putc(struct string* s, char c)
 {
-    size_t growby;
+    uintptr_t growby;
     char* buf;
 
     if (s->_u._s.size == s->_u._s.length) {

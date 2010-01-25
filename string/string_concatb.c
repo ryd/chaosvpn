@@ -4,9 +4,9 @@
 #include "string.h"
 
 int
-string_concatb(struct string* s, const char* sta, size_t len)
+string_concatb(struct string* s, const char* sta, uintptr_t len)
 {
-    size_t growby;
+    uintptr_t growby;
     char* buf;
 
     if (len > (s->_u._s.size - s->_u._s.length)) {
