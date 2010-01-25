@@ -11,11 +11,9 @@ string_putc(struct string* s, char c)
 
     if (s->_u._s.size == s->_u._s.length) {
         growby = s->_u._s.growby;
-        buf = malloc(s->_u._s.size + growby);
+        buf = realloc(s->s, s->_u._s.size + growby);
         if (!buf) return 1;
         s->_u._s.size += growby;
-        memcpy(buf, s->s, s->_u._s.length);
-        free(s->s);
         s->s = buf;
     }
     *(s->s + s->_u._s.length) = c;
