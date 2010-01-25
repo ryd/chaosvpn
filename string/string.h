@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 
 /* FUNCTIONS WORKING WITH struct string */
@@ -13,9 +14,9 @@ struct string {
     union __u__ {
         char align[16];
         struct __s__ {
-            size_t length;
-            size_t size;
-            size_t growby;
+            uintptr_t length;
+            uintptr_t size;
+            uintptr_t growby;
         } _s;
     } _u;
     char* s;
@@ -23,15 +24,15 @@ struct string {
 
 void string_clear(struct string*);
 int string_concat(struct string*, const char*);
-int string_concatb(struct string*, const char*, size_t);
+int string_concatb(struct string*, const char*, uintptr_t);
 int string_concat_sprintf(struct string* s, const char *msg, ...);
 int string_putc(struct string*, char);
 int string_putint(struct string*, int);
 void string_free(struct string*);
 char* string_get(struct string*);
-int string_init(struct string*, size_t, size_t);
+int string_init(struct string*, uintptr_t, uintptr_t);
 
-static inline size_t string_length(struct string *s) {
+static inline uintptr_t string_length(struct string *s) {
     return s->_u._s.length;
 }
 
