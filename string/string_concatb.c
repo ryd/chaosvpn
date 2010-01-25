@@ -15,13 +15,9 @@ string_concatb(struct string* s, const char* sta, size_t len)
             growby += s->_u._s.growby;
             if ((s->_u._s.size + growby) < s->_u._s.size) return 1;
         }
-        buf = malloc(s->_u._s.size + growby);
+        buf = realloc(s->s, s->_u._s.size + growby);
         if (!buf) return 1;
         s->_u._s.size += growby;
-        if (s->s != NULL) {
-            memcpy(buf, s->s, s->_u._s.length);
-            free(s->s);
-        }
         s->s = buf;
     }
     memcpy(s->s + s->_u._s.length, sta, len);
