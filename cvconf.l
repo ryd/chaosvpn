@@ -26,6 +26,7 @@ int yycurline = 1;
 \$my_vpn_netmask	{yylval.pval = &s_my_vpn_netmask; return KEYWORD_S;}
 \$tincd_restart_delay   {yylval.pval = &s_tincd_restart_delay; return KEYWORD_I;}
 \$tincd_graphdumpfile	{yylval.pval = &s_tincd_graphdumpfile; return KEYWORD_S;}
+\$update_interval {yylval.pval = &s_update_interval; return KEYWORD_I;}
 \$[_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "
             "\"%s\" in line %d\n", yytext, yycurline);

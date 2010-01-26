@@ -21,6 +21,7 @@ extern char* s_my_vpn_netmask;
 extern char* s_tincd_graphdumpfile;
 extern unsigned int s_tincd_debuglevel;
 extern unsigned int s_tincd_restart_delay;
+extern unsigned int s_update_interval;
 
 int yyparse(void);
 void settings_init_defaults(void);
