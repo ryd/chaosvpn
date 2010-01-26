@@ -6,7 +6,7 @@ LIB=-lcurl -lcrypto
 LEX=flex
 YACC=yacc
 
-STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c
+STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c
 SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC)
 STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
 OBJ=$(patsubst %.c,%.o,$(SRC))
