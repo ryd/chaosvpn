@@ -343,6 +343,18 @@ main_init(struct config *config) {
 	yyparse();
 	fclose(yyin);
 
+	if ((s_update_interval == 0) && (!DONOTFORK)) {
+		(void)fputs("Error: you have not configured a remote config update interval.\n" \
+					"($update_interval) Please configure an interval (3600 - 7200 seconds\n" \
+					"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
+		exit(1);
+	}
+	if ((s_update_interval < 300) && (!DONOTFORK)) {
+		(void)fputs("Error: $update_interval may not be <300.\n", stderr);
+		exit(1);
+	}
+
+
 	// first copy all parsed params into config structure
 	if (s_my_peerid != NULL)		config->peerid			= s_my_peerid;
 	if (s_my_vpn_ip != NULL)		config->vpn_ip			= s_my_vpn_ip;
