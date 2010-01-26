@@ -105,42 +105,42 @@ main (int argc,char *argv[]) {
 	}
 
 	if (!DONOTFORK) {
-        do {
-            ml_cont:
-            main_updated();
-    		while (1) {
-    			(void)sleep(2);
-                if (nextupdate < time(NULL)) {
-                    break;
-                }
-                if (r_sigterm || r_sigint) {
-                    goto bail_out;
-                }
-    		}
-            switch (main_fetch_config(config, &oldconfig)) {
-            case -1:
-                (void)fputs("\x1B[31mError while updating config. Not terminating tincd.\x1B[0m\n", stderr);
-                goto ml_cont;
+		do {
+		ml_cont:
+			main_updated();
+			while (1) {
+				(void)sleep(2);
+				if (nextupdate < time(NULL)) {
+					break;
+				}
+				if (r_sigterm || r_sigint) {
+					goto bail_out;
+				}
+			}
+			switch (main_fetch_config(config, &oldconfig)) {
+			case -1:
+				(void)fputs("\x1B[31mError while updating config. Not terminating tincd.\x1B[0m\n", stderr);
+				goto ml_cont;
 
-            case 1:
-                (void)fputs("\x1B[31mNo update needed.\x1B[0m\n", stderr);
-                goto ml_cont;
+			case 1:
+				(void)fputs("\x1B[31mNo update needed.\x1B[0m\n", stderr);
+				goto ml_cont;
 
-            default:;
-            }
-    		puts("\x1B[31;1mTerminating tincd.\x1B[0m");
-    		(void)signal(SIGTERM, SIG_IGN);
-    		(void)signal(SIGINT, sigint_holdon);
-    		(void)signal(SIGCHLD, SIG_IGN);
-    		daemon_stop(&di_tincd, 5);
-        } while (!r_sigterm && !r_sigint);
+			default:;
+			}
+			puts("\x1B[31;1mTerminating tincd.\x1B[0m");
+			(void)signal(SIGTERM, SIG_IGN);
+			(void)signal(SIGINT, sigint_holdon);
+			(void)signal(SIGCHLD, SIG_IGN);
+			daemon_stop(&di_tincd, 5);
+		} while (!r_sigterm && !r_sigint);
 
-        bail_out:
+		bail_out:
 		puts("\x1B[31;1mTerminating tincd.\x1B[0m");
-   		(void)signal(SIGTERM, SIG_IGN);
-   		(void)signal(SIGINT, sigint_holdon);
-   		(void)signal(SIGCHLD, SIG_IGN);
-   		daemon_stop(&di_tincd, 5);
+		(void)signal(SIGTERM, SIG_IGN);
+		(void)signal(SIGINT, sigint_holdon);
+		(void)signal(SIGCHLD, SIG_IGN);
+		daemon_stop(&di_tincd, 5);
 	}
 
 	daemon_free(&di_tincd);
