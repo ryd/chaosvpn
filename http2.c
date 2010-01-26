@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 
 int
-main ()
+conf_grab ()
 {
   struct addrinfo hints, *res;
   int sockfd, status, error, hdr;
