@@ -9,6 +9,7 @@
 
 static int epoch2http(struct string*, time_t);
 static int sendall(int, void*, size_t, int);
+static int httprecv(int, struct string*);
 
 /**
  * Fetch an URL
@@ -85,11 +86,64 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
         goto bail_out;
     }
 
+    if ((retval = httprecv(sfd, buffer))) {
+        goto bail_out;
+    }
+
 bail_out:
     close (sfd);
     string_free(&hostname);
     string_free(&path);
     string_free(&request);
+    return retval;
+}
+
+static int
+httprecv(int sfd, struct string* buf)
+{
+    char* b;
+    size_t bl, bptr = 0;
+    size_t i;
+    struct string oneline;
+    int retval = 0;
+    int BUFSIZE = 8192;
+
+    if ((b = malloc(BUFSIZE)) == NULL) return 1;
+    string_init(&oneline, 512, 512);
+
+    while(1) {
+        bl = recv(sfd, b + bptr, BUFSIZE - bptr, 0);
+printf("%d | %d\n", bl, bptr);
+        if (bl == 0) {
+            if (bptr == 0) {
+                break;
+            }
+        } else if (bl < 0) {
+            retval = 3;
+            goto bail_out;
+        }
+        bptr += bl;
+        if ((*b == '\n') || (*b == '\r')) goto finished;
+        for (i = 0; i < bptr; i++) {
+printf("%c", b[i]);
+            if (b[i] == '\n') {
+                string_clear(&oneline);
+                if (string_concatb(&oneline, b, i)) { retval=1; goto bail_out; }
+                if (oneline.s[oneline._u._s.length - 1] == '\r') --oneline._u._s.length;
+                ++i;
+                memmove(b, b + i, bptr - i);
+                bptr -= i;
+string_putc(&oneline, 0);
+printf("HDR: =>%s<=\n", oneline.s);
+                break;
+            }
+        }
+    }
+    finished:
+
+bail_out:
+    string_free(&oneline);
+    free(b);
     return retval;
 }
 
