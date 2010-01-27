@@ -88,7 +88,7 @@ crypto_load_key(const char *key, bool is_private) {
 
 
 int
-crypto_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
+crypto_rsa_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
 {
 	int err;
 	EVP_MD_CTX md_ctx;
