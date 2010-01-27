@@ -27,6 +27,7 @@ use constant VERSION => "0.1";
 use strict;
 use Data::Dumper;
 use Archive::Ar;		# libarchive-ar-perl
+use Compress::Zlib;		# libcompress-zlib-perl
 use Crypt::OpenSSL::Random;     # libcrypt-openssl-random-perl
 use Crypt::OpenSSL::RSA - RSA;  # libcrypt-openssl-rsa-perl
 use Crypt::CBC;			# libcrypt-cbc-perl
@@ -39,6 +40,12 @@ my $cleartextconfig = "/webroot/www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
 my $signkey = "/home/haegar/chaosvpn/clearprivkey.pem";
 my $signpubkey = "/home/haegar/chaosvpn/pubkey.pem";
 
+
+# --- no changes needed below for simple usage ---
+
+
+my $fileformat_version = "3";
+# increase this number for every incompatible file format change
 
 my $config = read_file_into_string("<$cleartextconfig") || die "config read error\n";
 
@@ -172,8 +179,7 @@ sub create_config($)
 		print "\npeer: $id\n";
 		#print Dumper($peer);
 
-		$ar->add_data("chaosvpn-version", "2");
-                # increase this number for every incompatible file format change
+		$ar->add_data("chaosvpn-version", $fileformat_version);
                 		
 		my $aeskey = Crypt::OpenSSL::Random::random_bytes(32);
 		my $aesiv = Crypt::OpenSSL::Random::random_bytes(16);
@@ -184,8 +190,13 @@ sub create_config($)
 		#print "  add cleartext...";
 		#$ar->add_data("cleartext", $config);
 		#print ".\n";
+
+		print "  compress config...";
+		my $compressed_config = Compress::Zlib::compress($config, 9);
+		print ".\n";
+		
                 print "  encrypt config...";
-                my $encrypted_config = aes_encrypt($config, $aeskey, $aesiv);
+                my $encrypted_config = aes_encrypt($compressed_config, $aeskey, $aesiv);
                 $ar->add_data("encrypted", $encrypted_config);
                 print ".\n";
             

@@ -22,6 +22,7 @@
 #include "daemon.h"
 #include "crypto.h"
 #include "ar.h"
+#include "uncompress.h"
 #include "version.h"
 
 int r_sigterm = 0;
@@ -425,6 +426,7 @@ main_request_config(struct config *config, struct string *http_response) {
 	struct string archive;
 	struct string chaosvpn_version;
 	struct string signature;
+	struct string compressed;
 	struct string encrypted;
 	struct string rsa_decrypted;
 	struct string aes_key;
@@ -443,7 +445,8 @@ main_request_config(struct config *config, struct string *http_response) {
 	string_init(&archive, 8192, 8192);
 	string_lazyinit(&chaosvpn_version, 16);
 	string_lazyinit(&signature, 1024);
-	string_lazyinit(&encrypted, 2048);
+	string_lazyinit(&compressed, 8192);
+	string_lazyinit(&encrypted, 8192);
 	string_lazyinit(&rsa_decrypted, 1024);
 	string_lazyinit(&aes_key, 64);
 	string_lazyinit(&aes_iv, 64);
@@ -498,9 +501,9 @@ main_request_config(struct config *config, struct string *http_response) {
 		goto bail_out;
 	}
 	string_putc(&chaosvpn_version, '\0');
-	if (strcmp(string_get(&chaosvpn_version), "2") != 0) {
+	if (strcmp(string_get(&chaosvpn_version), "3") != 0) {
 		string_free(&chaosvpn_version);
-		fprintf(stderr, "unusable data-version from backend, we only support version 2!\n");
+		fprintf(stderr, "unusable data-version from backend, we only support version 3!\n");
 		goto bail_out;
 	}
 	string_free(&chaosvpn_version);
@@ -558,16 +561,21 @@ main_request_config(struct config *config, struct string *http_response) {
 	string_concatb(&aes_key, buf+2, buf[0]);
 	string_concatb(&aes_iv, buf+2+buf[0], buf[1]);
 
-	/* get and decrypt config data */
+	/* get, decrypt and uncompress config data */
 	if (ar_extract(&archive, "encrypted", &encrypted)) {
 		fprintf(stderr, "encrypted data part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
-	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, http_response)) {
+	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &compressed)) {
 		fprintf(stderr, "data decrypt failed\n");
 		goto bail_out;
 	}
 	string_free(&encrypted);
+	if (uncompress_inflate(&compressed, http_response)) {
+		fprintf(stderr, "data uncompress failed\n");
+		goto bail_out;
+	}
+	string_free(&compressed);
 
 	/* get and decrypt signature */
 	if (ar_extract(&archive, "signature", &encrypted)) {
@@ -591,6 +599,7 @@ bail_out:
 	string_free(&archive);
 	string_free(&chaosvpn_version);
 	string_free(&signature);
+	string_free(&compressed);
 	string_free(&encrypted);
 	string_free(&rsa_decrypted);
 	string_free(&aes_key);
