@@ -176,11 +176,11 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 
 	err = main_parse_config(config, &http_response);
 	if (err) {
-	    string_free(&http_response);
-        return -1;
-    }
+		string_free(&http_response);
+		return -1;
+	}
 
-    /* replaced by string_move */
+	/* replaced by string_move */
 	// string_free(&http_response);
 	string_free(oldconfig);
 	string_move(&http_response, oldconfig);
@@ -209,7 +209,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 
 	main_free_parsed_info(config);
 
-    return 0;
+	return 0;
 }
 
 static void
