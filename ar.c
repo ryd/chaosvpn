@@ -67,6 +67,21 @@ ar_compare_name(char *inh, size_t len, char *searchname) {
   return (strcmp(lintbuf, searchname) == 0);
 }
 
+bool
+ar_is_ar_file(struct string *archive) {
+  if (string_length(archive) < SARMAG) {
+    fprintf(stderr, "ar_extract: buffer contents too short\n");
+    return false;
+  }
+  
+  if (strncmp(string_get(archive), ARMAG, sizeof(ARMAG)-1) != 0) {
+    fprintf(stderr, "ar_extract: no .ar header at the beginning\n");
+    return false;
+  }
+  
+  return true;
+}
+
 int
 ar_extract(struct string *archive, char *membername, struct string *result) {
   ssize_t len;
