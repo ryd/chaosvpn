@@ -32,6 +32,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     int retval = 0;
     struct addrinfo hints, *res, *rp;
     struct string ims;
+    char s_port[16];
 
     string_init(&hostname, 4096, 4096);
     string_init(&path, 4096, 4096);
@@ -47,7 +48,8 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     hints.ai_flags = 0;
     hints.ai_protocol = 0;
 
-    if ((retval = getaddrinfo (string_get(&hostname), "http", &hints, &res))) {
+    snprintf(s_port, 16, "%d", port);
+    if ((retval = getaddrinfo(string_get(&hostname), s_port, &hints, &res))) {
         return retval;
     }
 
@@ -137,7 +139,7 @@ httprecv(int sfd, struct string* buf)
                 string_clear(&oneline);
                 if (string_concatb(&oneline, b, i)) { retval=1; goto bail_out; }
                 if (oneline.s[oneline._u._s.length - 1] == '\r') --oneline._u._s.length;
-                ++i;
+                if (++i >= bptr) { retval=3; goto bail_out; }
                 memmove(b, b + i, bptr - i);
                 bptr -= i;
                 if (isfirsthdr) {

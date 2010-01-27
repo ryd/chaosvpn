@@ -13,13 +13,14 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
     uintptr_t i;
     int urlpart = 0;
     struct string portnum;
-    int retval = 1;
+    int retval = 0;
 
     string_lazyinit(&portnum, 16);
     s = string_get(url);
     l = string_length(url);
     if (l < 7) return 1;
     if (memcmp(s, "http://", 7)) return 1;
+    if (string_concat(path, "/")) { retval=1; goto bail_out; }
     for (i = 7; i < l; i++) {
         switch(urlpart) {
         case 0:
@@ -47,13 +48,15 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
 
         case 2:
             if (string_concatb(path, s + i, l - i)) { retval=1; goto bail_out; }
-            if (string_get(&portnum)) {
-                *port = atoi(string_get(&portnum));
-            } else {
-                *port = 80;
-            }
-            { retval=0; goto bail_out; }
+            { retval=0; goto bail_out_check_port; }
         }
+    }
+
+bail_out_check_port:
+    if (string_get(&portnum)) {
+        *port = atoi(string_get(&portnum));
+    } else {
+        *port = 80;
     }
 
 bail_out:
