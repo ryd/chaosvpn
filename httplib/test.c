@@ -8,10 +8,9 @@ static void die(char*);
 int
 main(int argc, char** argv)
 {
+    struct string buffer;
     struct string inp;
-    struct string hostname;
-    int port;
-    struct string path;
+    struct string em;
 
     --argc; ++argv;
 
@@ -19,13 +18,11 @@ main(int argc, char** argv)
 puts(*argv);
 
     string_initfromstringz(&inp, *argv);
-    string_lazyinit(&hostname, 512);
-    string_lazyinit(&path, 512);
-    http_parseurl(&inp, &hostname, &port, &path);
-    printf("HOST: %s | PORT: %d | PATH: %s\n",
-            string_get(&hostname),
-            port,
-            string_get(&path));
+    string_lazyinit(&buffer, 8192);
+    string_lazyinit(&em, 512);
+    printf("calling geturl: %d\n",
+            http_get(&inp, &buffer, 1264589818, &em, &em));
+    printf("Res: %s\n", buffer.s);
 
 }
 
