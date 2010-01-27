@@ -10,6 +10,7 @@
 static int epoch2http(struct string*, time_t);
 static int sendall(int, void*, size_t, int);
 static int httprecv(int, struct string*);
+static int handle_header(struct string*, int*);
 
 /**
  * Fetch an URL
@@ -74,12 +75,18 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     if (ifmodifiedsince) {
         string_init(&ims, 512, 512);
         if (epoch2http(&ims, ifmodifiedsince)) {
+            string_free(&ims);
             retval = 2;
             goto bail_out;
         }
-        string_concat_sprintf(&request, "If-Modified-Since: %S\r\n", &ims);
+        if (string_concat_sprintf(&request, "If-Modified-Since: %S\r\n", &ims)) {
+            string_free(&ims);
+            retval = 2;
+            goto bail_out;
+        }
     }
-    string_concat(&request, "\r\n");
+    if (string_concat(&request, "Connection: close\r\n")) { retval=2; goto bail_out; };
+    if (string_concat(&request, "\r\n")) { retval=2; goto bail_out; }
 
     if (sendall(sfd, request.s, request._u._s.length, MSG_NOSIGNAL)) {
         retval = 3;
@@ -106,14 +113,15 @@ httprecv(int sfd, struct string* buf)
     size_t i;
     struct string oneline;
     int retval = 0;
+    int res;
     int BUFSIZE = 8192;
+    int isfirsthdr = 1;
 
     if ((b = malloc(BUFSIZE)) == NULL) return 1;
     string_init(&oneline, 512, 512);
 
     while(1) {
         bl = recv(sfd, b + bptr, BUFSIZE - bptr, 0);
-printf("%d | %d\n", bl, bptr);
         if (bl == 0) {
             if (bptr == 0) {
                 break;
@@ -125,7 +133,6 @@ printf("%d | %d\n", bl, bptr);
         bptr += bl;
         if ((*b == '\n') || (*b == '\r')) goto finished;
         for (i = 0; i < bptr; i++) {
-printf("%c", b[i]);
             if (b[i] == '\n') {
                 string_clear(&oneline);
                 if (string_concatb(&oneline, b, i)) { retval=1; goto bail_out; }
@@ -133,18 +140,45 @@ printf("%c", b[i]);
                 ++i;
                 memmove(b, b + i, bptr - i);
                 bptr -= i;
-string_putc(&oneline, 0);
-printf("HDR: =>%s<=\n", oneline.s);
+                if (isfirsthdr) {
+                    if (handle_header(&oneline, &res)) { retval=3; goto bail_out; }
+                    isfirsthdr = 0;
+                }
                 break;
             }
         }
     }
     finished:
 
+    if (isfirsthdr) { retval=3; goto bail_out; }
+
+    printf("HTTPRES: %d\n", res);
+
 bail_out:
     string_free(&oneline);
     free(b);
     return retval;
+}
+
+static int
+handle_header(struct string* s, int* httpres)
+{
+    char* b;
+    uintptr_t l, i;
+    char* p, * p2;
+
+    b = string_get(s);
+    l = string_length(s);
+    if (l < 4) return 3;
+    for (i = 0; i < l; i++) if (b[i] == 0) return 3;
+    if (string_putc(s, 0)) return 1;
+    if (memcmp(b, "HTTP", 4)) return 3;
+    if ((p = strchr(b, ' ')) == NULL) return 3;
+    if ((p2 = strchr(p + 1, ' ')) == NULL) return 3;
+    *p2 = 0;
+    *httpres = atoi(p);
+    *p2 = 32;
+    return 0;
 }
 
 static int
@@ -169,6 +203,7 @@ epoch2http(struct string* s, time_t time)
     struct tm* tm;
 
     tm = localtime(&time);
-    strftime(buf, 512, "%a, %d %b %Y %H:%M:%S %Z", tm);
+    // TODO: actually do convert to GMT!
+    strftime(buf, 512, "%a, %d %b %Y %H:%M:%S GMT", tm);
     return(string_concat(s, buf));
 }
