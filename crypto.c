@@ -178,13 +178,9 @@ int
 crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted) {
     int retval = 1;
     EVP_CIPHER_CTX ctx;
-    char *pos;
-    unsigned char inbuf[1024];
-    unsigned char outbuf[1024 + EVP_MAX_BLOCK_LENGTH];
-    int left;
-    int inbufused;
-    int outbufdone;
-    
+    int decryptspace;
+    int decryptdone;
+
     EVP_CIPHER_CTX_init(&ctx);
     if (!EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL,
         (unsigned char *)string_get(aes_key),
@@ -204,30 +200,31 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         goto bail_out;
     }
 
-    pos = string_get(ciphertext);
-    left = string_length(ciphertext);
-    while (left > 0) {
-        outbufdone = 0;
-        if (left > sizeof(inbuf)) {
-            inbufused = sizeof(inbuf);
-        } else {
-            inbufused = left;
-        }
-        memcpy(inbuf, pos, inbufused);
-        left -= inbufused;
-        pos += inbufused;
+    decryptspace = string_length(ciphertext) + EVP_MAX_BLOCK_LENGTH;
 
-        if (EVP_DecryptUpdate(&ctx, outbuf, &outbufdone, inbuf, inbufused)) {
-            string_concatb(decrypted, (char *)&outbuf, outbufdone);
-        } else {
-            fprintf(stderr, "crypto_aes_decrypt: decrypt failed\n");
-            ERR_print_errors_fp(stderr);
-            goto bail_out;
-        }
+    string_free(decrypted); /* free previous buffer */
+    string_init(decrypted, decryptspace, 1024);
+    if (string_size(decrypted) < decryptspace) {
+        fprintf(stderr, "crypto_aes_decrypt: decrypt buffer malloc error\n");
+        goto bail_out;
     }
     
-    if (EVP_DecryptFinal_ex(&ctx, outbuf, &outbufdone)) {
-        string_concatb(decrypted, (char *)&outbuf, outbufdone);
+    if (EVP_DecryptUpdate(&ctx, (unsigned char*)string_get(decrypted),
+            &decryptdone, (unsigned char*)string_get(ciphertext),
+            string_length(ciphertext))) {
+        /* TODO: need cleaner way: */
+        decrypted->_u._s.length = decryptdone;
+    } else {
+        fprintf(stderr, "crypto_aes_decrypt: decrypt failed\n");
+        ERR_print_errors_fp(stderr);
+        goto bail_out;
+    }
+    
+    if (EVP_DecryptFinal_ex(&ctx,
+            (unsigned char*)string_get(decrypted)+string_length(decrypted),
+            &decryptdone)) {
+        /* TODO: need cleaner way: */
+        decrypted->_u._s.length += decryptdone;
     } else {
         fprintf(stderr, "crypto_aes_decrypt: decrypt final failed\n");
         ERR_print_errors_fp(stderr);
