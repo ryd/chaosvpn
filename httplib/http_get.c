@@ -19,12 +19,15 @@ static int handle_header(struct string*, int*);
  * @param url URL to fetch
  * @param buffer buffer to fetch data into
  * @param ifmodifiedsince
+ * @param useragent
  * @param servererror
  * @param errormessage
  * @return zero on success, else errval (see HTTP_*-consts)
  */
 int
-http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int* servererror, struct string* errormessage)
+http_get(struct string* url, struct string* buffer,
+        time_t ifmodifiedsince, struct string* useragent,
+        int* servererror, struct string* /* unused - TBI */ errormessage)
 {
     struct string hostname;
     struct string path;
@@ -78,8 +81,8 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     }
 
     string_init(&request, 4096, 4096);
-    string_concat_sprintf(&request, "GET %S HTTP/1.1\r\nHost: %S\r\n",
-            &path, &hostname);
+    string_concat_sprintf(&request, "GET %S HTTP/1.1\r\nHost: %S\r\nUser-Agent: %S\r\n",
+            &path, &hostname, useragent);
     if (ifmodifiedsince) {
         string_init(&ims, 512, 512);
         if (epoch2http(&ims, ifmodifiedsince)) {
