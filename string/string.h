@@ -47,6 +47,26 @@ string_concats(struct string* s, struct string* ss)
     return string_concatb(s, ss->s, ss->_u._s.length);
 }
 
+static inline int
+string_ensurez(struct string* s)
+{
+    if (s->s)
+        if (s->s[s->_u._s.length - 1] == 0)
+            return 0;
+    if (string_putc(s, 0)) return 1;
+    --s->_u._s.length;
+    return 0;
+}
+
+static inline void
+string_mkstatic(struct string* s, char* z)
+{
+    s->s = z;
+    s->_u._s.growby = 0;
+    s->_u._s.size = strlen(z);
+    s->_u._s.length = strlen(z);
+}
+
 
 /* FUNCTIONS WORKING WITH PLAIN char* */
 /* ---------------------------------- */
