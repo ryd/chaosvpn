@@ -196,11 +196,11 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
     EVP_CIPHER_CTX_set_padding(&ctx, 1);
     
     if (string_length(aes_key) != EVP_CIPHER_CTX_key_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid key size, %d vs %d\n", string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
+        fprintf(stderr, "crypto_aes_decrypt: invalid key size (%d vs expected %d)\n", string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
         goto bail_out;
     }
     if (string_length(aes_iv) != EVP_CIPHER_CTX_iv_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid iv size, %d vs %d\n", string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
+        fprintf(stderr, "crypto_aes_decrypt: invalid iv size (%d vs expected %d)\n", string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
         goto bail_out;
     }
 
