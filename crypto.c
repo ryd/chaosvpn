@@ -134,7 +134,6 @@ int
 crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted) {
         int retval = 1;
         EVP_PKEY *pkey;
-        unsigned char *outbuf;
 
         /* load private key into openssl */
         pkey = crypto_load_key(privkey, true);
@@ -149,25 +148,26 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
             goto bail_out;
         }
 
-        outbuf = malloc(EVP_PKEY_size(pkey));
-        if (outbuf == NULL) {
+        string_free(decrypted); /* just to be sure */
+        string_init(decrypted, EVP_PKEY_size(pkey), 512);
+        if (string_size(decrypted) < EVP_PKEY_size(pkey)) {
             fprintf(stderr, "crypto_rsa_decrypt: malloc error.\n");
-            goto bail_out;
         }
         
         retval = RSA_private_decrypt(string_length(ciphertext),
-            (unsigned char*)string_get(ciphertext), outbuf,
+            (unsigned char*)string_get(ciphertext),
+            (unsigned char*)string_get(decrypted),
             pkey->pkey.rsa,
             RSA_PKCS1_OAEP_PADDING);
-        if (retval != -1) {
-            string_concatb(decrypted, (char *)outbuf, retval);
+        if (retval >= 0) {
+            /* TODO: need cleaner way: */
+            decrypted->_u._s.length = retval;
             retval = 0;
         } else {
             retval = 1;
             fprintf(stderr, "crypto_rsa_decrypt: rsa decrypt failed.\n");
             ERR_print_errors_fp(stderr);
         }
-        free(outbuf);
 
 bail_out:
         EVP_PKEY_free(pkey);
