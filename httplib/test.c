@@ -12,6 +12,7 @@ main(int argc, char** argv)
     struct string buffer;
     struct string inp;
     struct string em;
+    int res, ser;
 
     --argc; ++argv;
 
@@ -22,8 +23,15 @@ puts(*argv);
     string_lazyinit(&buffer, 8192);
     string_lazyinit(&em, 512);
     printf("calling geturl: %d\n",
-            http_get(&inp, &buffer, 123, &em, &em));
-    printf("Res: %s\n", buffer.s);
+            res = http_get(&inp, &buffer, 123, &ser, &em));
+    if (res == 0) {
+        if (ser == 200) {
+            printf("Res: %s\n", buffer.s);
+        } else {
+            printf("Err: %d\n", ser);
+            printf("Res: %s\n", buffer.s);
+        }
+    }
 
 }
 

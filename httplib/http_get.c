@@ -4,12 +4,14 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "../string/string.h"
+#include "httplib.h"
 
 static int epoch2http(struct string*, time_t);
 static int sendall(int, void*, size_t, int);
-static int httprecv(int, struct string*);
+static int httprecv(int, struct string*, int*);
 static int handle_header(struct string*, int*);
 
 /**
@@ -32,6 +34,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     int retval = 0;
     struct addrinfo hints, *res, *rp;
     struct string ims;
+    char s_port[16];
 
     string_init(&hostname, 4096, 4096);
     string_init(&path, 4096, 4096);
@@ -47,7 +50,12 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     hints.ai_flags = 0;
     hints.ai_protocol = 0;
 
-    if ((retval = getaddrinfo (string_get(&hostname), "http", &hints, &res))) {
+    if (string_ensurez(&hostname)) {
+        string_free(&hostname);
+        return 1;
+    }
+    snprintf(s_port, 16, "%d", port);
+    if ((retval = getaddrinfo(string_get(&hostname), s_port, &hints, &res))) {
         return retval;
     }
 
@@ -94,7 +102,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
         goto bail_out;
     }
 
-    if ((retval = httprecv(sfd, buffer))) {
+    if ((retval = httprecv(sfd, buffer, servererror))) {
         goto bail_out;
     }
 
@@ -107,14 +115,13 @@ bail_out:
 }
 
 static int
-httprecv(int sfd, struct string* buf)
+httprecv(int sfd, struct string* buf, int* httpres)
 {
     char* b;
-    size_t bl, bptr = 0;
+    ssize_t bl, bptr = 0;
     size_t i;
     struct string oneline;
     int retval = 0;
-    int res;
     int BUFSIZE = 8192;
     int isfirsthdr = 1;
 
@@ -138,11 +145,13 @@ httprecv(int sfd, struct string* buf)
                 string_clear(&oneline);
                 if (string_concatb(&oneline, b, i)) { retval=1; goto bail_out; }
                 if (oneline.s[oneline._u._s.length - 1] == '\r') --oneline._u._s.length;
-                ++i;
-                memmove(b, b + i, bptr - i);
+                if (++i >= bptr) { retval=3; goto bail_out; }
+                if (bptr != i) {
+                    memmove(b, b + i, bptr - i);
+                }
                 bptr -= i;
                 if (isfirsthdr) {
-                    if (handle_header(&oneline, &res)) { retval=3; goto bail_out; }
+                    if (handle_header(&oneline, httpres)) { retval=3; goto bail_out; }
                     isfirsthdr = 0;
                 }
                 break;
@@ -153,7 +162,6 @@ httprecv(int sfd, struct string* buf)
 
     if (isfirsthdr) { retval=3; goto bail_out; }
 
-    printf("HTTPRES: %d\n", res);
     bl = 0;
     if (bptr > 2) {
         if ((b[0] == '\r') || (b[0] == '\n')) {
