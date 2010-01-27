@@ -41,6 +41,12 @@ static inline uintptr_t string_length(struct string *s) {
     return s->_u._s.length;
 }
 
+static inline int
+string_concats(struct string* s, struct string* ss)
+{
+    return string_concatb(s, ss->s, ss->_u._s.length);
+}
+
 
 /* FUNCTIONS WORKING WITH PLAIN char* */
 /* ---------------------------------- */

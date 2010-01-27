@@ -21,6 +21,7 @@ int string_concat_sprintf(struct string* s, const char *msg, ...)
 {
     va_list args;
     char* a_s;
+    struct string* a_S;
     char curchar;
     int a_i;
     char cfs[STRING_CFS_SIZE]; /* complex format string */
@@ -42,6 +43,11 @@ int string_concat_sprintf(struct string* s, const char *msg, ...)
             case 's':
                 a_s = va_arg(args, char*);
                 if (string_concat(s, a_s)) return 1;
+                break;
+
+            case 'S':
+                a_S = va_arg(args, struct string*);
+                if (string_concats(s, a_S)) return 1;
                 break;
 
             case 'd':

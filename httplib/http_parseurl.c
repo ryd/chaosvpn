@@ -13,7 +13,7 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
     uintptr_t i;
     int urlpart = 0;
     struct string portnum;
-    int retval = 0;
+    int retval = 1;
 
     string_lazyinit(&portnum, 16);
     s = string_get(url);
@@ -35,7 +35,7 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
                 continue;
 
             default:
-                string_putc(hostname, s[i]);
+                if (string_putc(hostname, s[i])) { retval=2; goto bail_out; }
             }
             break;
 
