@@ -591,7 +591,7 @@ bail_out:
 	string_free(&aes_iv);
 
 	// make sure result is null-terminated
-	// ar_extract() does not guarantee this!
+	// ar_extract() and crypto_*_decrypt() do not guarantee this!
 	string_putc(http_response, '\0');
 
 	return retval;
