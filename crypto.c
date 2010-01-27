@@ -42,47 +42,65 @@ openssl dgst \
 
 */
 
+EVP_PKEY *
+crypto_load_key(const char *key, bool is_private) {
+        EVP_PKEY *pkey;
+	char *tmpname;
+	int keyfd;
+	FILE *keyfp;
+    
+        /* create tempfile and store key into it */
+        tmpname = strdup("/tmp/tmp.XXXXXX");
+        keyfd = mkstemp(tmpname);
+        free(tmpname);
+        if (keyfd == -1) {
+            fprintf(stderr, "crypto_load_key: error creating tempfile\n");
+            return NULL;
+        }
+        if (write(keyfd, key, strlen(key)) != strlen(key)) {
+            close(keyfd);
+            fprintf(stderr, "crypto_load_key: tempfile write error\n");
+            return NULL;
+        }
+        keyfp = fdopen(keyfd, "rw");
+        if (keyfp == NULL) {
+            close(keyfd);
+            fprintf(stderr, "crypto_load_key: tempfile fdopen() failed\n");
+            return NULL;
+        }
+        fseek(keyfp, 0, SEEK_SET);
+
+        /* read and parse key */
+        if (is_private) {
+            pkey = PEM_read_PrivateKey(keyfp, NULL, NULL, NULL);
+        } else {
+            pkey = PEM_read_PUBKEY(keyfp, NULL, NULL, NULL);
+        }
+        fclose(keyfp);
+        if (pkey == NULL) {
+            fprintf(stderr, "crypto_load_key: loading and parsing key failed\n");
+            ERR_print_errors_fp(stderr);
+            return NULL;
+        }
+        
+        return pkey;
+}
+
+
 int
 crypto_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
 {
-	char *tmpname;
 	int err;
 	EVP_MD_CTX md_ctx;
 	EVP_PKEY *pkey;
-	int pubkeyfd;
-	FILE *pubkeyfp;
 
 	/* Just load the crypto library error strings, not SSL */
 	ERR_load_crypto_strings();
 	
-
-        /* create tempfile and store public key into it */
-        tmpname = strdup("/tmp/tmp.XXXXXX");
-        pubkeyfd = mkstemp(tmpname);
-        free(tmpname);
-        if (pubkeyfd == -1) {
-            fprintf(stderr, "crypto_verify_signature: error creating tempfile\n");
-            return 1;
-        }
-        if (write(pubkeyfd, pubkey, strlen(pubkey)) != strlen(pubkey)) {
-            close(pubkeyfd);
-            fprintf(stderr, "crypto_verify_signature: tempfile write error\n");
-            return 1;
-        }
-        pubkeyfp = fdopen(pubkeyfd, "rw");
-        if (pubkeyfp == NULL) {
-            close(pubkeyfd);
-            fprintf(stderr, "crypto_verify_signature: tempfile fdopen() failed\n");
-            return 1;
-        }
-        fseek(pubkeyfp, 0, SEEK_SET);
-
-        /* read and parse public key */
-        pkey = PEM_read_PUBKEY(pubkeyfp, NULL, NULL, NULL);
-        fclose(pubkeyfp);
+	/* load public key into openssl structure */
+        pkey = crypto_load_key(pubkey, false);
         if (pkey == NULL) {
-            fprintf(stderr, "crypto_verify_signature: loading and parsing public key failed\n");
-            ERR_print_errors_fp(stderr);
+            fprintf(stderr, "crypto_verify_signature: key loading failed\n");
             return 1;
         }
         
