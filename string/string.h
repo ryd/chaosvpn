@@ -59,9 +59,9 @@ static inline bool str_is_nonempty(char *s) {
 
 static inline bool str_is_true(char *s, bool def) {
     if (str_is_nonempty(s)) {
-        if (strcasecmp(s, "0")==0 || strcasecmp(s,"no")==0) {
+        if (strcmp(s, "0")==0 || strcasecmp(s,"no")==0) {
             return false;
-        } else if (strcasecmp(s, "1")==0 || strcasecmp(s,"yes")==0) {
+        } else if (strcmp(s, "1")==0 || strcasecmp(s,"yes")==0) {
             return true;
         } else {
             return def; /* TODO: something better needed */
