@@ -16,7 +16,6 @@
 #include "list.h"
 #include "main.h"
 #include "tun.h"
-#include "http.h"
 #include "parser.h"
 #include "tinc.h"
 #include "settings.h"
