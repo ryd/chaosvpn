@@ -1,4 +1,5 @@
 #include "../string/string.h"
+#include "httplib.h"
 
 
 /**
@@ -13,48 +14,48 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
     uintptr_t i;
     int urlpart = 0;
     struct string portnum;
-    int retval = 0;
+    int retval = HTTP_EOK;
 
     string_lazyinit(&portnum, 16);
     s = string_get(url);
     l = string_length(url);
-    if (l < 7) return 1;
-    if (memcmp(s, "http://", 7)) return 1;
-    if (string_concat(path, "/")) { retval=1; goto bail_out; }
+    if (l < 7) return HTTP_EINVURL;
+    if (memcmp(s, "http://", 7)) return HTTP_EINVURL;
+    if (string_concat(path, "/")) { retval=HTTP_EINVURL; goto bail_out; }
     for (i = 7; i < l; i++) {
         switch(urlpart) {
         case 0:
             switch(s[i]) {
             case ':':
-                if (string_length(hostname) < 1) return 1;
+                if (string_length(hostname) < 1) return HTTP_EINVURL;
                 urlpart = 1;
                 continue;
 
             case '/':
-                if (string_length(hostname) < 1) return 1;
+                if (string_length(hostname) < 1) return HTTP_EINVURL;
                 urlpart = 2;
                 continue;
 
             default:
-                if (string_putc(hostname, s[i])) { retval=2; goto bail_out; }
+                if (string_putc(hostname, s[i])) { retval=HTTP_ENOMEM; goto bail_out; }
             }
             break;
 
         case 1:
             if (s[i] == '/') { urlpart = 2; break; }
-            if ((s[i] < '0') || (s[i] > '9')) { retval=1; goto bail_out; }
-            if (string_putc(&portnum, s[i])) { retval=2; goto bail_out; }
+            if ((s[i] < '0') || (s[i] > '9')) { retval=HTTP_EINVURL; goto bail_out; }
+            if (string_putc(&portnum, s[i])) { retval=HTTP_ENOMEM; goto bail_out; }
             break;
 
         case 2:
-            if (string_concatb(path, s + i, l - i)) { retval=1; goto bail_out; }
-            { retval=0; goto bail_out_check_port; }
+            if (string_concatb(path, s + i, l - i)) { retval=HTTP_ENOMEM; goto bail_out; }
+            { retval=HTTP_EOK; goto bail_out_check_port; }
         }
     }
 
 bail_out_check_port:
     if (string_get(&portnum)) {
-        if (string_ensurez(&portnum)) { retval=1; goto bail_out; }
+        if (string_ensurez(&portnum)) { retval=HTTP_ENOMEM; goto bail_out; }
         *port = atoi(string_get(&portnum));
     } else {
         *port = 80;

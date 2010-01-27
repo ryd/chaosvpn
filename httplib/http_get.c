@@ -21,7 +21,7 @@ static int handle_header(struct string*, int*);
  * @param ifmodifiedsince
  * @param servererror
  * @param errormessage
- * @return 0 on success, 1 on url format errors, 2 on memory errors, 3 on network errors, 4 on server errors
+ * @return zero on success, else errval (see HTTP_*-consts)
  */
 int
 http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int* servererror, struct string* errormessage)
@@ -31,7 +31,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     struct string request;
     int port;
     int sfd;
-    int retval = 0;
+    int retval = HTTP_EOK;
     struct addrinfo hints, *res, *rp;
     struct string ims;
     char s_port[16];
@@ -52,7 +52,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
 
     if (string_ensurez(&hostname)) {
         string_free(&hostname);
-        return 1;
+        return HTTP_ENOMEM;
     }
     snprintf(s_port, 16, "%d", port);
     if ((retval = getaddrinfo(string_get(&hostname), s_port, &hints, &res))) {
@@ -74,7 +74,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     if (rp == NULL) {
         string_free(&hostname);
         string_free(&path);
-        return 3;
+        return HTTP_ENETERR;
     }
 
     string_init(&request, 4096, 4096);
@@ -84,12 +84,12 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
         string_init(&ims, 512, 512);
         if (epoch2http(&ims, ifmodifiedsince)) {
             string_free(&ims);
-            retval = 2;
+            retval = HTTP_ENOMEM;
             goto bail_out;
         }
         if (string_concat_sprintf(&request, "If-Modified-Since: %S\r\n", &ims)) {
             string_free(&ims);
-            retval = 2;
+            retval = HTTP_ENOMEM;
             goto bail_out;
         }
         string_free(&ims);
@@ -98,7 +98,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
     if (string_concat(&request, "\r\n")) { retval=2; goto bail_out; }
 
     if (sendall(sfd, request.s, request._u._s.length, MSG_NOSIGNAL)) {
-        retval = 3;
+        retval = HTTP_ENETERR;
         goto bail_out;
     }
 
@@ -121,11 +121,11 @@ httprecv(int sfd, struct string* buf, int* httpres)
     ssize_t bl, bptr = 0;
     size_t i;
     struct string oneline;
-    int retval = 0;
+    int retval = HTTP_EOK;
     int BUFSIZE = 8192;
     int isfirsthdr = 1;
 
-    if ((b = malloc(BUFSIZE)) == NULL) return 1;
+    if ((b = malloc(BUFSIZE)) == NULL) return HTTP_ENOMEM;
     string_init(&oneline, 512, 512);
 
     while(1) {
@@ -135,7 +135,7 @@ httprecv(int sfd, struct string* buf, int* httpres)
                 break;
             }
         } else if (bl < 0) {
-            retval = 3;
+            retval = HTTP_ENETERR;
             goto bail_out;
         }
         bptr += bl;
@@ -179,6 +179,8 @@ httprecv(int sfd, struct string* buf, int* httpres)
         if (string_concatb(buf, b, bl)) { retval=1; goto bail_out; }
     }
 
+    if (retval == HTTP_EOK) if (*httpres != 200) retval = HTTP_ESRVERR;
+
 bail_out:
     close(sfd);
     string_free(&oneline);
@@ -195,16 +197,16 @@ handle_header(struct string* s, int* httpres)
 
     b = string_get(s);
     l = string_length(s);
-    if (l < 4) return 3;
-    for (i = 0; i < l; i++) if (b[i] == 0) return 3;
-    if (string_putc(s, 0)) return 1;
-    if (memcmp(b, "HTTP", 4)) return 3;
-    if ((p = strchr(b, ' ')) == NULL) return 3;
-    if ((p2 = strchr(p + 1, ' ')) == NULL) return 3;
+    if (l < 4) return HTTP_ENETERR;
+    for (i = 0; i < l; i++) if (b[i] == 0) return HTTP_ENETERR;
+    if (string_putc(s, 0)) return HTTP_ENOMEM;
+    if (memcmp(b, "HTTP", 4)) return HTTP_ENETERR;
+    if ((p = strchr(b, ' ')) == NULL) return HTTP_ENETERR;
+    if ((p2 = strchr(p + 1, ' ')) == NULL) return HTTP_ENETERR;
     *p2 = 0;
     *httpres = atoi(p);
     *p2 = 32;
-    return 0;
+    return HTTP_EOK;
 }
 
 static int
@@ -219,7 +221,7 @@ sendall(int sfd, void* buf, size_t len, int flags)
         }
         bas += res; len -= res;
     }
-    return 0;
+    return HTTP_EOK;
 }
 
 static int
