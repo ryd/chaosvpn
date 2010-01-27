@@ -4,8 +4,10 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "../string/string.h"
+#include "httplib.h"
 
 static int epoch2http(struct string*, time_t);
 static int sendall(int, void*, size_t, int);
