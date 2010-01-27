@@ -153,8 +153,25 @@ httprecv(int sfd, struct string* buf)
     if (isfirsthdr) { retval=3; goto bail_out; }
 
     printf("HTTPRES: %d\n", res);
+    bl = 0;
+    if (bptr > 2) {
+        if ((b[0] == '\r') || (b[0] == '\n')) {
+            ++bl;
+            if ((b[1] == '\r') || (b[1] == '\n')) {
+                ++bl;
+            }
+        }
+    }
+    if (string_concatb(buf, b + bl, bptr - bl)) { retval=1; goto bail_out; }
+    while(1) {
+        bl = recv(sfd, b, BUFSIZE, 0);
+        if (bl == 0) break;
+        if (bl < 0) { retval=3; goto bail_out; }
+        if (string_concatb(buf, b, bl)) { retval=1; goto bail_out; }
+    }
 
 bail_out:
+    close(sfd);
     string_free(&oneline);
     free(b);
     return retval;

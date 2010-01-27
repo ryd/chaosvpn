@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "../string/string.h"
 #include "httplib.h"
@@ -21,7 +22,7 @@ puts(*argv);
     string_lazyinit(&buffer, 8192);
     string_lazyinit(&em, 512);
     printf("calling geturl: %d\n",
-            http_get(&inp, &buffer, 1264589818, &em, &em));
+            http_get(&inp, &buffer, 123, &em, &em));
     printf("Res: %s\n", buffer.s);
 
 }
