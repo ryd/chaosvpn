@@ -146,6 +146,7 @@ main (int argc,char *argv[]) {
 	daemon_free(&di_tincd);
 	settings_free_all();
 	string_free(&oldconfig);
+	free(config); config = NULL;
 
 	return 0;
 }
@@ -349,7 +350,7 @@ main_init(struct config *config) {
 					"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
 		exit(1);
 	}
-	if ((s_update_interval < 300) && (!DONOTFORK)) {
+	if ((s_update_interval < 60) && (!DONOTFORK)) {
 		(void)fputs("Error: $update_interval may not be <300.\n", stderr);
 		exit(1);
 	}
