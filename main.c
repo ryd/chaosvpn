@@ -35,6 +35,8 @@ static char* CONFIG_FILE = "/etc/tinc/chaosvpn.conf";
 static int DONOTFORK = 0;
 
 static time_t nextupdate = 0;
+static struct string HTTP_USER_AGENT;
+
 
 static int main_check_root(void);
 static int main_create_backup(struct config*);
@@ -58,8 +60,6 @@ static void sigint(int);
 static void sigint_holdon(int);
 static void usage(void);
 
-static struct string HTTP_USER_AGENT;
-
 int
 main (int argc,char *argv[]) {
 	struct config *config;
@@ -67,7 +67,8 @@ main (int argc,char *argv[]) {
 	int err;
 	struct string oldconfig;
 
-	string_mkstatic(&HTTP_USER_AGENT, "ChaosVPN/0.1");
+	string_init(&HTTP_USER_AGENT, 64, 16);
+	string_concat_sprintf(&HTTP_USER_AGENT, "ChaosVPN/%s", VERSION);
 
 	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
