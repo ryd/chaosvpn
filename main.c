@@ -6,6 +6,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -33,9 +34,12 @@ extern FILE *yyin;
 static char* CONFIG_FILE = "/etc/tinc/chaosvpn.conf";
 static int DONOTFORK = 0;
 
+static time_t nextupdate = 0;
+
 static int main_check_root(void);
 static int main_create_backup(struct config*);
 static int main_cleanup_hosts_subdir(struct config*);
+static int main_fetch_config(struct config* config, struct string* oldconfig);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 /*@null@*/ static struct config* main_initialize_config(void);
@@ -44,6 +48,7 @@ static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(void);
+static void main_updated(void);
 static int main_write_config_hosts(struct config*);
 static int main_write_config_tinc(struct config*);
 static int main_write_config_up(struct config*);
@@ -58,7 +63,7 @@ main (int argc,char *argv[]) {
 	struct config *config;
 	char tincd_debugparam[32];
 	int err;
-	struct string http_response;
+	struct string oldconfig;
 
 	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
@@ -73,42 +78,8 @@ main (int argc,char *argv[]) {
 	err = main_init(config);
 	if (err) return err;
 
-	(void)fputs("Fetching information:", stdout);
-	(void)fflush(stdout);
-
-	string_init(&http_response, 4096, 512);
-
-	err = main_request_config(config, &http_response);
-	if (err) return err;
-
-	err = main_parse_config(config, &http_response);
-	if (err) return err;
-
-	string_free(&http_response);
-
-	(void)fputs(".\n", stdout);
-
-	(void)fputs("Backing up old configs:", stdout);
-	(void)fflush(stdout);
-	if (main_create_backup(config)) {
-		(void)fputs("Unable to complete config backup.\n", stderr);
-		return 1;
-	}
-	(void)fputs(".\n", stdout);
-
-	(void)fputs("Cleanup previous host entries:", stdout);
-	(void)fflush(stdout);
-	if (main_cleanup_hosts_subdir(config)) {
-		(void)fputs("Unable to remove previous host subconfigs.\n", stderr);
-		return 1;
-	}
-	(void)fputs(".\n", stdout);
-
-	if (main_write_config_tinc(config)) return 1;
-	if (main_write_config_hosts(config)) return 1;
-	if (main_write_config_up(config)) return 1;
-
-	// if (main_create_pidfile()) return 1;
+	string_init(&oldconfig, 4096, 4096);
+	main_fetch_config(config, &oldconfig);
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
 	
@@ -126,7 +97,7 @@ main (int argc,char *argv[]) {
 		main_unlink_pidfile();
 	}
 
-	main_free_parsed_info(config);
+	main_updated();
 
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (daemon_start(&di_tincd)) {
@@ -135,9 +106,34 @@ main (int argc,char *argv[]) {
 	}
 
 	if (!DONOTFORK) {
-		while (!r_sigterm && !r_sigint) {
-			(void)sleep(2);
-		}
+		do {
+		ml_cont:
+			main_updated();
+			while (1) {
+				(void)sleep(2);
+				if (nextupdate < time(NULL)) {
+					break;
+				}
+				if (r_sigterm || r_sigint) {
+					goto bail_out;
+				}
+			}
+			switch (main_fetch_config(config, &oldconfig)) {
+			case -1:
+				(void)fputs("\x1B[31mError while updating config. Not terminating tincd.\x1B[0m\n", stderr);
+				goto ml_cont;
+
+			case 1:
+				(void)fputs("\x1B[31mNo update needed.\x1B[0m\n", stderr);
+				goto ml_cont;
+
+			default:;
+			}
+			puts("\x1B[31;1mTerminating tincd.\x1B[0m");
+			daemon_stop(&di_tincd, 5);
+		} while (!r_sigterm && !r_sigint);
+
+		bail_out:
 		puts("\x1B[31;1mTerminating tincd.\x1B[0m");
 		(void)signal(SIGTERM, SIG_IGN);
 		(void)signal(SIGINT, sigint_holdon);
@@ -147,8 +143,73 @@ main (int argc,char *argv[]) {
 
 	daemon_free(&di_tincd);
 	settings_free_all();
+	string_free(&oldconfig);
+	free(config); config = NULL;
 
 	return 0;
+}
+
+static void
+main_updated(void)
+{
+    nextupdate = time(NULL) + s_update_interval;
+}
+
+static int
+main_fetch_config(struct config* config, struct string* oldconfig)
+{
+	int err;
+	struct string http_response;
+
+	(void)fputs("Fetching information:", stdout);
+	(void)fflush(stdout);
+
+	string_init(&http_response, 4096, 512);
+
+	err = main_request_config(config, &http_response);
+	if (err) return -1;
+
+	if (string_equals(&http_response, oldconfig) == 0) {
+		string_free(&http_response);
+		return 1;
+	}
+
+	err = main_parse_config(config, &http_response);
+	if (err) {
+	    string_free(&http_response);
+        return -1;
+    }
+
+    /* replaced by string_move */
+	// string_free(&http_response);
+	string_free(oldconfig);
+	string_move(&http_response, oldconfig);
+
+	(void)fputs(".\n", stdout);
+
+	(void)fputs("Backing up old configs:", stdout);
+	(void)fflush(stdout);
+	if (main_create_backup(config)) {
+		(void)fputs("Unable to complete config backup.\n", stderr);
+		return -1;
+	}
+	(void)fputs(".\n", stdout);
+
+	(void)fputs("Cleanup previous host entries:", stdout);
+	(void)fflush(stdout);
+	if (main_cleanup_hosts_subdir(config)) {
+		(void)fputs("Unable to remove previous host subconfigs.\n", stderr);
+		return -1;
+	}
+	(void)fputs(".\n", stdout);
+
+	if (main_write_config_tinc(config)) return -1;
+	if (main_write_config_hosts(config)) return -1;
+	if (main_write_config_up(config)) return -1;
+
+	main_free_parsed_info(config);
+
+    return 0;
 }
 
 static void
@@ -280,6 +341,18 @@ main_init(struct config *config) {
 	}
 	yyparse();
 	fclose(yyin);
+
+	if ((s_update_interval == 0) && (!DONOTFORK)) {
+		(void)fputs("Error: you have not configured a remote config update interval.\n" \
+					"($update_interval) Please configure an interval (3600 - 7200 seconds\n" \
+					"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
+		exit(1);
+	}
+	if ((s_update_interval < 60) && (!DONOTFORK)) {
+		(void)fputs("Error: $update_interval may not be <60.\n", stderr);
+		exit(1);
+	}
+
 
 	// first copy all parsed params into config structure
 	if (s_my_peerid != NULL)		config->peerid			= s_my_peerid;

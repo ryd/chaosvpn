@@ -31,6 +31,8 @@ int string_putint(struct string*, int);
 void string_free(struct string*);
 char* string_get(struct string*);
 int string_init(struct string*, uintptr_t, uintptr_t);
+void string_move(struct string*, struct string*);
+int string_equals(struct string*, struct string*);
 
 static inline uintptr_t string_length(struct string *s) {
     return s->_u._s.length;
