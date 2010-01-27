@@ -129,4 +129,47 @@ bailout_ctx_cleanup:
         //printf ("Signature Verified Ok.\n");
 	return err;
 }
-    
+
+int
+crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted) {
+        int retval = 1;
+        EVP_PKEY *pkey;
+        unsigned char *outbuf;
+
+        /* load private key into openssl */
+        pkey = crypto_load_key(privkey, true);
+        if (pkey == NULL) {
+            fprintf(stderr, "crypto_rsa_decrypt: key loading failed.\n");
+            return 1;
+        }
+
+        /* check length of ciphertext */
+        if (string_length(ciphertext) != EVP_PKEY_size(pkey)) {
+            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key.\n");
+            goto bail_out;
+        }
+
+        outbuf = malloc(EVP_PKEY_size(pkey));
+        if (outbuf == NULL) {
+            fprintf(stderr, "crypto_rsa_decrypt: malloc error.\n");
+            goto bail_out;
+        }
+        
+        retval = RSA_private_decrypt(string_length(ciphertext),
+            (unsigned char*)string_get(ciphertext), outbuf,
+            pkey->pkey.rsa,
+            RSA_PKCS1_OAEP_PADDING);
+        if (retval != -1) {
+            string_concatb(decrypted, (char *)outbuf, retval);
+            retval = 0;
+        } else {
+            retval = 1;
+            fprintf(stderr, "crypto_rsa_decrypt: rsa decrypt failed.\n");
+            ERR_print_errors_fp(stderr);
+        }
+        free(outbuf);
+
+bail_out:
+        EVP_PKEY_free(pkey);
+        return retval;
+}
