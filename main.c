@@ -172,7 +172,10 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	string_init(&http_response, 4096, 512);
 
 	err = main_request_config(config, &http_response);
-	if (err) return err;
+	if (err) {
+		string_free(&http_response);
+		return err;
+	}
 
 	if (string_equals(&http_response, oldconfig) == 0) {
 		string_free(&http_response);
