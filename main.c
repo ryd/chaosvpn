@@ -129,9 +129,6 @@ main (int argc,char *argv[]) {
 			default:;
 			}
 			puts("\x1B[31;1mTerminating tincd.\x1B[0m");
-			(void)signal(SIGTERM, SIG_IGN);
-			(void)signal(SIGINT, sigint_holdon);
-			(void)signal(SIGCHLD, SIG_IGN);
 			daemon_stop(&di_tincd, 5);
 		} while (!r_sigterm && !r_sigint);
 
@@ -351,7 +348,7 @@ main_init(struct config *config) {
 		exit(1);
 	}
 	if ((s_update_interval < 60) && (!DONOTFORK)) {
-		(void)fputs("Error: $update_interval may not be <300.\n", stderr);
+		(void)fputs("Error: $update_interval may not be <60.\n", stderr);
 		exit(1);
 	}
 
