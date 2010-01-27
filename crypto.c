@@ -145,7 +145,7 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
 
         /* check length of ciphertext */
         if (string_length(ciphertext) != EVP_PKEY_size(pkey)) {
-            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key.\n");
+            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key (%d vs %d).\n", string_length(ciphertext),EVP_PKEY_size(pkey));
             goto bail_out;
         }
 
@@ -172,4 +172,71 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
 bail_out:
         EVP_PKEY_free(pkey);
         return retval;
+}
+
+int
+crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted) {
+    int retval = 1;
+    EVP_CIPHER_CTX ctx;
+    char *pos;
+    unsigned char inbuf[1024];
+    unsigned char outbuf[1024 + EVP_MAX_BLOCK_LENGTH];
+    int left;
+    int inbufused;
+    int outbufdone;
+    
+    EVP_CIPHER_CTX_init(&ctx);
+    if (!EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL,
+        (unsigned char *)string_get(aes_key),
+        (unsigned char *)string_get(aes_iv))) {
+        fprintf(stderr, "crypto_aes_decrypt: init failed\n");
+        ERR_print_errors_fp(stderr);
+        goto bail_out;
+    }
+    EVP_CIPHER_CTX_set_padding(&ctx, 1);
+    
+    if (string_length(aes_key) != EVP_CIPHER_CTX_key_length(&ctx)) {
+        fprintf(stderr, "crypto_aes_decrypt: invalid key size, %d vs %d\n", string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
+        goto bail_out;
+    }
+    if (string_length(aes_iv) != EVP_CIPHER_CTX_iv_length(&ctx)) {
+        fprintf(stderr, "crypto_aes_decrypt: invalid iv size, %d vs %d\n", string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
+        goto bail_out;
+    }
+
+    pos = string_get(ciphertext);
+    left = string_length(ciphertext);
+    while (left > 0) {
+        outbufdone = 0;
+        if (left > sizeof(inbuf)) {
+            inbufused = sizeof(inbuf);
+        } else {
+            inbufused = left;
+        }
+        memcpy(inbuf, pos, inbufused);
+        left -= inbufused;
+        pos += inbufused;
+
+        if (EVP_DecryptUpdate(&ctx, outbuf, &outbufdone, inbuf, inbufused)) {
+            string_concatb(decrypted, (char *)&outbuf, outbufdone);
+        } else {
+            fprintf(stderr, "crypto_aes_decrypt: decrypt failed\n");
+            ERR_print_errors_fp(stderr);
+            goto bail_out;
+        }
+    }
+    
+    if (EVP_DecryptFinal_ex(&ctx, outbuf, &outbufdone)) {
+        string_concatb(decrypted, (char *)&outbuf, outbufdone);
+    } else {
+        fprintf(stderr, "crypto_aes_decrypt: decrypt final failed\n");
+        ERR_print_errors_fp(stderr);
+        goto bail_out;
+    }
+
+    retval = 0;
+
+bail_out:
+    EVP_CIPHER_CTX_cleanup(&ctx);
+    return retval;
 }
