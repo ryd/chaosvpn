@@ -49,6 +49,7 @@ struct config {
 	char *pidfile;
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;
+	struct string privkey;
 	struct peer_config *my_peer;
 	struct list_head peer_config;
 };

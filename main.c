@@ -314,6 +314,7 @@ main_initialize_config(void) {
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
 
+	string_lazyinit(&config->privkey, 2048);
 	INIT_LIST_HEAD(&config->peer_config);
 
 	return config;
@@ -322,6 +323,8 @@ main_initialize_config(void) {
 static int
 main_init(struct config *config) {
 	struct stat st; 
+	struct string privkey_name;
+
 	if (main_check_root()) {
 		fprintf(stderr, "Error - wrong user - please start as root user\n");
 		return 1;
@@ -391,6 +394,17 @@ main_init(struct config *config) {
 		return 1;
 	}
 
+	string_init(&privkey_name, 1024, 512);
+	if (string_concat_sprintf(&privkey_name, "%s/rsa_key.priv", config->base_path)) { return 1; }
+
+	string_free(&config->privkey); /* just to be sure */
+	if (fs_read_file(&config->privkey, string_get(&privkey_name))) {
+		fprintf(stderr, "error: can't read private rsa key at %s\n", string_get(&privkey_name));
+		string_free(&privkey_name);
+		return 1;
+	}
+	string_free(&privkey_name);
+
 	return 0;
 }
 
@@ -399,15 +413,28 @@ main_request_config(struct config *config, struct string *http_response) {
 	int retval = 1;
 	struct string httpurl;
 	struct string archive;
+	struct string chaosvpn_version;
 	struct string signature;
+	struct string encrypted;
+	struct string rsa_decrypted;
+	struct string aes_key;
+	struct string aes_iv;
+	char *buf;
 
 	/* fetch main configfile */
 
+	/* basic string inits first, makes for way easier error-cleanup */
+	string_init(&httpurl, 512, 128);
 	string_init(&archive, 8192, 8192);
+	string_lazyinit(&chaosvpn_version, 16);
+	string_lazyinit(&signature, 1024);
+	string_lazyinit(&encrypted, 2048);
+	string_lazyinit(&rsa_decrypted, 1024);
+	string_lazyinit(&aes_key, 64);
+	string_lazyinit(&aes_iv, 64);
 
 	//(void)fputs("Fetching information:", stdout);
 	//void)fflush(stdout);
-	string_init(&httpurl, 512, 512);
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
@@ -419,36 +446,130 @@ main_request_config(struct config *config, struct string *http_response) {
 	string_free(&httpurl);
 	//(void)fputs(".\n", stdout);
 
-	if (ar_extract(&archive, "cleartext", http_response)) {
-		fprintf(stderr, "cleartext part missing - cant work with this config\n");
+
+	/* check if we received a new-style ar archive */
+	if (!ar_is_ar_file(&archive)) {
+		/* if we do not expect a signature than we can still use it
+		   as the raw config (for debugging) */
+
+		if (str_is_empty(config->masterdata_signkey)) {
+			/* move whole received data to http_response */
+			/* free old contents from http_response first */
+			string_free(http_response);
+			string_move(&archive, http_response);
+
+			retval = 0; /* no error */
+		} else {
+			fprintf(stderr, "Invalid data format received from %s\n", config->master_url);
+		}
 		goto bail_out;
 	}
+
+
+	/* check chaosvpn-version in received ar archive */
+	if (ar_extract(&archive, "chaosvpn-version", &chaosvpn_version)) {
+		string_free(&chaosvpn_version);
+		fprintf(stderr, "chaosvpn-version missing - cant work with this config\n");
+		goto bail_out;
+	}
+	string_putc(&chaosvpn_version, '\0');
+	if (strcmp(string_get(&chaosvpn_version), "2") != 0) {
+		string_free(&chaosvpn_version);
+		fprintf(stderr, "unusable data-version from backend, we only support version 2!\n");
+		goto bail_out;
+	}
+	string_free(&chaosvpn_version);
+
 	if (str_is_empty(config->masterdata_signkey)) {
-		/* no public key defined, nothing to verify against */
+		/* no public key defined, nothing to verify against or to decrypt with */
+		/* expect cleartext part */
+
+		if (ar_extract(&archive, "cleartext", http_response)) {
+			fprintf(stderr, "cleartext part missing - cant work with this config\n");
+			goto bail_out;
+		}
+
 		/* return success */
 		retval = 0;
 		goto bail_out;
 	}
 
 
-	/* fetch signature */
-
-	string_init(&signature, 512, 512);
-	if (ar_extract(&archive, "signature", &signature)) {
-		fprintf(stderr, "signature part in data from %s missing\n", config->master_url);
-		goto bail_out_signature;
+	/* get and decrypt rsa data block */
+	if (ar_extract(&archive, "rsa", &encrypted)) {
+		fprintf(stderr, "rsa part in data from %s missing\n", config->master_url);
+		goto bail_out;
 	}
+	if (crypto_rsa_decrypt(&encrypted, string_get(&config->privkey), &rsa_decrypted)) {
+		fprintf(stderr, "rsa decrypt failed\n");
+		goto bail_out;
+	}
+	string_free(&encrypted);
 
+	/* check and copy data decrypted from rsa block */
+	/* structure:
+		1 byte length aes key
+		1 byte length aes iv
+		x bytes aes key
+		y bytes aes iv
+	   */
+	if (string_length(&rsa_decrypted) < 2) {
+		fprintf(stderr, "rsa decrypt result too short\n");
+		goto bail_out;
+	}
+	buf = string_get(&rsa_decrypted);
+	if (buf[0] != 32) {
+		fprintf(stderr, "invalid aes keysize - expected 32, received %d\n", buf[0]);
+		goto bail_out;
+	}
+	if (buf[1] != 16) {
+		fprintf(stderr, "invalid aes ivsize - expected 16, received %d\n", buf[1]);
+		goto bail_out;
+	}
+	if (string_length(&rsa_decrypted) < buf[0]+buf[1]+2) {
+		fprintf(stderr, "rsa decrypt result too short\n");
+		goto bail_out;
+	}
+	string_concatb(&aes_key, buf+2, buf[0]);
+	string_concatb(&aes_iv, buf+2+buf[0], buf[1]);
+
+	/* get and decrypt config data */
+	if (ar_extract(&archive, "encrypted", &encrypted)) {
+		fprintf(stderr, "encrypted data part in data from %s missing\n", config->master_url);
+		goto bail_out;
+	}
+	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, http_response)) {
+		fprintf(stderr, "data decrypt failed\n");
+		goto bail_out;
+	}
+	string_free(&encrypted);
+
+	/* get and decrypt signature */
+	if (ar_extract(&archive, "signature", &encrypted)) {
+		fprintf(stderr, "signature part in data from %s missing\n", config->master_url);
+		goto bail_out;
+	}
+	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &signature)) {
+		fprintf(stderr, "signature decrypt failed\n");
+		goto bail_out;
+	}
+	string_free(&encrypted);
 
 	/* verify signature */
-	retval = crypto_verify_signature(http_response, &signature, config->masterdata_signkey);
+	retval = crypto_rsa_verify_signature(http_response, &signature, config->masterdata_signkey);
 
 
-bail_out_signature:
-	string_free(&signature);
 bail_out:
+	/* free all strings, even if we may already freed them above */
+	/* double string_free() is ok, and the error cleanup this way is easier */
 	string_free(&httpurl);
 	string_free(&archive);
+	string_free(&chaosvpn_version);
+	string_free(&signature);
+	string_free(&encrypted);
+	string_free(&rsa_decrypted);
+	string_free(&aes_key);
+	string_free(&aes_iv);
 
 	// make sure result is null-terminated
 	// ar_extract() does not guarantee this!
