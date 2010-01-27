@@ -54,6 +54,7 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
 
 bail_out_check_port:
     if (string_get(&portnum)) {
+        if (string_ensurez(&portnum)) { retval=1; goto bail_out; }
         *port = atoi(string_get(&portnum));
     } else {
         *port = 80;
