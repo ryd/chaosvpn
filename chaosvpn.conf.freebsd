@@ -11,8 +11,6 @@ $my_vpn_netmask		= "255.255.255.0";
 
 $my_vpn_ip6		= "";
 
-
-$my_password		= ""; # unused
 $my_ip			= ""; # address for tincd to listen on, empty for 0.0.0.0
 
 
