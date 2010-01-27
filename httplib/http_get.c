@@ -84,6 +84,7 @@ http_get(struct string* url, struct string* buffer, time_t ifmodifiedsince, int*
             retval = 2;
             goto bail_out;
         }
+        string_free(&ims);
     }
     if (string_concat(&request, "Connection: close\r\n")) { retval=2; goto bail_out; };
     if (string_concat(&request, "\r\n")) { retval=2; goto bail_out; }
