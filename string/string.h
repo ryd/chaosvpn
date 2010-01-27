@@ -38,7 +38,13 @@ int string_initfromstringz(struct string*, const char const*);
 
 
 static inline uintptr_t string_length(struct string *s) {
+    /* amount of bytes filled with content */
     return s->_u._s.length;
+}
+
+static inline uintptr_t string_size(struct string *s) {
+    /* amount of memory (in bytes) currently allocated */
+    return s->_u._s.size;
 }
 
 static inline int
