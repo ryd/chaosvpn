@@ -7,8 +7,10 @@ LEX=flex
 YACC=yacc
 
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c
-SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC)
+HTTPLIBSRC=httplib/http_get.c httplib/http_parseurl.c
+SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC) $(HTTPLIBSRC)
 STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
+HTTPLIBOBJ=$(patsubst %.c,%.o,$(HTTPLIBSRC))
 OBJ=$(patsubst %.c,%.o,$(SRC))
 
 NAME = chaosvpn
@@ -29,7 +31,7 @@ lex.yy.c: cvconf.l
 	$(LEX) cvconf.l
 
 clean:
-	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o $(NAME)
+	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME)
 
 CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
