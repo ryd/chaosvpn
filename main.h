@@ -1,3 +1,4 @@
+#include "string/string.h"
 #include "list.h"
 
 struct buffer {
