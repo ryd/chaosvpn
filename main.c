@@ -11,6 +11,7 @@
 #include <sys/types.h>
 
 #include "string/string.h"
+#include "httplib/httplib.h"
 #include "fs.h"
 #include "list.h"
 #include "main.h"
@@ -57,12 +58,16 @@ static void sigint(int);
 static void sigint_holdon(int);
 static void usage(void);
 
+static struct string HTTP_USER_AGENT;
+
 int
 main (int argc,char *argv[]) {
 	struct config *config;
 	char tincd_debugparam[32];
 	int err;
 	struct string oldconfig;
+
+	string_mkstatic(&HTTP_USER_AGENT, "ChaosVPN/0.1");
 
 	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
@@ -166,7 +171,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	string_init(&http_response, 4096, 512);
 
 	err = main_request_config(config, &http_response);
-	if (err) return -1;
+	if (err) return err;
 
 	if (string_equals(&http_response, oldconfig) == 0) {
 		string_free(&http_response);
@@ -312,6 +317,7 @@ main_initialize_config(void) {
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
+	config->ifmodifiedsince = 0;
 
 	INIT_LIST_HEAD(&config->peer_config);
 
@@ -396,8 +402,12 @@ main_init(struct config *config) {
 static int
 main_request_config(struct config *config, struct string *http_response) {
 	int retval = 1;
+	int httpres;
 	struct string httpurl;
 	struct string signature;
+	time_t startfetchtime;
+
+	startfetchtime = time(NULL);
 
 	/* fetch main configfile */
 
@@ -407,13 +417,23 @@ main_request_config(struct config *config, struct string *http_response) {
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
-	if (http_request(string_get(&httpurl), http_response)) {
-		fprintf(stderr, "Unable to fetch %s - maybe server is down\n", config->master_url);
+	if ((retval = http_get(&httpurl, http_response, config->ifmodifiedsince, &HTTP_USER_AGENT, &httpres, NULL))) {
+		if (retval == HTTP_ESRVERR) {
+			if (httpres == 304) {
+				fprintf(stderr, "Not fetching %s - got HTTP %d - not modified\n", config->master_url, httpres);
+				retval = 1;
+			} else {
+				fprintf(stderr, "Unable to fetch %s - got HTTP %d\n", config->master_url, httpres);
+			}
+		} else if (retval == HTTP_EINVURL) {
+			fprintf(stderr, "\x1B[41;37;1mInvalid URL %s. Only http:// is supported.\x1B[0m\n", config->master_url);
+			exit(1);
+		} else {
+			fprintf(stderr, "Unable to fetch %s - maybe server is down\n", config->master_url);
+		}
 		goto bail_out;
 	}
-
-	string_free(&httpurl);
-	//(void)fputs(".\n", stdout);
+	config->ifmodifiedsince = startfetchtime;
 
 
 	if (str_is_empty(config->masterdata_signkey)) {
@@ -428,11 +448,11 @@ main_request_config(struct config *config, struct string *http_response) {
 
 	//(void)fputs("Fetching signature:", stdout);
 	//(void)fflush(stdout);
-	string_init(&httpurl, 512, 512);
+	string_clear(&httpurl);
 	string_concat_sprintf(&httpurl, "%s.sig?id=%s",
 		config->master_url, config->peerid);
 	string_init(&signature, 512, 512);
-	if (http_request(string_get(&httpurl), &signature)) {
+	if (http_get(&httpurl, &signature, 0, &HTTP_USER_AGENT, &httpres, NULL)) {
 		fprintf(stderr, "Unable to fetch signature for %s - maybe server is down\n", config->master_url);
 		goto bail_out_signature;
 	}

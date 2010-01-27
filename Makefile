@@ -2,13 +2,13 @@ CC=gcc
 INCLUDES=-I/usr/local/include
 LIBDIRS=-L/usr/local/lib
 CFLAGS=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
-LIB=-lcurl -lcrypto
+LIB=-lcrypto
 LEX=flex
 YACC=yacc
 
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c
 HTTPLIBSRC=httplib/http_get.c httplib/http_parseurl.c
-SRC = tinc.c fs.c parser.c tun.c http.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC) $(HTTPLIBSRC)
+SRC = tinc.c fs.c parser.c tun.c y.tab.c lex.yy.c settings.c daemon.c verify.c $(STRINGSRC) $(HTTPLIBSRC)
 STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
 HTTPLIBOBJ=$(patsubst %.c,%.o,$(HTTPLIBSRC))
 OBJ=$(patsubst %.c,%.o,$(SRC))

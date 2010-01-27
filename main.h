@@ -51,5 +51,6 @@ struct config {
 	char *tincd_graphdumpfile;
 	struct peer_config *my_peer;
 	struct list_head peer_config;
+	time_t ifmodifiedsince;
 };
 
