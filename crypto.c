@@ -94,9 +94,6 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
 	EVP_MD_CTX md_ctx;
 	EVP_PKEY *pkey;
 
-	/* Just load the crypto library error strings, not SSL */
-	ERR_load_crypto_strings();
-	
 	/* load public key into openssl structure */
         pkey = crypto_load_key(pubkey, false);
         if (pkey == NULL) {
@@ -236,4 +233,15 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
 bail_out:
     EVP_CIPHER_CTX_cleanup(&ctx);
     return retval;
+}
+
+void
+crypto_init(void) {
+    /* Just load the crypto library error strings, not SSL */
+    ERR_load_crypto_strings();
+}
+
+void
+crypto_finish(void) {
+    ERR_free_strings();
 }

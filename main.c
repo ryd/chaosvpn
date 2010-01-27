@@ -433,6 +433,8 @@ main_request_config(struct config *config, struct string *http_response) {
 
 	/* fetch main configfile */
 
+	crypto_init();
+
 	/* basic string inits first, makes for way easier error-cleanup */
 	string_init(&httpurl, 512, 128);
 	string_init(&archive, 8192, 8192);
@@ -594,6 +596,8 @@ bail_out:
 	// make sure result is null-terminated
 	// ar_extract() and crypto_*_decrypt() do not guarantee this!
 	string_putc(http_response, '\0');
+
+	crypto_finish();
 
 	return retval;
 }
