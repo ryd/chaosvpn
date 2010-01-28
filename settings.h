@@ -12,7 +12,7 @@ typedef enum E_settings_list_entry_type {
 struct settings_list_entry {
     settings_list_entry_type etype;
     union {
-        const char const* s;
+        char* s;
         int i;
     } evalue;
 };
