@@ -1,3 +1,17 @@
+chaosvpn (2.0~rc9-0.0) unstable; urgency=low
+
+  * Note: starting with this version we receive a different formatted data
+    from the central server.
+  * Note2: you need to incorporate some changes into your chaosvpn.conf
+
+  * Data on the Server is now signed by a central master key, and then
+    encrypted using the public part of our tinc key, and then all
+    of this transmitted in one http request.
+  * Usage of libcurl has been replaced by a small http get library.
+  * In Daemon-Mode config re-fetching has been implemented.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 28 Jan 2010 10:34:31 +0100
+
 chaosvpn (2.0~rc8-0.0) unstable; urgency=low
 
   * The major TODO of verifying a signature on the central configfile
