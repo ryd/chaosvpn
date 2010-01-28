@@ -233,8 +233,7 @@ epoch2http(struct string* s, time_t time)
     char buf[512];
     struct tm* tm;
 
-    tm = localtime(&time);
-    // TODO: actually do convert to GMT!
+    tm = gmtime(&time);
     strftime(buf, 512, "%a, %d %b %Y %H:%M:%S GMT", tm);
     return(string_concat(s, buf));
 }
