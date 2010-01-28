@@ -3,8 +3,9 @@
 #include "y.tab.h"
 
 int yycurline = 1;
+int stringcaller;
 %}
-%Start PV SS
+%Start PV SS LL
 %option noyywrap
 %%
 \$my_peerid   {yylval.pval = &s_my_peerid; return KEYWORD_S;}
@@ -27,21 +28,27 @@ int yycurline = 1;
 \$tincd_restart_delay   {yylval.pval = &s_tincd_restart_delay; return KEYWORD_I;}
 \$tincd_graphdumpfile	{yylval.pval = &s_tincd_graphdumpfile; return KEYWORD_S;}
 \$update_interval {yylval.pval = &s_update_interval; return KEYWORD_I;}
-\$[_a-z]+   {
+@exclude {yylval.pval = &s_exclude; return KEYWORD_L;}
+\[@$][_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "
             "\"%s\" in line %d\n", yytext, yycurline);
     exit(1);
 }
 
-@exclude.*;
-
 [ \t]*=[ \t]*	{ BEGIN PV; return ASSIGNMENT; }
 <PV>[0-9]*\.[0-9]+	{yylval.fval = atof(yytext); return FLOATVAL;}
 <PV>[0-9]+	{yylval.ival = atoi(yytext); return INTVAL;}
-<PV>\"	{ BEGIN SS; return STRINGMARKER; }
-<SS>\"	{ BEGIN 0; return STRINGMARKER; }
+<PV>\"	{ stringcaller = YY_START; BEGIN SS; return STRINGMARKER; }
+<PV>\(  { BEGIN LL; return LISTOPEN; }
+<SS>\"	{ BEGIN stringcaller; return STRINGMARKER; }
 <SS>\\\$ {yylval.sval = strdup("$"); return STRING;}
 <SS>[^"\\\$]* {yylval.sval = strdup(yytext); return STRING;}
+<LL>[ \t]* {}
+<LL>, { return LISTSEP; }
+<LL>\"  { stringcaller = YY_START; BEGIN SS; return STRINGMARKER; }
+<LL>[0-9]*\.[0-9]+	{yylval.fval = atof(yytext); return FLOATVAL;}
+<LL>[0-9]+	{yylval.ival = atoi(yytext); return INTVAL;}
+<LL>\)  { BEGIN 0; return LISTCLOSE; }
 ;	{ return SEPARATOR; }
 #.*
 [ \t]*

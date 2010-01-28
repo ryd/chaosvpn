@@ -1,6 +1,28 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
+#include "list.h"
+
+typedef enum E_settings_list_entry_type {
+    LIST_STRING,
+    LIST_INTEGER,
+    LIST_LIST /* reserved */
+} settings_list_entry_type;
+
+struct settings_list_entry {
+    settings_list_entry_type etype;
+    union {
+        const char const* s;
+        int i;
+    } evalue;
+};
+
+struct settings_list {
+    struct list_head list;
+    struct settings_list_entry* e;
+};
+
+
 extern char* s_my_peerid;
 extern char* s_my_vpn_ip;
 extern char* s_my_vpn_ip6;
@@ -22,6 +44,7 @@ extern char* s_tincd_graphdumpfile;
 extern unsigned int s_tincd_debuglevel;
 extern unsigned int s_tincd_restart_delay;
 extern unsigned int s_update_interval;
+extern struct settings_list* s_exclude;
 
 int yyparse(void);
 void settings_init_defaults(void);

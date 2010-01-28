@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
+#include "list.h"
+#include "settings.h"
+
 
 // NOTE: *must* assign NULL here to string values; initialize those in
 // settings_init_defaults(). All numerics may be initialized here.
@@ -25,6 +28,7 @@ char* s_tincd_graphdumpfile = NULL;
 unsigned int s_tincd_debuglevel = 3;
 unsigned int s_tincd_restart_delay = 20;
 unsigned int s_update_interval = 0;
+struct settings_list* s_exclude;
 
 
 // Note: all settings *must* be strdupped!

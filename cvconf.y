@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "list.h"
 #include "settings.h"
 
 extern int yyerror(char*);
@@ -10,6 +11,9 @@ extern int yylex (void);
 
 static char* catandfree(char*, char*, int, int);
 static char* concatias(int, char*, int);
+static struct settings_list_entry* list_mkientry(int);
+static struct settings_list_entry* list_mksentry(const char const*);
+static struct settings_list* list_add_elem(struct settings_list*, struct settings_list_entry*);
 
 extern int yycurline;
 %}
@@ -18,18 +22,26 @@ extern int yycurline;
     float fval;
     char* sval;
     void* pval;
+    struct settings_list* lval;
+    struct settings_list_entry* eval;
 }
 %token <pval> KEYWORD_S
 %token <pval> KEYWORD_I
 %token <pval> KEYWORD_F
+%token <pval> KEYWORD_L
 %token <sval> STRING
 %token <ival> INTVAL
 %token <fval> FLOATVAL
 %token <sval> ASSIGNMENT
 %token <sval> SEPARATOR
 %token <sval> STRINGMARKER
+%token <pval> LISTOPEN
+%token <pval> LISTSEP
+%token <pval> LISTCLOSE
 
 %type <sval> string
+%type <lval> list
+%type <eval> listentry
 
 %%
 parser: { settings_init_defaults(); } config
@@ -40,8 +52,20 @@ config:
 
 setting: KEYWORD_I ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
     | KEYWORD_F ASSIGNMENT FLOATVAL	{ *((float*)$1) = $3; }
-    | KEYWORD_S ASSIGNMENT STRINGMARKER string	STRINGMARKER	{ if (*(char**)$1) {free(*(char**)$1);} *((char**)$1) = $4; }
+    | KEYWORD_S ASSIGNMENT STRINGMARKER string STRINGMARKER	{ if (*(char**)$1) {free(*(char**)$1);} *((char**)$1) = $4; }
+    | KEYWORD_L ASSIGNMENT LISTOPEN list { *((struct settings_list**)$1) = $4; }
     ;
+
+listentry: INTVAL { $$ = list_mkientry($1); }
+    | STRINGMARKER string STRINGMARKER { $$ = list_mksentry($2); }
+
+list: listentry LISTCLOSE {
+    struct settings_list* sl = (struct settings_list*)
+            malloc(sizeof(struct settings_list*));
+    if (sl == NULL) exit(111);
+    INIT_LIST_HEAD(&sl->list);
+    $$ = list_add_elem(sl, $1); }
+    | listentry LISTSEP list { $$ = list_add_elem($3, $1); }
 
 string: { $$ = strdup(""); /* ugly */ }
     | KEYWORD_S string { 
@@ -56,6 +80,38 @@ string: { $$ = strdup(""); /* ugly */ }
     ;
 %%
 
+static struct settings_list_entry*
+list_mkientry(int i)
+{
+    struct settings_list_entry* entry;
+    entry = malloc(sizeof(struct settings_list_entry*));
+    if (entry == NULL) exit(111);
+    entry->etype = LIST_INTEGER;
+    entry->evalue.i = i;
+    return entry;
+}
+
+static struct settings_list_entry*
+list_mksentry(const char const* s)
+{
+    struct settings_list_entry* entry;
+    entry = malloc(sizeof(struct settings_list_entry*));
+    if (entry == NULL) exit(111);
+    entry->etype = LIST_STRING;
+    entry->evalue.s = strdup(s);
+    return entry;
+}
+
+static struct settings_list*
+list_add_elem(struct settings_list* list, struct settings_list_entry* item)
+{
+    struct settings_list* listitem;
+    listitem = (struct settings_list*) malloc(sizeof(struct settings_list*));
+    if (listitem == NULL) exit(111);
+    listitem->e = item;
+    list_add_tail(&listitem->list, &list->list);
+    return list;
+}
 
 int
 yyerror(char* msg)
