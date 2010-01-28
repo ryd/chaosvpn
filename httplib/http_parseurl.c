@@ -20,19 +20,19 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
     s = string_get(url);
     l = string_length(url);
     if (l < 7) return HTTP_EINVURL;
-    if (memcmp(s, "http://", 7)) return HTTP_EINVURL;
+    if (memcmp(s, "http://", 7)) { retval=HTTP_EINVURL; goto bail_out; }
     if (string_concat(path, "/")) { retval=HTTP_EINVURL; goto bail_out; }
     for (i = 7; i < l; i++) {
         switch(urlpart) {
         case 0:
             switch(s[i]) {
             case ':':
-                if (string_length(hostname) < 1) return HTTP_EINVURL;
+                if (string_length(hostname) < 1) { retval=HTTP_EINVURL; goto bail_out; }
                 urlpart = 1;
                 continue;
 
             case '/':
-                if (string_length(hostname) < 1) return HTTP_EINVURL;
+                if (string_length(hostname) < 1) { retval=HTTP_EINVURL; goto bail_out; }
                 urlpart = 2;
                 continue;
 
