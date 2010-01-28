@@ -9,8 +9,9 @@ chaosvpn (2.0~rc9-0.0) unstable; urgency=low
     of this transmitted in one http request.
   * Usage of libcurl has been replaced by a small http get library.
   * In Daemon-Mode config re-fetching has been implemented.
+  * Some memory leaks (mostly in error paths) have been fixed.
 
- -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 28 Jan 2010 10:34:31 +0100
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 28 Jan 2010 18:32:28 +0100
 
 chaosvpn (2.0~rc8-0.0) unstable; urgency=low
 
