@@ -42,9 +42,7 @@ http_get(struct string* url, struct string* buffer,
     string_init(&hostname, 4096, 4096);
     string_init(&path, 4096, 4096);
     if ((retval = http_parseurl(url, &hostname, &port, &path))) {
-        string_free(&hostname);
-        string_free(&path);
-        return retval;
+        goto bail_out_free_hostname;
     }
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -54,12 +52,12 @@ http_get(struct string* url, struct string* buffer,
     hints.ai_protocol = 0;
 
     if (string_ensurez(&hostname)) {
-        string_free(&hostname);
-        return HTTP_ENOMEM;
+        retval = HTTP_ENOMEM;
+        goto bail_out_free_hostname;
     }
     snprintf(s_port, 16, "%d", port);
     if ((retval = getaddrinfo(string_get(&hostname), s_port, &hints, &res))) {
-        return retval;
+        goto bail_out_free_hostname;
     }
 
     for (rp = res; rp != NULL; rp = rp->ai_next) {
@@ -75,9 +73,8 @@ http_get(struct string* url, struct string* buffer,
     }
     freeaddrinfo (res);
     if (rp == NULL) {
-        string_free(&hostname);
-        string_free(&path);
-        return HTTP_ENETERR;
+        retval = HTTP_ENETERR;
+        goto bail_out_free_hostname;
     }
 
     string_init(&request, 4096, 4096);
@@ -111,9 +108,10 @@ http_get(struct string* url, struct string* buffer,
 
 bail_out:
     close (sfd);
+    string_free(&request);
+bail_out_free_hostname:
     string_free(&hostname);
     string_free(&path);
-    string_free(&request);
     return retval;
 }
 
@@ -161,7 +159,7 @@ httprecv(int sfd, struct string* buf, int* httpres)
             }
         }
     }
-    finished:
+finished:
 
     if (isfirsthdr) { retval=3; goto bail_out; }
 
