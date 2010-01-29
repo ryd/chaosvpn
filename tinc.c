@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/param.h>
 
@@ -7,6 +8,7 @@
 #include "string/string.h"
 #include "list.h"
 #include "tinc.h"
+#include "settings.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
@@ -15,6 +17,26 @@
 #define CONCAT_SN(buffer, value)	if (tinc_add_subnet(buffer, value)) return 1
 
 static int tinc_add_subnet(struct string*, struct list_head*);
+
+static bool
+tinc_check_if_excluded(char *peername)
+{
+	struct list_head* ptr;
+	struct settings_list* etr;
+
+	list_for_each(ptr, &s_exclude->list) {
+		etr = list_entry(ptr, struct settings_list, list);
+		if (etr->e->etype != LIST_STRING) {
+			/* only strings allowed */
+			continue;
+		}
+		if (strcasecmp(etr->e->evalue.s, peername) == 0) {
+			return true;
+		}
+	}
+	
+	return false;
+}
 
 int
 tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
@@ -76,6 +98,10 @@ tinc_generate_config(struct string* buffer, struct config *config)
 			continue;
 		}
 
+		if (tinc_check_if_excluded(i->peer_config->name)) {
+			continue;
+		}
+
 		if (str_is_nonempty(i->peer_config->gatewayhost) &&
 				!str_is_true(i->peer_config->hidden, false)) {
 			CONCAT_F(buffer, "ConnectTo=%s\n", i->peer_config->name);
@@ -110,6 +136,10 @@ tinc_generate_up(struct string* buffer, struct config *config)
 			continue;
 		}
 
+		if (tinc_check_if_excluded(i->peer_config->name)) {
+			continue;
+		}
+		
 		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routeadd)) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
