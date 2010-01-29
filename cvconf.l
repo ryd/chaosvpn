@@ -17,6 +17,7 @@ int stringcaller;
 \$tincd_bin   {yylval.pval = &s_tincd_bin; return KEYWORD_S;}
 \$routeadd   {yylval.pval = &s_routeadd; return KEYWORD_S;}
 \$routeadd6   {yylval.pval = &s_routeadd6; return KEYWORD_S;}
+\$routemetric   {yylval.pval = &s_routemetric; return KEYWORD_S;}
 \$ifconfig   {yylval.pval = &s_ifconfig; return KEYWORD_S;}
 \$ifconfig6   {yylval.pval = &s_ifconfig6; return KEYWORD_S;}
 \$master_url   {yylval.pval = &s_master_url; return KEYWORD_S;}

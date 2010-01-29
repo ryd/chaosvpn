@@ -16,6 +16,7 @@ char* s_networkname = NULL;
 char* s_tincd_bin = NULL;
 char* s_routeadd = NULL;
 char* s_routeadd6 = NULL;
+char* s_routemetric = NULL;
 char* s_ifconfig = NULL;
 char* s_ifconfig6 = NULL;
 char* s_master_url = NULL;
@@ -36,6 +37,7 @@ void
 settings_init_defaults(void)
 {
     s_interface = strdup("eth0");
+    s_routemetric = strdup("0");
 }
 
 void
@@ -50,6 +52,7 @@ settings_free_all(void)
 	free(s_tincd_bin);
 	free(s_routeadd);
 	free(s_routeadd6);
+	free(s_routemetric);
 	free(s_ifconfig);
 	free(s_ifconfig6);
 	free(s_master_url);
