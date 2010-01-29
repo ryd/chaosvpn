@@ -70,7 +70,7 @@ string_mkstatic(struct string* s, char* z)
     s->s = z;
     s->_u._s.growby = 0;
     s->_u._s.size = strlen(z);
-    s->_u._s.length = strlen(z);
+    s->_u._s.length = s->_u._s.size;
 }
 
 
