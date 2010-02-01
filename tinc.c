@@ -24,6 +24,10 @@ tinc_check_if_excluded(char *peername)
 	struct list_head* ptr;
 	struct settings_list* etr;
 
+	if (s_exclude == NULL) {
+		return false;
+	}
+
 	list_for_each(ptr, &s_exclude->list) {
 		etr = list_entry(ptr, struct settings_list, list);
 		if (etr->e->etype != LIST_STRING) {

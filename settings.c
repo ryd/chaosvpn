@@ -29,7 +29,7 @@ char* s_tincd_graphdumpfile = NULL;
 unsigned int s_tincd_debuglevel = 3;
 unsigned int s_tincd_restart_delay = 20;
 unsigned int s_update_interval = 0;
-struct settings_list* s_exclude;
+struct settings_list* s_exclude = NULL;
 
 
 // Note: all settings *must* be strdupped!
