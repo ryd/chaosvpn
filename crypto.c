@@ -1,4 +1,4 @@
-
+#include <inttypes.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <openssl/rsa.h>
@@ -141,7 +141,8 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
 
         /* check length of ciphertext */
         if (string_length(ciphertext) != EVP_PKEY_size(pkey)) {
-            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key (%d vs %d).\n", string_length(ciphertext),EVP_PKEY_size(pkey));
+            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key (%" PRIuPTR " vs %d).\n",
+                    string_length(ciphertext),EVP_PKEY_size(pkey));
             goto bail_out;
         }
 
@@ -189,11 +190,13 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
     EVP_CIPHER_CTX_set_padding(&ctx, 1);
     
     if (string_length(aes_key) != EVP_CIPHER_CTX_key_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid key size (%d vs expected %d)\n", string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
+        fprintf(stderr, "crypto_aes_decrypt: invalid key size (%" PRIuPTR " vs expected %d)\n",
+                string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
         goto bail_out;
     }
     if (string_length(aes_iv) != EVP_CIPHER_CTX_iv_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid iv size (%d vs expected %d)\n", string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
+        fprintf(stderr, "crypto_aes_decrypt: invalid iv size (%" PRIuPTR " vs expected %d)\n",
+                string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
         goto bail_out;
     }
 
