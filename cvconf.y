@@ -14,6 +14,7 @@ static char* concatias(int, char*, int);
 static struct settings_list_entry* list_mkientry(int);
 static struct settings_list_entry* list_mksentry(const char const*);
 static struct settings_list* list_add_elem(struct settings_list*, struct settings_list_entry*);
+static struct settings_list* list_allocate(void);
 
 extern int yycurline;
 %}
@@ -59,13 +60,10 @@ setting: KEYWORD_I ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
 listentry: INTVAL { $$ = list_mkientry($1); }
     | STRINGMARKER string STRINGMARKER { $$ = list_mksentry($2); }
 
-list: listentry LISTCLOSE {
-    struct settings_list* sl = (struct settings_list*)
-            malloc(sizeof(struct settings_list));
-    if (sl == NULL) exit(111);
-    INIT_LIST_HEAD(&sl->list);
-    $$ = list_add_elem(sl, $1); }
+list: listentry LISTCLOSE { $$ = list_add_elem(list_allocate(), $1); }
     | listentry LISTSEP list { $$ = list_add_elem($3, $1); }
+    | LISTCLOSE { $$ = list_allocate(); }
+    ;
 
 string: { $$ = strdup(""); /* ugly */ }
     | KEYWORD_S string { 
@@ -79,6 +77,17 @@ string: { $$ = strdup(""); /* ugly */ }
     | STRING string { $$ = catandfree($1, $2, 1, 1); }
     ;
 %%
+
+static struct settings_list*
+list_allocate(void)
+{
+    struct settings_list* sl = (struct settings_list*)
+            malloc(sizeof(struct settings_list));
+    if (sl == NULL) exit(111);
+    INIT_LIST_HEAD(&sl->list);
+    return sl;
+}
+
 
 static struct settings_list_entry*
 list_mkientry(int i)
