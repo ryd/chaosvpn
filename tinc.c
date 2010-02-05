@@ -78,7 +78,7 @@ tinc_generate_config(struct string* buffer, struct config *config)
 
 	CONCAT(buffer, "Mode=router\n");
 	CONCAT_F(buffer, "Name=%s\n", config->peerid);
-	CONCAT(buffer, "Hostnames=yes\n");
+	CONCAT(buffer, "Hostnames=no\n");
 	CONCAT(buffer, "TunnelServer=yes\n");
 
 	if (str_is_nonempty(config->tincd_graphdumpfile)) {
