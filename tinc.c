@@ -165,6 +165,8 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		}
 	}
 
+	CONCAT(buffer, "\nexit 0\n\n");
+
 	return 0;
 }
 
