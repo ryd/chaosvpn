@@ -133,6 +133,8 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		CONCAT_F(buffer, "%s\n", config->ifconfig6);
 	}
 
+	CONCAT(buffer, "\n");
+
 	list_for_each(p, &config->peer_config) {
 		i = container_of(p, struct peer_config_list, list);
 
@@ -141,9 +143,11 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		}
 
 		if (tinc_check_if_excluded(i->peer_config->name)) {
+			CONCAT_F(buffer, "# excluded node: %s\n", i->peer_config->name);
 			continue;
 		}
-		
+
+		CONCAT_F(buffer, "# node: %s\n", i->peer_config->name);
 		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routeadd)) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
