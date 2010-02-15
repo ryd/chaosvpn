@@ -178,7 +178,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	if (err) {
 		string_free(&http_response);
 		if (main_load_previous_config(&http_response)) {
-			return 1;
+			return err;
 		}
 		(void)fputs("Warning: Unable to fetch config; using last stored config.", stderr);
 	}
