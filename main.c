@@ -45,10 +45,12 @@ static int main_cleanup_hosts_subdir(struct config*);
 static int main_fetch_config(struct config* config, struct string* oldconfig);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
+static int main_load_previous_config(struct string*);
 /*@null@*/ static struct config* main_initialize_config(void);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct string*);
+static void main_tempsave_fetched_config(struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(void);
 static void main_updated(void);
@@ -175,7 +177,10 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	err = main_request_config(config, &http_response);
 	if (err) {
 		string_free(&http_response);
-		return err;
+		if (main_load_previous_config(&http_response)) {
+			return 1;
+		}
+		(void)fputs("Warning: Unable to fetch config; using last stored config.", stderr);
 	}
 
 	if (string_equals(&http_response, oldconfig) == 0) {
@@ -188,6 +193,9 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 		string_free(&http_response);
 		return -1;
 	}
+
+	// tempsave new config
+	main_tempsave_fetched_config(&http_response);
 
 	/* replaced by string_move */
 	// string_free(&http_response);
@@ -719,6 +727,59 @@ main_write_config_hosts(struct config *config) {
 	string_free(&hostfilepath);
 	
 	return 0;
+}
+
+static void
+main_tempsave_fetched_config(struct string* cnf)
+{
+	int fd;
+    static int NOTMPFILEWARNED = 0;
+
+	if (s_tmpconffile == NULL) {
+        if (NOTMPFILEWARNED) return;
+		(void)fputs("Warning: not tempsaving fetched config. Set $tmpconffile\n"
+				" in chaosvpn.conf to enable.", stderr);
+        NOTMPFILEWARNED = 1;
+		return;
+	}
+
+	fd = open(s_tmpconffile, O_WRONLY | O_CREAT, 0600);
+	if (fd == -1) return;
+
+	(void)write(fd, string_get(cnf), string_length(cnf));
+	close(fd);
+}
+
+static int
+main_load_previous_config(struct string* cnf)
+{
+	int fd;
+	struct stat sb;
+	intptr_t readbytes;
+	int retval = 1;
+
+	if (s_tmpconffile == NULL) return 1;
+
+	fd = open(s_tmpconffile, O_RDONLY | O_CREAT);
+	if (fd == -1) return 1;
+
+	if (fstat(fd, &sb)) return 1;
+	if (string_read(cnf, fd, sb.st_size, &readbytes)) {
+		(void)fputs("Error: not enough memory to read stored config file.\n", stderr);
+		string_clear(cnf);
+		goto bail_out;
+	}
+
+	if (readbytes != sb.st_size) {
+		(void)fputs("Error: unable to fully read stored config file.\n", stderr);
+		string_clear(cnf);
+		goto bail_out;
+	}
+
+	retval = 0;
+bail_out:
+	close(fd);
+	return retval;
 }
 
 static int

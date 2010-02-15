@@ -26,6 +26,7 @@ char* s_pidfile = NULL;
 char* s_interface = NULL;
 char* s_my_vpn_netmask = NULL;
 char* s_tincd_graphdumpfile = NULL;
+char* s_tmpconffile = NULL;
 unsigned int s_tincd_debuglevel = 3;
 unsigned int s_tincd_restart_delay = 20;
 unsigned int s_update_interval = 0;

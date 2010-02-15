@@ -6,7 +6,7 @@ LIB=-lz -lcrypto
 LEX=flex
 YACC=yacc
 
-STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c
+STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c string/string_read.c
 HTTPLIBSRC=httplib/http_get.c httplib/http_parseurl.c
 SRC = tinc.c fs.c parser.c tun.c y.tab.c lex.yy.c settings.c daemon.c crypto.c ar.c uncompress.c $(STRINGSRC) $(HTTPLIBSRC)
 HEADERS = ar.h crypto.h daemon.h fs.h list.h main.h parser.h settings.h tinc.h tun.h uncompress.h version.h y.tab.h httplib/httplib.h string/string.h

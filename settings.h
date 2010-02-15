@@ -42,6 +42,7 @@ extern char* s_pidfile;
 extern char* s_interface;
 extern char* s_my_vpn_netmask;
 extern char* s_tincd_graphdumpfile;
+extern char* s_tmpconffile;
 extern unsigned int s_tincd_debuglevel;
 extern unsigned int s_tincd_restart_delay;
 extern unsigned int s_update_interval;
