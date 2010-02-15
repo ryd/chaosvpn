@@ -14,8 +14,11 @@ static int sendall(int, void*, size_t, int);
 static int httprecv(int, struct string*, int*);
 static int handle_header(struct string*, int*);
 
+/* TODO: make configurable somehow (nicely!) */
+#define GENERIC_SOCKET_TIMEOUT 10
+
 /**
- * Fetch an URL
+ * Fetch a URL
  * @param url URL to fetch
  * @param buffer buffer to fetch data into
  * @param ifmodifiedsince
@@ -38,6 +41,10 @@ http_get(struct string* url, struct string* buffer,
     struct addrinfo hints, *res, *rp;
     struct string ims;
     char s_port[16];
+    struct timeval tv;
+
+    tv.tv_sec = GENERIC_SOCKET_TIMEOUT;
+    tv.tv_usec = 0;
 
     string_init(&hostname, 4096, 4096);
     string_init(&path, 4096, 4096);
@@ -66,6 +73,8 @@ http_get(struct string* url, struct string* buffer,
         if (sfd == -1) {
             continue;
         }
+        (void)setsockopt(sfd, SOL_SOCKET, SO_SNDTIMEO, (char*) &tv, sizeof(tv));
+        (void)setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (char*) &tv, sizeof(tv));
         if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1) {
             break;
         }
