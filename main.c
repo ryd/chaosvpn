@@ -746,7 +746,9 @@ main_tempsave_fetched_config(struct string* cnf)
 	fd = open(s_tmpconffile, O_WRONLY | O_CREAT, 0600);
 	if (fd == -1) return;
 
-	(void)write(fd, string_get(cnf), string_length(cnf));
+	if (write(fd, string_get(cnf), string_length(cnf)) != string_length(cnf)) {
+		(void)unlink(s_tmpconffile);
+	}
 	close(fd);
 }
 
@@ -760,7 +762,7 @@ main_load_previous_config(struct string* cnf)
 
 	if (s_tmpconffile == NULL) return 1;
 
-	fd = open(s_tmpconffile, O_RDONLY | O_CREAT);
+	fd = open(s_tmpconffile, O_RDONLY);
 	if (fd == -1) return 1;
 
 	if (fstat(fd, &sb)) return 1;
