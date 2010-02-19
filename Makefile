@@ -50,11 +50,11 @@ splint:
 deb:
 	[ -n "$(GITDEBVERSION)" ] # check if gitversion is set
 	dpkg-checkbuilddeps
-	if git status debian/changelog >/dev/null 2>/dev/null ; then \
+	if git commit --dry-run -- debian/changelog >/dev/null 2>/dev/null ; then \
 		echo -e "\nERROR: uncommited changes in debian/changelog!\n       either commit or revert with 'git checkout debian/changelog'\n" ; \
 		exit 1 ; \
 	fi
-	if git status version.h >/dev/null 2>/dev/null ; then \
+	if git commit --dry-run -- version.h >/dev/null 2>/dev/null ; then \
 		echo -e "\nERROR: uncommited changes in version.h!\n       either commit or revert with 'git checkout version.h'\n" ; \
 		exit 1 ; \
 	fi
