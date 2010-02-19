@@ -16,7 +16,7 @@ static struct settings_list_entry* list_mksentry(const char const*);
 static struct settings_list* list_add_elem(struct settings_list*, struct settings_list_entry*);
 static struct settings_list* list_allocate(void);
 
-extern int yycurline;
+extern int yylineno;
 %}
 %union {
     int ival;
@@ -68,7 +68,7 @@ list: listentry LISTCLOSE { $$ = list_add_elem(list_allocate(), $1); }
 string: { $$ = strdup(""); /* ugly */ }
     | KEYWORD_S string { 
         if (*(char**)$1 == NULL) {
-            fprintf(stderr, "error: access to uninitialized configuration variable in line %d\n", yycurline);
+            fprintf(stderr, "error: access to uninitialized configuration variable in line %d\n", yylineno);
             exit(1);
         }
         $$ = catandfree(*(char**)$1, $2, 0, 1); 
@@ -125,7 +125,7 @@ list_add_elem(struct settings_list* list, struct settings_list_entry* item)
 int
 yyerror(char* msg)
 {
-    fprintf(stderr, "parse error: %s in line %d\n", msg, yycurline);
+    fprintf(stderr, "parse error: %s in line %d\n", msg, yylineno);
     return 0;
 }
 

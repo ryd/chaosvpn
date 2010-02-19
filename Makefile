@@ -29,7 +29,7 @@ y.tab.c y.tab.h: cvconf.y
 	$(YACC) -d cvconf.y
 
 lex.yy.c: cvconf.l
-	$(LEX) cvconf.l
+	$(LEX) --yylineno cvconf.l
 
 clean:
 	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME)

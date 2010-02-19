@@ -2,7 +2,6 @@
 #include "settings.h"
 #include "y.tab.h"
 
-int yycurline = 1;
 int stringcaller;
 %}
 %Start PV SS LL
@@ -33,7 +32,7 @@ int stringcaller;
 @exclude {yylval.pval = &s_exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "
-            "\"%s\" in line %d\n", yytext, yycurline);
+            "\"%s\" in line %d\n", yytext, yylineno);
     exit(1);
 }
 
@@ -54,4 +53,4 @@ int stringcaller;
 ;	{ return SEPARATOR; }
 #.*
 [ \t]*
-\n  { ++yycurline; }
+\n
