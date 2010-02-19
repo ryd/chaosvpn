@@ -3,7 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
 Build-Depends: debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
