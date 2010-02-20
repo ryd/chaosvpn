@@ -3,6 +3,15 @@
 
 #include "string/string.h"
 #define TINC_DEFAULT_PORT "665"
+/*
+   ^^ Note: This 665 is a typo, it should have been 655 instead.
+            But fixing this may mean creating imcompatibiliies between
+            older versions of this program and current versions, peers
+            using the default port would have to change their firewall
+            rules - so just keep it.
+            (The ancient perl version correctly used 655)
+ */
+
 #define TINC_DEFAULT_CIPHER "blowfish"
 #define TINC_DEFAULT_COMPRESSION "0"
 #define TINC_DEFAULT_DIGEST "sha1"
