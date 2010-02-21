@@ -43,8 +43,9 @@ openssl dgst \
 */
 
 EVP_PKEY *
-crypto_load_key(const char *key, bool is_private) {
-        EVP_PKEY *pkey;
+crypto_load_key(const char *key, bool is_private)
+{
+    EVP_PKEY *pkey;
 	char *tmpname;
 	int keyfd;
 	FILE *keyfp;
@@ -128,7 +129,8 @@ bailout_ctx_cleanup:
 }
 
 int
-crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted) {
+crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted)
+{
         int retval = 1;
         EVP_PKEY *pkey;
 
@@ -173,7 +175,8 @@ bail_out:
 }
 
 int
-crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted) {
+crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted)
+{
     int retval = 1;
     EVP_CIPHER_CTX ctx;
     int decryptspace;
@@ -239,12 +242,15 @@ bail_out:
 }
 
 void
-crypto_init(void) {
+crypto_init(void)
+{
     /* Just load the crypto library error strings, not SSL */
     ERR_load_crypto_strings();
 }
 
 void
-crypto_finish(void) {
+crypto_finish(void)
+{
     ERR_free_strings();
 }
+

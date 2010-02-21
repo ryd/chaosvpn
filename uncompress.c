@@ -4,7 +4,8 @@
 #include "string/string.h"
 
 int
-uncompress_inflate(struct string *compressed, struct string *uncompressed) {
+uncompress_inflate(struct string *compressed, struct string *uncompressed)
+{
     int retval;
     z_stream strm;
     unsigned char outbuf[1024];

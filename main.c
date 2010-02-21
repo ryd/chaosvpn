@@ -64,7 +64,8 @@ static void sigint_holdon(int);
 static void usage(void);
 
 int
-main (int argc,char *argv[]) {
+main (int argc,char *argv[])
+{
 	struct config *config;
 	char tincd_debugparam[32];
 	int err;
@@ -307,7 +308,8 @@ main_check_root() {
 }
 
 /*@null@*/ static struct config*
-main_initialize_config(void) {
+main_initialize_config(void)
+{
 	struct config *config;
 
 	config = malloc(sizeof(struct config));
@@ -339,7 +341,8 @@ main_initialize_config(void) {
 }
 
 static int
-main_init(struct config *config) {
+main_init(struct config *config)
+{
 	struct stat st; 
 	struct string privkey_name;
 
@@ -427,7 +430,8 @@ main_init(struct config *config) {
 }
 
 static int
-main_request_config(struct config *config, struct string *http_response) {
+main_request_config(struct config *config, struct string *http_response)
+{
 	int retval = 1;
 	int httpres;
 	struct string httpurl;
@@ -623,7 +627,8 @@ bail_out:
 }
 
 static int
-main_parse_config(struct config *config, struct string *http_response) {
+main_parse_config(struct config *config, struct string *http_response)
+{
 	struct list_head *p = NULL;
 
 	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
@@ -654,7 +659,8 @@ main_free_parsed_info(struct config* config)
 }
 
 static int
-main_write_config_tinc(struct config *config) {
+main_write_config_tinc(struct config *config)
+{
 	struct string configfilename;
 	struct string tinc_config;
 
@@ -687,7 +693,8 @@ main_write_config_tinc(struct config *config) {
 }
 
 static int
-main_write_config_hosts(struct config *config) {
+main_write_config_hosts(struct config *config)
+{
 	struct list_head *p = NULL;
 	struct string hostfilepath;
 
@@ -785,7 +792,8 @@ bail_out:
 }
 
 static int
-main_write_config_up(struct config *config) {
+main_write_config_up(struct config *config)
+{
 	struct string up_filecontents;
 	struct string up_filepath;
 
@@ -809,7 +817,8 @@ main_write_config_up(struct config *config) {
 }
 
 static int
-main_create_backup(struct config *config) {
+main_create_backup(struct config *config)
+{
 	int retval = 1;
 	struct string base_backup_fn;
 
@@ -826,7 +835,8 @@ bail_out:
 }
 
 static int
-main_cleanup_hosts_subdir(struct config *config) {
+main_cleanup_hosts_subdir(struct config *config)
+{
 	int retval = 1;
 	struct string hosts_dir;
 	
@@ -876,5 +886,4 @@ sigint_holdon(int sig /*__unused*/)
 {
 	puts("I'm doing me best, please be patient for a little, will ya?");
 }
-
 

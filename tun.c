@@ -10,7 +10,9 @@
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
 #define NOERR   (0)
 
-static int tun_create_dev(){
+static int
+tun_create_dev()
+{
 	mode_t mask = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	if (!EXISTS(TUN_PATH) && (NOERR != mkdir(TUN_PATH, mask))) {
 		return 1;
@@ -21,7 +23,9 @@ static int tun_create_dev(){
 	return 0;
 }
 
-int tun_check_or_create() {
+int
+tun_check_or_create()
+{
 	if (!EXISTS(TUN_DEV)) {
 		printf("tun device does't exists - trying to create it.");
 		return tun_create_dev();

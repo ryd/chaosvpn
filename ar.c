@@ -14,10 +14,9 @@ minimal parsing of ar style archive buffer and in-memory extract
 
 */
 
-
-
 static ssize_t
-ar_parseheaderlength(const char *inh, size_t len) {
+ar_parseheaderlength(const char *inh, size_t len)
+{
   char lintbuf[15];
   ssize_t r;
   char *endp;
@@ -46,7 +45,8 @@ ar_parseheaderlength(const char *inh, size_t len) {
 }
 
 static bool
-ar_compare_name(char *inh, size_t len, char *searchname) {
+ar_compare_name(char *inh, size_t len, char *searchname)
+{
   char lintbuf[32];
   
   if (memchr(inh,0,len)) {
@@ -68,7 +68,8 @@ ar_compare_name(char *inh, size_t len, char *searchname) {
 }
 
 bool
-ar_is_ar_file(struct string *archive) {
+ar_is_ar_file(struct string *archive)
+{
   if (string_length(archive) < SARMAG) {
     fprintf(stderr, "ar_extract: buffer contents too short\n");
     return false;
@@ -83,7 +84,8 @@ ar_is_ar_file(struct string *archive) {
 }
 
 int
-ar_extract(struct string *archive, char *membername, struct string *result) {
+ar_extract(struct string *archive, char *membername, struct string *result)
+{
   ssize_t len;
   char *pos;
   struct ar_hdr *arh;

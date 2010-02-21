@@ -9,7 +9,8 @@ static struct peer_config *my_config = NULL;
 static int parse_key_mode;
 
 static char*
-parser_check_configitem(char *line, char *config) {
+parser_check_configitem(char *line, char *config)
+{
 	int len;
 
 	len = strlen(config);
@@ -20,7 +21,8 @@ parser_check_configitem(char *line, char *config) {
 }
 
 static struct list_head*
-parser_stringlist(char *item) {
+parser_stringlist(char *item)
+{
 	struct string_list *i = malloc(sizeof(struct string_list));
 	if (i == NULL) return NULL;
 	i->text = strdup(item);
@@ -28,7 +30,8 @@ parser_stringlist(char *item) {
 }
 
 static void
-parser_extend_key(char *line) {
+parser_extend_key(char *line)
+{
 	my_config->key = realloc(
 			my_config->key, 
 			strlen(my_config->key) + strlen(line) + 2
@@ -211,7 +214,8 @@ parser_parse_line(char *line, struct list_head *configlist)
 }
 
 int
-parser_parse_config (char *data, struct list_head *config_list) {
+parser_parse_config (char *data, struct list_head *config_list)
+{
 	char *token;
 	char *search = "\n";
 	char *tmp;
