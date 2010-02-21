@@ -1,0 +1,29 @@
+@# Code Style ##
+
+I don't wanna enforce any code style, so please see this
+document more as a guideline to make the style of this
+code more unique and on this way more easy to read. This
+make write here more easy, cause a lot of people working
+on this project.
+
+### Braces ###
+
+static char *
+my_function(char* param1, char* param2)
+{
+    ...
+}
+
+if (condition) {
+    ...
+} else {
+    ...
+}
+
+So, for function, the braces goes to the next line, everywhere
+else, put it to the same line.
+
+### Spaces/Taps ###
+
+Not clear at this point - let's fine a solution.
+
