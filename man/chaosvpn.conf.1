@@ -5,8 +5,8 @@ chaosvpn.conf - configfile for chaosvpn
 .B chaosvpn.conf
 configure the behavior of the config generator
 .PP
-This config file is written in perl syntax. The reason in that
-are in chaosvpn 1.0, which was written in perl.
+This config file is written in a perl-like syntax. The reason for that
+was chaosvpn 1.0, which was written in perl.
 .SH CONFIG
 .B $my_peerid
 .RS 4
@@ -24,7 +24,9 @@ Your IP address in the network.
 .RS 4
 .PP
 Your netmask for your IP Address. If you only use one IP in
-your Network, use "255.255.255.255".
+your Network or route the rest of your IPs out to other devices
+use "255.255.255.255" - in 99% of all usages you should keep this at
+"255.255.255.255".
 .PP
 .RE
 .B $my_vpn_ip6
@@ -37,7 +39,7 @@ empty.
 .B $my_ip
 .RS 4
 .PP
-The address, you tincd listen to. Leave this empty to listen on all
+The address your tincd listens to. Leave this empty to listen on all
 interfaces (0.0.0.0).
 .PP
 .RE
@@ -50,10 +52,9 @@ VPN, or direct connection to these nodes.
 .PP
 .RE
 .B $networkname
-(optional)
 .RS 4
 .PP
-Name of you config in tinc. If you keep this empty, default name is "chaos".
+Name of you config in tinc. For CCC ChaosVPN set this to "chaos".
 .PP
 .RE
 .B $tincd_bin
@@ -64,36 +65,30 @@ Path to tincd executable. Default is "/usr/sbin/tincd".
 .PP
 .RE
 .B $routemetric
-(optional)
 .RS 4
 .PP
-Priority if your route. Only needed if you wanna build up redudant routes.
+Priority of your route. Only needed if you wanna build up redudant routes.
+Keep this at "0" unless you know why you change it.
 .PP
 .RE
 .B $routeadd
-(optional)
 .br
 .B $routeadd6
-(optional)
 .RS 4
 .PP
-Command to setup you route. This maybe used on different Operating Systems like
-BSD. Default is for common used Linux systems.
+Commands to setup you routes. These may be different on different systems.
 .PP
 .RE
 .B $ifconfig
-(optional)
 .br
 .B $ifconfig6
-(optional)
 .RS 4
 .PP
-Command to setup IP address and netmask for IPv4 and IPv6. This may be different
-on different systems too. Default is also for common linux systems.
+Commands to setup IP address and netmask for IPv4 and IPv6. This may be different
+on different systems too.
 .PP
 .RE
 .B $master_url
-(optional)
 .RS 4
 .PP
 URL to get the master config. Default is configured to CCC ChaosVPN.
@@ -103,21 +98,20 @@ URL to get the master config. Default is configured to CCC ChaosVPN.
 (optional)
 .RS 4
 .PP
-Public Key to verify data from master URL. Default configured for CCC ChaosVPN.
+Public Key to verify data from master URL. If no key is defined fall back to
+cleartext transport - that will not work for CCC ChaosVPN.
 .PP
 .RE
 .B $base
-(optional)
 .RS 4
 .PP
 Location of the generated tinc config.
 .PP
 .RE
 .B $pidfile
-(optional)
 .RS 4
 .PP
-Location of the ProcessID file to ensure, process is running only once.
+Location of the ProcessID file to ensure tincd process is running only once.
 .PP
 .RE
 .B $tincd_debuglevel
