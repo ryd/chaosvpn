@@ -3,8 +3,143 @@
 chaosvpn.conf - configfile for chaosvpn
 .SH DESCRIPTION
 .B chaosvpn.conf
-is a config file to configure chaosvpn
+configure the behavior of the config generator
 .PP
-TODO.
+This config file is written in perl syntax. The reason in that
+are in chaosvpn 1.0, which was written in perl.
+.SH CONFIG
+.B $my_peerid
+.RS 4
+.PP
+This is your network name - this is unique in the master config
+.PP
+.RE
+.B $my_vpn_ip
+.RS 4
+.PP
+Your IP address in the network.
+.PP
+.RE
+.B $my_vpn_netmask
+.RS 4
+.PP
+Your netmask for your IP Address. If you only use one IP in
+your Network, use "255.255.255.255".
+.PP
+.RE
+.B $my_vpn_ip6
+.RS 4
+.PP
+Your IPV6 address of our node/gateway. If you not using IPv6, leave this
+empty.
+.PP
+.RE
+.B $my_ip
+.RS 4
+.PP
+The address, you tincd listen to. Leave this empty to listen on all
+interfaces (0.0.0.0).
+.PP
+.RE
+.B @exclude
+.RS 4
+.PP
+The exclude parameter can contain a list of node names. A VPN connection
+will not established to them. You may want to use it if you have another
+VPN, or direct connection to these nodes.
+.PP
+.RE
+.B $networkname
+(optional)
+.RS 4
+.PP
+Name of you config in tinc. If you keep this empty, default name is "chaos".
+.PP
+.RE
+.B $tincd_bin
+(optional)
+.RS 4
+.PP
+Path to tincd executable. Default is "/usr/sbin/tincd".
+.PP
+.RE
+.B $routemetric
+(optional)
+.RS 4
+.PP
+Priority if your route. Only needed if you wanna build up redudant routes.
+.PP
+.RE
+.B $routeadd
+(optional)
+.br
+.B $routeadd6
+(optional)
+.RS 4
+.PP
+Command to setup you route. This maybe used on different Operating Systems like
+BSD. Default is for common used Linux systems.
+.PP
+.RE
+.B $ifconfig
+(optional)
+.br
+.B $ifconfig6
+(optional)
+.RS 4
+.PP
+Command to setup IP address and netmask for IPv4 and IPv6. This may be different
+on different systems too. Default is also for common linux systems.
+.PP
+.RE
+.B $master_url
+(optional)
+.RS 4
+.PP
+URL to get the master config. Default is configured to CCC ChaosVPN.
+.PP
+.RE
+.B $masterdata_signkey
+(optional)
+.RS 4
+.PP
+Public Key to verify data from master URL. Default configured for CCC ChaosVPN.
+.PP
+.RE
+.B $base
+(optional)
+.RS 4
+.PP
+Location of the generated tinc config.
+.PP
+.RE
+.B $pidfile
+(optional)
+.RS 4
+.PP
+Location of the ProcessID file to ensure, process is running only once.
+.PP
+.RE
+.B $tincd_debuglevel
+(optional)
+.RS 4
+.PP
+Debuglevel of the tincd output. More details in tincd documentation.
+.PP
+.RE
+.B $tincd_restart_delay
+(optional)
+.RS 4
+.PP
+Number of seconds to wait before tincd is restarted after it has
+unexpectedly terminated.
+.PP
+.RE
+.B $update_interval
+(optional)
+.RS 4
+.PP
+Number of seconds to wait between refetching the remote config.
+.PP
 .SH SEE ALSO
 chaosvpn(1)
