@@ -1,9 +1,9 @@
-.TH CHAOSVPN 1 "Feburary 2010" "Discordian coreutils" ""
+.TH CHAOSVPN 5 "Feburary 2010" "Discordian coreutils" ""
 .SH NAME
-chaosvpn.conf - configfile for chaosvpn
+chaosvpn.conf - configuration file for chaosvpn
 .SH DESCRIPTION
 .B chaosvpn.conf
-configure the behavior of the config generator
+configures the behavior of the config generator.
 .PP
 This config file is written in a perl-like syntax. The reason for that
 was chaosvpn 1.0, which was written in perl.
@@ -11,20 +11,20 @@ was chaosvpn 1.0, which was written in perl.
 .B $my_peerid
 .RS 4
 .PP
-This is your network name - this is unique in the master config
+This is your network name - it has to be unique in the master configuration.
 .PP
 .RE
 .B $my_vpn_ip
 .RS 4
 .PP
-Your IP address in the network.
+Your IPv4 address within the network.
 .PP
 .RE
 .B $my_vpn_netmask
 .RS 4
 .PP
-Your netmask for your IP Address. If you only use one IP in
-your Network or route the rest of your IPs out to other devices
+The netmask for your IPv4 address. If you only use one IP address in
+your network, or route the rest of your IP addresses to other devices
 use "255.255.255.255" - in 99% of all usages you should keep this at
 "255.255.255.255".
 .PP
@@ -32,15 +32,15 @@ use "255.255.255.255" - in 99% of all usages you should keep this at
 .B $my_vpn_ip6
 .RS 4
 .PP
-Your IPV6 address of our node/gateway. If you not using IPv6, leave this
-empty.
+Your IPv6 address of the VPN interface on your node/gateway. If you do
+not use IPv6, leave this field empty.
 .PP
 .RE
 .B $my_ip
 .RS 4
 .PP
-The address your tincd listens to. Leave this empty to listen on all
-interfaces (0.0.0.0).
+The public IP address on which the tincd daemon will listen. Leave this empty to listen on all
+interfaces (0.0.0.0). Make sure that you open the necessary ports on an existing firewall.
 .PP
 .RE
 .B @exclude
@@ -67,8 +67,9 @@ Path to tincd executable. Default is "/usr/sbin/tincd".
 .B $routemetric
 .RS 4
 .PP
-Priority of your route. Only needed if you wanna build up redudant routes.
-Keep this at "0" unless you know why you change it.
+Metric of all routes through the ChaosVPN interface. Only needed if you
+wanna build up redudant routes. Keep this at "0" unless you know why
+you change it.
 .PP
 .RE
 .B $routeadd
@@ -76,7 +77,7 @@ Keep this at "0" unless you know why you change it.
 .B $routeadd6
 .RS 4
 .PP
-Commands to setup you routes. These may be different on different systems.
+Command to setup the network routes. These may be different on other operating systems.
 .PP
 .RE
 .B $ifconfig
@@ -84,28 +85,28 @@ Commands to setup you routes. These may be different on different systems.
 .B $ifconfig6
 .RS 4
 .PP
-Commands to setup IP address and netmask for IPv4 and IPv6. This may be different
-on different systems too.
+Command to setup IP address and netmask for IPv4 and IPv6. This may be different
+on other operating systems too.
 .PP
 .RE
 .B $master_url
 .RS 4
 .PP
-URL to get the master config. Default is configured to CCC ChaosVPN.
+URL to get the master configuration file. Default is configured to CCC ChaosVPN.
 .PP
 .RE
 .B $masterdata_signkey
 (optional)
 .RS 4
 .PP
-Public Key to verify data from master URL. If no key is defined fall back to
-cleartext transport - that will not work for CCC ChaosVPN.
+Public Key to verify data from master URL. If no key is defined, it will fall back to
+cleartext transport - this will not work for CCC ChaosVPN.
 .PP
 .RE
 .B $base
 .RS 4
 .PP
-Location of the generated tinc config.
+Location of the generated tinc configuration.
 .PP
 .RE
 .B $pidfile
@@ -136,4 +137,4 @@ unexpectedly terminated.
 Number of seconds to wait between refetching the remote config.
 .PP
 .SH SEE ALSO
-chaosvpn(1)
+chaosvpn(5)
