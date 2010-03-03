@@ -7,6 +7,11 @@ configures the behavior of the config generator.
 .PP
 This config file is written in a perl-like syntax. The reason for that
 was chaosvpn 1.0, which was written in perl.
+.PP
+The default location for this file is the /etc/tinc/ directory. Another
+location and file name is also possible and you can point the chaosvpn(1)
+application with a parameter to a different location, or file name. On
+other operating systems, like BSDs, the location may be /usr/local/etc/tinc/.
 .SH CONFIG
 .B $my_peerid
 .RS 4
