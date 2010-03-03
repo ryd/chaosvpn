@@ -1,4 +1,4 @@
-.TH CHAOSVPN 1 "November 2009" "Discordian coreutils" ""
+.TH CHAOSVPN 1 "March 2010" "Discordian coreutils" ""
 .SH NAME
 chaosvpn - manage tincd to connect to the chaosvpn
 .SH SYNOPSIS
@@ -6,15 +6,12 @@ chaosvpn - manage tincd to connect to the chaosvpn
 [-c CONFIGFILE] [-a] [-f]
 .SH DESCRIPTION
 .B chaosvpn
-is a utility that simplifies the process of connecting to the
-chaosvpn.
+is a utility that simplifies the process of connecting to the chaosvpn.
 .PP
-tincd is used to connect to the chaosvpn; the chaosvpn
-utility configures and runs the tinc daemon.
+tincd is used to connect to the chaosvpn; the chaosvpn utility configures and runs the tinc daemon.
 .PP
 chaosvpn is configured via the configuration file \fBchaosvpn.conf\fP.
-At this time, no command line arguments are accepted, but this is
-on the TODO list.
+At this time, only a limited set of command line arguments are accepted.
 .PP
 When run,
 .B chaosvpn
@@ -39,7 +36,7 @@ instance.
 .PP
 \fBchaosvpn\fP supports the following options:
 .TP
-\fB-c CONFIGFULE\fP Use CONFIGFILE as configuration file instead of ./chaosvpn.conf
+\fB-c CONFIGFILE\fP Use CONFIGFILE as configuration file instead of ./chaosvpn.conf
 .TP
 \fB-a\fP Legacy mode. After configuration files are updated, try to
 kill an already running tincd by reading its pid from the PIDFILE
@@ -50,16 +47,14 @@ the chaosvpn utility instead of controlling tincd.
 and automatically restarted if it crashes, or if the configuration has
 changed.
 .SH SEE ALSO
-chaosvpn.conf(1), tincd(8)
+chaosvpn.conf(5), tincd(8)
 .SH BUGS
-Quite a few, probably. Definitely needs testing. mc.fly needs to
-supply me with a test certificate, for example. ;-)
+Quite a few, probably. Definitely needs testing.
 .SH SECURITY CONSIDERATIONS
 Not secure at all at the moment. We need to do some serious asymetric
 signature validation.
 .SH TODO
- * Auto-reretrieve configuration and restart tincd if necessary in the process
- * Signature verification
  * Parse command line options
- * Document chaosvpn.conf
  * Write a utility to generate keys?
+ * Generate initial config from chaosvpn(1)?
+ ** And send it to a contact person which will include it on the central configuration file?
