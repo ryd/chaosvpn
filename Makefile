@@ -38,6 +38,9 @@ CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
 
 install:
+	install -m 0644 man/chaosvpn.1 $(DESTDIR)/usr/share/man/man1
+	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)/usr/share/man/man5
+
 	install -m 0755 chaosvpn $(DESTDIR)/usr/sbin/
 	if [ ! -e $(DESTDIR)/etc/tinc/chaosvpn.conf ] ; then \
 		install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/ ; \
