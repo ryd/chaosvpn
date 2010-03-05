@@ -43,8 +43,9 @@ install:
 
 	strip $(NAME)
 	install -m 0755 $(NAME) $(DESTDIR)/usr/sbin/
-	if [ ! -e $(DESTDIR)/etc/tinc/chaosvpn.conf ] ; then \
+	@if [ ! -e $(DESTDIR)/etc/tinc/chaosvpn.conf ] ; then \
 		install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/ ; \
+		echo "Create config File /etc/tinc/chaosvpn.conf"; \
 	fi
 
 splint:
