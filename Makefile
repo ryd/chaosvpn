@@ -6,6 +6,9 @@ LIB?=-lz -lcrypto
 LEX?=flex
 YACC?=yacc
 
+DESTDIR?=/usr
+TINCDIR?=/etc/tinc
+
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c string/string_read.c
 HTTPLIBSRC=httplib/http_get.c httplib/http_parseurl.c
 SRC = tinc.c fs.c parser.c tun.c y.tab.c lex.yy.c settings.c daemon.c crypto.c ar.c uncompress.c $(STRINGSRC) $(HTTPLIBSRC)
@@ -14,7 +17,7 @@ STRINGOBJ=$(patsubst %.c,%.o,$(STRINGSRC))
 HTTPLIBOBJ=$(patsubst %.c,%.o,$(HTTPLIBSRC))
 OBJ=$(patsubst %.c,%.o,$(SRC))
 
-NAME = chaosvpn
+NAME?=chaosvpn
 GITDEBVERSION=$(shell debian/scripts/calcdebversion )
 
 $(NAME): main.o $(OBJ) $(HEADERS)
@@ -38,13 +41,13 @@ CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
 
 install:
-	install -m 0644 man/chaosvpn.1 $(DESTDIR)/usr/share/man/man1
-	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)/usr/share/man/man5
+	install -m 0644 man/chaosvpn.1 $(DESTDIR)/share/man/man1
+	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)/share/man/man5
 
 	strip $(NAME)
-	install -m 0755 $(NAME) $(DESTDIR)/usr/sbin/
-	@if [ ! -e $(DESTDIR)/etc/tinc/chaosvpn.conf ] ; then \
-		install -m 0600 chaosvpn.conf $(DESTDIR)/etc/tinc/ ; \
+	install -m 0755 $(NAME) $(DESTDIR)/sbin/
+	@if [ ! -e $(TINCDIR)/$(NAME).conf ] ; then \
+		install -m 0600 chaosvpn.conf $(TINCDIR)/$(NAME).conf ; \
 		echo "Create config File /etc/tinc/chaosvpn.conf"; \
 	fi
 
