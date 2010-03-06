@@ -2,7 +2,7 @@
 # refretch chaosvpn config from backend and restart its tinc daemon
 
 if [ -x /etc/init.d/chaosvpn ] ; then
-	invoke-rc.d chaosvpn reload
+	/usr/sbin/invoke-rc.d chaosvpn reload
 fi
 
 exit 0
