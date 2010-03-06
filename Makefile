@@ -6,7 +6,7 @@ LIB?=-lz -lcrypto
 LEX?=flex
 YACC?=yacc
 
-DESTDIR?=/usr
+PREFIX?=/usr
 TINCDIR?=/etc/tinc
 
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c string/string_read.c
@@ -41,14 +41,14 @@ CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
 
 install:
-	install -m 0644 man/chaosvpn.1 $(DESTDIR)/share/man/man1
-	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)/share/man/man5
-
 	strip $(NAME)
-	install -m 0755 $(NAME) $(DESTDIR)/sbin/
-	@if [ ! -e $(TINCDIR)/$(NAME).conf ] ; then \
-		install -m 0600 chaosvpn.conf $(TINCDIR)/$(NAME).conf ; \
-		echo "Create config File /etc/tinc/chaosvpn.conf"; \
+	install -m 0644 man/chaosvpn.1 $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)$(PREFIX)/share/man/man5
+
+	install -m 0755 $(NAME) $(DESTDIR)$(PREFIX)/sbin/
+	@if [ ! -e $(DESTDIR)$(TINCDIR)/$(NAME).conf ] ; then \
+		install -m 0600 chaosvpn.conf $(DESTDIR)$(TINCDIR)/$(NAME).conf ; \
+		echo "Created config File $(TINCDIR)/chaosvpn.conf"; \
 	fi
 
 splint:
