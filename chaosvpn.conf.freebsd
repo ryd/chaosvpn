@@ -48,7 +48,7 @@ JVw7sWohWm4buu0iKlfPWIsCAwEAAQ==
 
 $base			= "/usr/local/etc/tinc/$networkname";
 $pidfile		= "/var/run/tinc.$networkname.pid";
-$tmpconffile            = "/tmp/chaosvpn-config.temp";
+$tmpconffile            = "$base/chaosvpn-config.temp";
 $tincd_debuglevel	= 2;
 #$tincd_graphdumpfile	= "/var/run/tinc.$networkname.dump";
 
