@@ -376,3 +376,70 @@ bail_out:
 	fclose(fp);
 	return retval;
 }
+
+/* read everything from fd into struct string */
+/* note: not NULL terminated! binary clean */
+int
+fs_read_fd(struct string *buffer, int fd) {
+	int retval = 1;
+	char chunk[4096];
+	ssize_t read_size;
+	
+	while ((read_size = read(fd, &chunk, sizeof(chunk))) > 0) {
+		if (string_concatb(buffer, chunk, read_size)) goto bail_out;
+	}
+	
+	retval = 0;
+
+bail_out:
+	return retval;
+}
+
+/* execute cmd, return stdout output in struct string *outputbuffer */
+int
+fs_backticks_exec(const char *cmd, struct string *outputbuffer) {
+	int fds[2], pid = 0;
+	int retval = 1;
+
+	if (pipe(fds)) {
+		fprintf(stderr, "fs_backticks_exec: pipe() failed\n");
+		goto bail_out;
+	}
+	
+	pid = fork();
+	if (pid < 0) {
+		fprintf(stderr, "fs_backticks_exec: fork() failed\n");
+		close(fds[0]);
+		close(fds[1]);
+		goto bail_out;
+	} else if (pid) {
+		/* parent */
+		close(fds[1]);
+		retval = fs_read_fd(outputbuffer, fds[0]);
+		close(fds[0]);
+	} else {
+		/* child */
+		char *argv[255] = {0};
+		int argc = 0;
+		char *p;
+		char *mycmd = strdup(cmd);
+		close(fds[0]);
+		dup2(fds[1], STDOUT_FILENO);
+		argv[argc++] = mycmd;
+		do {
+			if ((p = strchr(mycmd, ' '))) {
+				*p = '\0';
+				mycmd = ++p;
+				argv[argc++] = mycmd;
+			}
+		} while (p != NULL);
+		close(fds[1]);
+		execv(argv[0], argv);
+		fprintf(stderr, "fs_backticks_exec: exec of %s failed\n", argv[0]);
+		free(mycmd);
+		exit(0);
+	}
+	
+bail_out:
+	return retval;
+}
