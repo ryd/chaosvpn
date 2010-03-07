@@ -7,8 +7,10 @@
 #include "main.h"
 #include "string/string.h"
 #include "list.h"
+#include "fs.h"
 #include "tinc.h"
 #include "settings.h"
+#include "strnatcmp.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
@@ -79,7 +81,13 @@ tinc_generate_config(struct string* buffer, struct config *config)
 	CONCAT(buffer, "Mode=router\n");
 	CONCAT_F(buffer, "Name=%s\n", config->peerid);
 	CONCAT(buffer, "Hostnames=no\n");
-	CONCAT(buffer, "TunnelServer=yes\n");
+
+	if (strnatcmp(config->tincd_version, "1.0.12") > 0) {
+		/* this option is only available since 1.0.12+git / 1.0.13 */
+		CONCAT(buffer, "StrictSubnets=yes\n");
+	} else {
+		CONCAT(buffer, "TunnelServer=yes\n");
+	}
 
 	if (str_is_nonempty(config->tincd_graphdumpfile)) {
 		CONCAT_F(buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
@@ -181,4 +189,37 @@ tinc_add_subnet(struct string* buffer, struct list_head *network)
 	}
 
 	return 0;
+}
+
+char *
+tinc_get_version(struct config *config) {
+	struct string tincd_output;
+	char *retval = NULL;
+	char cmd[1024];
+	char *p;
+	int res;
+	
+	string_init(&tincd_output, 1024, 512);
+	snprintf(cmd, sizeof(cmd), "%s --version", config->tincd_bin);
+	res = fs_backticks_exec(cmd, &tincd_output);
+	if (string_putc(&tincd_output, 0)) goto bail_out;
+
+	if (strncmp(string_get(&tincd_output), "tinc version ", 13) != 0) {
+		retval = NULL;
+		goto bail_out;
+	}
+
+	if ((p = strchr(string_get(&tincd_output)+13, ' '))) {
+		*p = '\0';
+	}
+	
+	//printf("tinc version output: '%s'\n", string_get(&tincd_output));
+
+	retval = strdup(string_get(&tincd_output)+13);
+
+	//printf("tinc version: '%s'\n", retval);
+
+bail_out:
+	string_free(&tincd_output);
+	return retval;
 }

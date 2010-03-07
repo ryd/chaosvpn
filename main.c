@@ -87,6 +87,8 @@ main (int argc,char *argv[])
 	err = main_init(config);
 	if (err) return err;
 
+	config->tincd_version = tinc_get_version(config);
+
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_config(config, &oldconfig);
 

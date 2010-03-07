@@ -16,8 +16,9 @@
 #define TINC_DEFAULT_COMPRESSION "0"
 #define TINC_DEFAULT_DIGEST "sha1"
 
-int tinc_generate_config(struct string*, struct config*);
-int tinc_generate_peer_config(struct string*, struct peer_config*);
-int tinc_generate_up(struct string*, struct config*);
+extern int tinc_generate_config(struct string*, struct config*);
+extern int tinc_generate_peer_config(struct string*, struct peer_config*);
+extern int tinc_generate_up(struct string*, struct config*);
+extern char *tinc_get_version(struct config *config);
 
 #endif

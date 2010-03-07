@@ -41,6 +41,7 @@ struct config {
 	char *networkname;
 	char *my_ip;
 	char *tincd_bin;
+	char *tincd_version;
 	char *routeadd;
 	char *routeadd6;
 	char *ifconfig;
