@@ -1,3 +1,13 @@
+chaosvpn (2.0~rc11-0.0) unstable; urgency=low
+
+  * Replace usage of TunnelServer=yes with StrictSubnets=yes
+    for tinc >> 1.0.12
+  * Documentation and manpage updates.
+  * Makefile changes for easier OpenWRT porting.
+  * Debian: fix calls to invoke-rc.d, repair daily config reloads.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 07 Mar 2010 10:53:01 +0100
+
 chaosvpn (2.0~rc10-0.0) unstable; urgency=low
 
   * Multiple bugfixes
