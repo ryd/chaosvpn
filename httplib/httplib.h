@@ -1,5 +1,5 @@
-#ifndef __HTTPLIB_H_
-#define __HTTPLIB_H_
+#ifndef __HTTPLIB_H
+#define __HTTPLIB_H
 
 #include "../string/string.h"
 
