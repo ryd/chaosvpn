@@ -1,10 +1,6 @@
 #include "string/string.h"
 #include "list.h"
 
-struct buffer {
-	char *text;
-};
-
 struct string_list {
     struct list_head list;
     char *text;
