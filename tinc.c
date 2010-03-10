@@ -155,7 +155,7 @@ tinc_write_config(struct config *config)
 }
 
 int
-tinc_generate_updown(struct config *config, bool up)
+tinc_write_updown(struct config *config, bool up)
 {
 	/* up == true:  generate tinc-up */
 	/* up == false: generate tinc-down */

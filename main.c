@@ -226,8 +226,8 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 
 	if (tinc_write_config(config)) return -1;
 	if (main_write_config_hosts(config)) return -1;
-	if (tinc_generate_updown(config, true)) return -1;
-	if (tinc_generate_updown(config, false)) return -1;
+	if (tinc_write_updown(config, true)) return -1;
+	if (tinc_write_updown(config, false)) return -1;
 
 	main_free_parsed_info(config);
 
