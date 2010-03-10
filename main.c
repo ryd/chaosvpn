@@ -42,7 +42,7 @@ static struct string HTTP_USER_AGENT;
 static int main_check_root(void);
 static int main_create_backup(struct config*);
 static int main_cleanup_hosts_subdir(struct config*);
-static int main_fetch_config(struct config* config, struct string* oldconfig);
+static int main_load_and_apply_config(struct config* config, struct string* oldconfig);
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static int main_load_previous_config(struct string*);
@@ -90,7 +90,7 @@ main (int argc,char *argv[])
 	}
 
 	string_init(&oldconfig, 4096, 4096);
-	main_fetch_config(config, &oldconfig);
+	main_load_and_apply_config(config, &oldconfig);
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
 	
@@ -129,7 +129,7 @@ main (int argc,char *argv[])
 					goto bail_out;
 				}
 			}
-			switch (main_fetch_config(config, &oldconfig)) {
+			switch (main_load_and_apply_config(config, &oldconfig)) {
 			case -1:
 				(void)fputs("\x1B[31mError while updating config. Not terminating tincd.\x1B[0m\n", stderr);
 				goto ml_cont;
@@ -167,7 +167,7 @@ main_updated(void)
 }
 
 static int
-main_fetch_config(struct config* config, struct string* oldconfig)
+main_load_and_apply_config(struct config* config, struct string* oldconfig)
 {
 	int err;
 	struct string http_response;
