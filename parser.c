@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "list.h"
 #include "main.h"
+#include "config.h"
 #include "parser.h"
 
 static struct peer_config *my_config = NULL;

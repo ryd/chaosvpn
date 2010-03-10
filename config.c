@@ -2,6 +2,7 @@
 #include <string.h>
 #include "list.h"
 #include "main.h"
+#include "config.h"
 #include "settings.h"
 
 

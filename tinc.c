@@ -5,6 +5,7 @@
 #include <sys/param.h>
 
 #include "main.h"
+#include "config.h"
 #include "string/string.h"
 #include "list.h"
 #include "fs.h"
