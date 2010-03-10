@@ -42,11 +42,15 @@ CHANGES:
 
 install:
 	strip $(NAME)
-	install -m 0644 man/chaosvpn.1 $(DESTDIR)$(PREFIX)/share/man/man1
-	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)$(PREFIX)/share/man/man5
+	install -m 0755 -d $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m 0644 man/chaosvpn.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+	install -m 0755 -d $(DESTDIR)$(PREFIX)/share/man/man5
+	install -m 0644 man/chaosvpn.conf.5 $(DESTDIR)$(PREFIX)/share/man/man5/
 
+	install -m 0755 -d $(DESTDIR)$(PREFIX)/sbin
 	install -m 0755 $(NAME) $(DESTDIR)$(PREFIX)/sbin/
 	@if [ ! -e $(DESTDIR)$(TINCDIR)/$(NAME).conf ] ; then \
+		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
 		install -m 0600 chaosvpn.conf $(DESTDIR)$(TINCDIR)/$(NAME).conf ; \
 		echo "Created config File $(TINCDIR)/chaosvpn.conf"; \
 	fi
