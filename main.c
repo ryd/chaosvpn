@@ -153,7 +153,6 @@ main (int argc,char *argv[])
 	}
 
 	daemon_free(&di_tincd);
-	settings_free_all();
 	string_free(&oldconfig);
 	free(config); config = NULL;
 

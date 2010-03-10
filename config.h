@@ -59,6 +59,7 @@ struct config {
 	char *tincd_version;
 	unsigned int tincd_debuglevel;
 	unsigned int tincd_restart_delay;
+	char *routemetric;
 	char *routeadd;
 	char *routeadd6;
 	char *routedel;
@@ -78,6 +79,10 @@ struct config {
 	time_t ifmodifiedsince;
 	unsigned int update_interval;
 
+	/* vars only used in configfile, dummy for c code: */
+	char *password;
+	char *vpn_netmask;
+
 	/* commandline parameter: */
 	char *configfile;
 	bool donotfork;
@@ -88,9 +93,5 @@ extern int config_init(struct config *config);
 
 /* get pointer to already allocated and initialized config structure */
 extern struct config* config_get(void);
-
-/* this extern define is here in config.h so that settings.h
-   needs to be ONLY included from config.c and not from somewhere else */
-extern void settings_free_all(void);
 
 #endif

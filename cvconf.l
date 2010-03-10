@@ -1,37 +1,39 @@
 %{
-#include "settings.h"
+#include "config.h"
 #include "y.tab.h"
 
-int stringcaller;
+extern struct config *globalconfig; /* private from config.c */
+
+static int stringcaller;
 %}
 %Start PV SS LL
 %option noyywrap
 %%
-\$my_peerid   {yylval.pval = &s_my_peerid; return KEYWORD_S;}
-\$my_vpn_ip   {yylval.pval = &s_my_vpn_ip; return KEYWORD_S;}
-\$my_vpn_ip6   {yylval.pval = &s_my_vpn_ip6; return KEYWORD_S;}
-\$my_password   {yylval.pval = &s_my_password; return KEYWORD_S;}
-\$my_ip   {yylval.pval = &s_my_ip; return KEYWORD_S;}
-\$networkname   {yylval.pval = &s_networkname; return KEYWORD_S;}
-\$tincd_bin   {yylval.pval = &s_tincd_bin; return KEYWORD_S;}
-\$routeadd   {yylval.pval = &s_routeadd; return KEYWORD_S;}
-\$routeadd6   {yylval.pval = &s_routeadd6; return KEYWORD_S;}
-\$routedel   {yylval.pval = &s_routedel; return KEYWORD_S;}
-\$routedel6   {yylval.pval = &s_routedel6; return KEYWORD_S;}
-\$routemetric   {yylval.pval = &s_routemetric; return KEYWORD_S;}
-\$ifconfig   {yylval.pval = &s_ifconfig; return KEYWORD_S;}
-\$ifconfig6   {yylval.pval = &s_ifconfig6; return KEYWORD_S;}
-\$master_url   {yylval.pval = &s_master_url; return KEYWORD_S;}
-\$masterdata_signkey   {yylval.pval = &s_masterdata_signkey; return KEYWORD_S;}
-\$base   {yylval.pval = &s_base; return KEYWORD_S;}
-\$pidfile   {yylval.pval = &s_pidfile; return KEYWORD_S;}
-\$tincd_debuglevel   {yylval.pval = &s_tincd_debuglevel; return KEYWORD_I;}
-\$my_vpn_netmask	{yylval.pval = &s_my_vpn_netmask; return KEYWORD_S;}
-\$tmpconffile	{yylval.pval = &s_tmpconffile; return KEYWORD_S;}
-\$tincd_restart_delay   {yylval.pval = &s_tincd_restart_delay; return KEYWORD_I;}
-\$tincd_graphdumpfile	{yylval.pval = &s_tincd_graphdumpfile; return KEYWORD_S;}
-\$update_interval {yylval.pval = &s_update_interval; return KEYWORD_I;}
-@exclude {yylval.pval = &s_exclude; return KEYWORD_L;}
+\$my_peerid   {yylval.pval = &globalconfig->peerid; return KEYWORD_S;}
+\$my_vpn_ip   {yylval.pval = &globalconfig->vpn_ip; return KEYWORD_S;}
+\$my_vpn_ip6   {yylval.pval = &globalconfig->vpn_ip6; return KEYWORD_S;}
+\$my_password   {yylval.pval = &globalconfig->password; return KEYWORD_S;}
+\$my_ip   {yylval.pval = &globalconfig->my_ip; return KEYWORD_S;}
+\$networkname   {yylval.pval = &globalconfig->networkname; return KEYWORD_S;}
+\$tincd_bin   {yylval.pval = &globalconfig->tincd_bin; return KEYWORD_S;}
+\$routeadd   {yylval.pval = &globalconfig->routeadd; return KEYWORD_S;}
+\$routeadd6   {yylval.pval = &globalconfig->routeadd6; return KEYWORD_S;}
+\$routedel   {yylval.pval = &globalconfig->routedel; return KEYWORD_S;}
+\$routedel6   {yylval.pval = &globalconfig->routedel6; return KEYWORD_S;}
+\$routemetric   {yylval.pval = &globalconfig->routemetric; return KEYWORD_S;}
+\$ifconfig   {yylval.pval = &globalconfig->ifconfig; return KEYWORD_S;}
+\$ifconfig6   {yylval.pval = &globalconfig->ifconfig6; return KEYWORD_S;}
+\$master_url   {yylval.pval = &globalconfig->master_url; return KEYWORD_S;}
+\$masterdata_signkey   {yylval.pval = &globalconfig->masterdata_signkey; return KEYWORD_S;}
+\$base   {yylval.pval = &globalconfig->base_path; return KEYWORD_S;}
+\$pidfile   {yylval.pval = &globalconfig->pidfile; return KEYWORD_S;}
+\$tincd_debuglevel   {yylval.pval = &globalconfig->tincd_debuglevel; return KEYWORD_I;}
+\$my_vpn_netmask	{yylval.pval = &globalconfig->vpn_netmask; return KEYWORD_S;}
+\$tmpconffile	{yylval.pval = &globalconfig->tmpconffile; return KEYWORD_S;}
+\$tincd_restart_delay   {yylval.pval = &globalconfig->tincd_restart_delay; return KEYWORD_I;}
+\$tincd_graphdumpfile	{yylval.pval = &globalconfig->tincd_graphdumpfile; return KEYWORD_S;}
+\$update_interval {yylval.pval = &globalconfig->update_interval; return KEYWORD_I;}
+@exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "
             "\"%s\" in line %d\n", yytext, yylineno);

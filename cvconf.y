@@ -4,7 +4,9 @@
 #include <string.h>
 
 #include "list.h"
-#include "settings.h"
+#include "config.h"
+
+extern struct config *globalconfig; /* private from config.c */
 
 extern int yyerror(char*);
 extern int yylex (void);
@@ -45,7 +47,7 @@ extern int yylineno;
 %type <eval> listentry
 
 %%
-parser: { settings_init_defaults(); } config
+parser: { } config
 
 config:
     | setting SEPARATOR config
