@@ -89,10 +89,6 @@ main (int argc,char *argv[])
 	err = config_init(config);
 	if (err) return err;
 
-	config->tincd_version = tinc_get_version(config);
-	if (config->tincd_version == NULL) {
-		fprintf(stderr, "Warning: cant determine tinc version!\n");
-	}
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);

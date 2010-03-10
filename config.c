@@ -14,6 +14,7 @@
 #include "config.h"
 #include "settings.h"
 #include "fs.h"
+#include "tinc.h"
 
 
 extern FILE *yyin;
@@ -133,6 +134,12 @@ config_init(struct config *config)
 		return 1;
 	}
 	string_free(&privkey_name);
+
+
+	config->tincd_version = tinc_get_version(config);
+	if (config->tincd_version == NULL) {
+		fprintf(stderr, "Warning: cant determine tinc version!\n");
+	}
 
 	return 0;
 }
