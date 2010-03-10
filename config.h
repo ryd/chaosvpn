@@ -59,6 +59,6 @@ struct config {
 };
 
 extern struct config* config_alloc(void);
-
+extern int config_init(struct config *config);
 
 #endif
