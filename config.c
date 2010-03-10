@@ -102,7 +102,6 @@ config_init(struct config *config)
 	reqparam(networkname, "$networkname");
 	reqparam(vpn_ip, "$my_vpn_ip");
 	reqparam(routeadd, "$routeadd");
-	reqparam(routedel, "$routedel");
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
 
