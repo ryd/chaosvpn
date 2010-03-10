@@ -5,28 +5,48 @@
 #include "list.h"
 #include "main.h"
 
+typedef enum E_settings_list_entry_type {
+	LIST_STRING,
+	LIST_INTEGER,
+	LIST_LIST /* reserved */
+} settings_list_entry_type;
+
+struct settings_list_entry {
+	settings_list_entry_type etype;
+	union {
+		char* s;
+		int i;
+	} evalue;
+};
+
+struct settings_list {
+	struct list_head list;
+	struct settings_list_entry* e;
+};
+
+
 struct peer_config {
-    char *name;
-    char *gatewayhost;
-    char *owner;
-    char *use_tcp_only;
-    struct list_head network;
-    struct list_head network6;
-    struct list_head route_network;
-    struct list_head route_network6;
-    char *hidden;
-    char *silent;
-    char *port;
-    char *indirectdata;
-    char *key;
-    char *cipher;
-    char *compression;
-    char *digest;
+	char *name;
+	char *gatewayhost;
+	char *owner;
+	char *use_tcp_only;
+	struct list_head network;
+	struct list_head network6;
+	struct list_head route_network;
+	struct list_head route_network6;
+	char *hidden;
+	char *silent;
+	char *port;
+	char *indirectdata;
+	char *key;
+	char *cipher;
+	char *compression;
+	char *digest;
 };
 
 struct peer_config_list {
-    struct list_head list;
-    struct peer_config *peer_config;
+	struct list_head list;
+	struct peer_config *peer_config;
 };
 
 struct config {
@@ -37,6 +57,8 @@ struct config {
 	char *my_ip;
 	char *tincd_bin;
 	char *tincd_version;
+	unsigned int tincd_debuglevel;
+	unsigned int tincd_restart_delay;
 	char *routeadd;
 	char *routeadd6;
 	char *routedel;
@@ -48,10 +70,13 @@ struct config {
 	char *pidfile;
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;
+	char *tmpconffile;
 	struct string privkey;
+	struct settings_list *exclude;
 	struct peer_config *my_peer;
 	struct list_head peer_config;
 	time_t ifmodifiedsince;
+	unsigned int update_interval;
 
 	/* commandline parameter: */
 	char *configfile;
@@ -60,5 +85,12 @@ struct config {
 
 extern struct config* config_alloc(void);
 extern int config_init(struct config *config);
+
+/* get pointer to already allocated and initialized config structure */
+extern struct config* config_get(void);
+
+/* this extern define is here in config.h so that settings.h
+   needs to be ONLY included from config.c and not from somewhere else */
+extern void settings_free_all(void);
 
 #endif

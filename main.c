@@ -18,7 +18,6 @@
 #include "tun.h"
 #include "parser.h"
 #include "tinc.h"
-#include "settings.h"
 #include "config.h"
 #include "daemon.h"
 #include "crypto.h"
@@ -39,14 +38,14 @@ static int main_create_backup(struct config*);
 static int main_cleanup_hosts_subdir(struct config*);
 static int main_fetch_and_apply_config(struct config* config, struct string* oldconfig);
 static void main_free_parsed_info(struct config*);
-static int main_load_previous_config(struct string*);
+static int main_load_previous_config(struct config*, struct string*);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(struct config*, int, char**);
 static int main_request_config(struct config*, struct string*);
-static void main_tempsave_fetched_config(struct string*);
+static void main_tempsave_fetched_config(struct config*, struct string*);
 static void main_terminate_old_tincd(struct config*);
-static void main_unlink_pidfile(void);
-static void main_updated(void);
+static void main_unlink_pidfile(struct config*);
+static void main_updated(struct config*);
 static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
@@ -93,7 +92,7 @@ main (int argc,char *argv[])
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
 
-	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 	
 	if (config->donotfork) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
@@ -106,10 +105,10 @@ main (int argc,char *argv[])
 	if (config->donotfork) {
 		main_terminate_old_tincd(config);
 	} else {
-		main_unlink_pidfile();
+		main_unlink_pidfile(config);
 	}
 
-	main_updated();
+	main_updated(config);
 
 	puts("\x1B[31;1mStarting tincd.\x1B[0m");
 	if (daemon_start(&di_tincd)) {
@@ -120,7 +119,7 @@ main (int argc,char *argv[])
 	if (!config->donotfork) {
 		do {
 		ml_cont:
-			main_updated();
+			main_updated(config);
 			while (1) {
 				(void)sleep(2);
 				if (nextupdate < time(NULL)) {
@@ -162,9 +161,9 @@ main (int argc,char *argv[])
 }
 
 static void
-main_updated(void)
+main_updated(struct config *config)
 {
-    nextupdate = time(NULL) + s_update_interval;
+    nextupdate = time(NULL) + config->update_interval;
 }
 
 static int
@@ -181,7 +180,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	err = main_request_config(config, &http_response);
 	if (err) {
 		string_free(&http_response);
-		if (main_load_previous_config(&http_response)) {
+		if (main_load_previous_config(config, &http_response)) {
 			return err;
 		}
 		(void)fputs("Warning: Unable to fetch config; using last stored config.", stderr);
@@ -199,7 +198,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	}
 
 	// tempsave new config
-	main_tempsave_fetched_config(&http_response);
+	main_tempsave_fetched_config(config, &http_response);
 
 	/* replaced by string_move */
 	// string_free(&http_response);
@@ -263,7 +262,7 @@ main_terminate_old_tincd(struct config *config)
 	if (kill(pid, SIGKILL) == 0) {
 		(void)fputs("warning: tincd needed SIGKILL; unlinking its pidfile.\n", stderr);
 		// SIGKILL succeeded; hence, we must manually unlink the old pidfile.
-		main_unlink_pidfile();
+		main_unlink_pidfile(config);
 	}
 }
 
@@ -541,39 +540,39 @@ main_free_parsed_info(struct config* config)
 }
 
 static void
-main_tempsave_fetched_config(struct string* cnf)
+main_tempsave_fetched_config(struct config *config, struct string* cnf)
 {
 	int fd;
-    static int NOTMPFILEWARNED = 0;
+	static int NOTMPFILEWARNED = 0;
 
-	if (s_tmpconffile == NULL) {
-        if (NOTMPFILEWARNED) return;
+	if (config->tmpconffile == NULL) {
+		if (NOTMPFILEWARNED) return;
 		(void)fputs("Warning: not tempsaving fetched config. Set $tmpconffile\n"
-				" in chaosvpn.conf to enable.", stderr);
-        NOTMPFILEWARNED = 1;
+			" in chaosvpn.conf to enable.", stderr);
+	        NOTMPFILEWARNED = 1;
 		return;
 	}
 
-	fd = open(s_tmpconffile, O_WRONLY | O_CREAT, 0600);
+	fd = open(config->tmpconffile, O_WRONLY | O_CREAT, 0600);
 	if (fd == -1) return;
 
 	if (write(fd, string_get(cnf), string_length(cnf)) != string_length(cnf)) {
-		(void)unlink(s_tmpconffile);
+		(void)unlink(config->tmpconffile);
 	}
 	close(fd);
 }
 
 static int
-main_load_previous_config(struct string* cnf)
+main_load_previous_config(struct config *config, struct string* cnf)
 {
 	int fd;
 	struct stat sb;
 	intptr_t readbytes;
 	int retval = 1;
 
-	if (s_tmpconffile == NULL) return 1;
+	if (config->tmpconffile == NULL) return 1;
 
-	fd = open(s_tmpconffile, O_RDONLY);
+	fd = open(config->tmpconffile, O_RDONLY);
 	if (fd == -1) return 1;
 
 	if (fstat(fd, &sb)) return 1;
@@ -632,17 +631,19 @@ bail_out:
 }
 
 static void
-main_unlink_pidfile(void)
+main_unlink_pidfile(struct config *config)
 {
-	(void)unlink(s_pidfile);
+	(void)unlink(config->pidfile);
 }
 
 static void
 sigchild(int sig /*__unused*/)
 {
-	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", s_tincd_restart_delay);
-	main_unlink_pidfile();
-	if (daemon_sigchld(&di_tincd, s_tincd_restart_delay)) {
+	struct config *config = config_get();
+
+	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", config->tincd_restart_delay);
+	main_unlink_pidfile(config);
+	if (daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
 		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
 		exit(EXIT_FAILURE);
 	}

@@ -10,7 +10,6 @@
 #include "list.h"
 #include "fs.h"
 #include "tinc.h"
-#include "settings.h"
 #include "strnatcmp.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
@@ -22,16 +21,16 @@
 static int tinc_add_subnet(struct string*, struct list_head*);
 
 static bool
-tinc_check_if_excluded(char *peername)
+tinc_check_if_excluded(struct config *config, char *peername)
 {
 	struct list_head* ptr;
 	struct settings_list* etr;
 
-	if (s_exclude == NULL) {
+	if (config->exclude == NULL) {
 		return false;
 	}
 
-	list_for_each(ptr, &s_exclude->list) {
+	list_for_each(ptr, &config->exclude->list) {
 		etr = list_entry(ptr, struct settings_list, list);
 		if (etr->e->etype != LIST_STRING) {
 			/* only strings allowed */
@@ -166,7 +165,7 @@ tinc_write_config(struct config *config)
 			continue;
 		}
 
-		if (tinc_check_if_excluded(i->peer_config->name)) {
+		if (tinc_check_if_excluded(config, i->peer_config->name)) {
 			continue;
 		}
 
@@ -237,7 +236,7 @@ tinc_write_updown(struct config *config, bool up)
 			continue;
 		}
 
-		if (tinc_check_if_excluded(i->peer_config->name)) {
+		if (tinc_check_if_excluded(config, i->peer_config->name)) {
 			CONCAT_F(&buffer, "# excluded node: %s\n", i->peer_config->name);
 			continue;
 		}

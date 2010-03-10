@@ -2,25 +2,7 @@
 #define __SETTINGS_H
 
 #include "list.h"
-
-typedef enum E_settings_list_entry_type {
-    LIST_STRING,
-    LIST_INTEGER,
-    LIST_LIST /* reserved */
-} settings_list_entry_type;
-
-struct settings_list_entry {
-    settings_list_entry_type etype;
-    union {
-        char* s;
-        int i;
-    } evalue;
-};
-
-struct settings_list {
-    struct list_head list;
-    struct settings_list_entry* e;
-};
+#include "config.h"
 
 
 extern char* s_my_peerid;
@@ -50,8 +32,8 @@ extern unsigned int s_tincd_restart_delay;
 extern unsigned int s_update_interval;
 extern struct settings_list* s_exclude;
 
-int yyparse(void);
-void settings_init_defaults(void);
-void settings_free_all(void);
+extern int yyparse(void);
+extern void settings_init_defaults(void);
+extern void settings_free_all(void);
 
 #endif

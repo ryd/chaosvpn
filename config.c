@@ -19,6 +19,8 @@
 
 extern FILE *yyin;
 
+static struct config *globalconfig = NULL;
+
 
 struct config*
 config_alloc(void)
@@ -102,6 +104,12 @@ config_init(struct config *config)
 	if (s_masterdata_signkey != NULL)	config->masterdata_signkey	= s_masterdata_signkey;
 	if (s_tincd_graphdumpfile != NULL)	config->tincd_graphdumpfile	= s_tincd_graphdumpfile;
 	if (s_pidfile != NULL)			config->pidfile			= s_pidfile;
+	if (s_tmpconffile != NULL)		config->tmpconffile		= s_tmpconffile;
+
+	config->tincd_debuglevel = s_tincd_debuglevel;
+	config->tincd_restart_delay = s_tincd_restart_delay;
+	config->update_interval = s_update_interval;
+	config->exclude = s_exclude;
 
 	// then check required params
 	#define reqparam(paramfield, label) if (str_is_empty(config->paramfield)) { \
@@ -141,5 +149,12 @@ config_init(struct config *config)
 		fprintf(stderr, "Warning: cant determine tinc version!\n");
 	}
 
+	globalconfig = config;
 	return 0;
+}
+
+/* get pointer to already allocated and initialized config structure */
+struct config*
+config_get(void) {
+	return globalconfig;
 }
