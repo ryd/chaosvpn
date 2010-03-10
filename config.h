@@ -52,6 +52,10 @@ struct config {
 	struct peer_config *my_peer;
 	struct list_head peer_config;
 	time_t ifmodifiedsince;
+
+	/* commandline parameter: */
+	char *configfile;
+	bool donotfork;
 };
 
 extern struct config* config_alloc(void);

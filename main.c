@@ -32,10 +32,6 @@ static struct daemon_info di_tincd;
 
 extern FILE *yyin;
 
-/* getopt switches */
-static char* CONFIG_FILE = "/etc/tinc/chaosvpn.conf";
-static int DONOTFORK = 0;
-
 static time_t nextupdate = 0;
 static struct string HTTP_USER_AGENT;
 
@@ -48,7 +44,7 @@ static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static int main_load_previous_config(struct string*);
 static int main_parse_config(struct config*, struct string*);
-static void main_parse_opts(int, char**);
+static void main_parse_opts(struct config*, int, char**);
 static int main_request_config(struct config*, struct string*);
 static void main_tempsave_fetched_config(struct string*);
 static void main_terminate_old_tincd(struct config*);
@@ -73,13 +69,13 @@ main (int argc,char *argv[])
 
 	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
-	main_parse_opts(argc, argv);
-
 	config = config_alloc();
 	if (config == NULL) {
 		fprintf(stderr, "config malloc error\n");
 		exit(EXIT_FAILURE);
 	}
+
+	main_parse_opts(config, argc, argv);
 
 	if (main_check_root()) {
 		fprintf(stderr, "Error - wrong user - please start as root user\n");
@@ -106,7 +102,7 @@ main (int argc,char *argv[])
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", s_tincd_debuglevel);
 	
-	if (DONOTFORK) {
+	if (config->donotfork) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
@@ -114,7 +110,7 @@ main (int argc,char *argv[])
 		(void)signal(SIGINT, sigint);
 		(void)signal(SIGCHLD, sigchild);
 	}
-	if (DONOTFORK) {
+	if (config->donotfork) {
 		main_terminate_old_tincd(config);
 	} else {
 		main_unlink_pidfile();
@@ -128,7 +124,7 @@ main (int argc,char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (!DONOTFORK) {
+	if (!config->donotfork) {
 		do {
 		ml_cont:
 			main_updated();
@@ -279,7 +275,7 @@ main_terminate_old_tincd(struct config *config)
 }
 
 static void
-main_parse_opts(int argc, char** argv)
+main_parse_opts(struct config *config, int argc, char** argv)
 {
 	int c;
 
@@ -287,15 +283,15 @@ main_parse_opts(int argc, char** argv)
 	while ((c = getopt(argc, argv, "c:af")) != -1) {
 		switch (c) {
 		case 'c':
-			CONFIG_FILE = optarg;
+			config->configfile = optarg;
 			break;
 
 		case 'a':
-			DONOTFORK = 1;
+			config->donotfork = true;
 			break;
 
 		case 'f':
-			DONOTFORK = 0;
+			config->donotfork = false;
 			break;
 
 		default:
@@ -328,21 +324,21 @@ main_init(struct config *config)
 	struct stat st; 
 	struct string privkey_name;
 
-	yyin = fopen(CONFIG_FILE, "r");
+	yyin = fopen(config->configfile, "r");
 	if (!yyin) {
-		(void)fprintf(stderr, "Error: unable to open %s\n", CONFIG_FILE);
+		(void)fprintf(stderr, "Error: unable to open %s\n", config->configfile);
 		return 1;
 	}
 	yyparse();
 	fclose(yyin);
 
-	if ((s_update_interval == 0) && (!DONOTFORK)) {
+	if ((s_update_interval == 0) && (!config->donotfork)) {
 		(void)fputs("Error: you have not configured a remote config update interval.\n" \
 					"($update_interval) Please configure an interval (3600 - 7200 seconds\n" \
 					"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
 		exit(1);
 	}
-	if ((s_update_interval < 60) && (!DONOTFORK)) {
+	if ((s_update_interval < 60) && (!config->donotfork)) {
 		(void)fputs("Error: $update_interval may not be <60.\n", stderr);
 		exit(1);
 	}
@@ -369,7 +365,7 @@ main_init(struct config *config)
 
 	// then check required params
 	#define reqparam(paramfield, label) if (str_is_empty(config->paramfield)) { \
-		fprintf(stderr, "%s is missing or empty in %s\n", label, CONFIG_FILE); \
+		fprintf(stderr, "%s is missing or empty in %s\n", label, config->configfile); \
 		return 1; \
 		}
 

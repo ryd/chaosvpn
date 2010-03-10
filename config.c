@@ -38,5 +38,8 @@ config_alloc(void)
 	string_lazyinit(&config->privkey, 2048);
 	INIT_LIST_HEAD(&config->peer_config);
 
+	config->configfile		= "/etc/tinc/chaosvpn.conf";
+	config->donotfork		= false;
+
 	return config;
 }
