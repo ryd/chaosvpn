@@ -54,7 +54,6 @@ static void main_tempsave_fetched_config(struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(void);
 static void main_updated(void);
-static int main_write_config_hosts(struct config*);
 static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
@@ -225,7 +224,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	(void)fputs(".\n", stdout);
 
 	if (tinc_write_config(config)) return -1;
-	if (main_write_config_hosts(config)) return -1;
+	if (tinc_write_hosts(config)) return -1;
 	if (tinc_write_updown(config, true)) return -1;
 	if (tinc_write_updown(config, false)) return -1;
 
@@ -665,50 +664,6 @@ static void
 main_free_parsed_info(struct config* config)
 {
 	parser_free_config(&config->peer_config);
-}
-
-static int
-main_write_config_hosts(struct config *config)
-{
-	struct list_head *p = NULL;
-	struct string hostfilepath;
-
-	string_init(&hostfilepath, 512, 512);
-	string_concat(&hostfilepath, config->base_path);
-	string_concat(&hostfilepath, "/hosts/");
-
-	fs_mkdir_p(string_get(&hostfilepath), 0700);
-
-	list_for_each(p, &config->peer_config) {
-		struct string peer_config;
-		struct peer_config_list *i = container_of(p, 
-				struct peer_config_list, list);
-
-		printf("Writing config file for peer %s:", i->peer_config->name);
-		(void)fflush(stdout);
-
-		if (string_init(&peer_config, 2048, 512)) return 1;
-
-		if (tinc_generate_peer_config(&peer_config, i->peer_config)) {
-			string_free(&peer_config);
-			return 1;
-		}
-
-		if (fs_writecontents_safe(string_get(&hostfilepath), 
-				i->peer_config->name, string_get(&peer_config),
-				string_length(&peer_config), 0600)) {
-			fputs("unable to write host config file.\n", stderr);
-			string_free(&peer_config);
-			return 1;
-		}
-
-		string_free(&peer_config);
-		(void)puts(".");
-	}
-
-	string_free(&hostfilepath);
-	
-	return 0;
 }
 
 static void
