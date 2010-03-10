@@ -1,6 +1,8 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
+/* this file should only be included from config.c and the lex/yacc code */
+
 #include "list.h"
 #include "config.h"
 
