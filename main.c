@@ -55,7 +55,6 @@ static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(void);
 static void main_updated(void);
 static int main_write_config_hosts(struct config*);
-static int main_write_config_tinc(struct config*);
 static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
@@ -225,7 +224,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	}
 	(void)fputs(".\n", stdout);
 
-	if (main_write_config_tinc(config)) return -1;
+	if (tinc_write_config(config)) return -1;
 	if (main_write_config_hosts(config)) return -1;
 	if (tinc_generate_updown(config, true)) return -1;
 	if (tinc_generate_updown(config, false)) return -1;
@@ -666,40 +665,6 @@ static void
 main_free_parsed_info(struct config* config)
 {
 	parser_free_config(&config->peer_config);
-}
-
-static int
-main_write_config_tinc(struct config *config)
-{
-	struct string configfilename;
-	struct string tinc_config;
-
-	(void)fputs("Writing global config file:", stdout);
-	(void)fflush(stdout);
-	if (string_init(&tinc_config, 8192, 2048)) return 1;
-	if (tinc_generate_config(&tinc_config, config)) {
-		string_free(&tinc_config);
-		return 1;
-	}
-
-	string_init(&configfilename, 512, 512);
-	string_concat(&configfilename, config->base_path);
-	string_concat(&configfilename, "/tinc.conf");
-
-	if (fs_writecontents(string_get(&configfilename), string_get(&tinc_config),
-			string_length(&tinc_config), 0600)) {
-		(void)fputs("unable to write tinc config file!\n", stderr);
-		string_free(&tinc_config);
-		string_free(&configfilename);
-		return 1;
-	}
-
-	string_free(&tinc_config);
-	string_free(&configfilename);
-
-	(void)puts(".");
-
-	return 0;
 }
 
 static int

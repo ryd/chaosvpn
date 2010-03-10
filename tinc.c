@@ -67,37 +67,47 @@ tinc_generate_peer_config(struct string* buffer, struct peer_config *peer)
 }
 
 int
-tinc_generate_config(struct string* buffer, struct config *config)
+tinc_write_config(struct config *config)
 {
 	struct list_head *p;
+	struct string configfilename;
+	struct string buffer;
 
-	CONCAT(buffer, "AddressFamily=ipv4\n");
+	(void)fputs("Writing global config file:", stdout);
+	(void)fflush(stdout);
+
+	string_init(&buffer, 8192, 2048);
+
+
+	/* generate main tinc.conf */
+
+	CONCAT(&buffer, "AddressFamily=ipv4\n");
 
 #ifndef BSD
-	CONCAT(buffer, "Device=/dev/net/tun\n");
-	CONCAT_F(buffer, "Interface=%s_vpn\n", config->networkname);
+	CONCAT(&buffer, "Device=/dev/net/tun\n");
+	CONCAT_F(&buffer, "Interface=%s_vpn\n", config->networkname);
 #endif
 
-	CONCAT(buffer, "Mode=router\n");
-	CONCAT_F(buffer, "Name=%s\n", config->peerid);
-	CONCAT(buffer, "Hostnames=no\n");
-	CONCAT(buffer, "PingTimeout=10\n");
+	CONCAT(&buffer, "Mode=router\n");
+	CONCAT_F(&buffer, "Name=%s\n", config->peerid);
+	CONCAT(&buffer, "Hostnames=no\n");
+	CONCAT(&buffer, "PingTimeout=10\n");
 
 	if (strnatcmp(config->tincd_version, "1.0.12") > 0) {
 		/* this option is only available since 1.0.12+git / 1.0.13 */
-		CONCAT(buffer, "StrictSubnets=yes\n");
+		CONCAT(&buffer, "StrictSubnets=yes\n");
 	} else {
-		CONCAT(buffer, "TunnelServer=yes\n");
+		CONCAT(&buffer, "TunnelServer=yes\n");
 	}
 
 	if (str_is_nonempty(config->tincd_graphdumpfile)) {
-		CONCAT_F(buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
+		CONCAT_F(&buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
 	}
 
 	if (str_is_nonempty(config->my_ip) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
 			strcmp(config->my_ip, "0.0.0.0")) {
-		CONCAT_F(buffer, "BindToAddress=%s\n", config->my_ip);
+		CONCAT_F(&buffer, "BindToAddress=%s\n", config->my_ip);
 	}
 
 	if (str_is_true(config->my_peer->silent, false)) {
@@ -117,9 +127,29 @@ tinc_generate_config(struct string* buffer, struct config *config)
 
 		if (str_is_nonempty(i->peer_config->gatewayhost) &&
 				!str_is_true(i->peer_config->hidden, false)) {
-			CONCAT_F(buffer, "ConnectTo=%s\n", i->peer_config->name);
+			CONCAT_F(&buffer, "ConnectTo=%s\n", i->peer_config->name);
 		}
 	}
+
+
+	/* write tinc.conf */
+
+	string_init(&configfilename, 512, 512);
+	string_concat(&configfilename, config->base_path);
+	string_concat(&configfilename, "/tinc.conf");
+
+	if (fs_writecontents(string_get(&configfilename), string_get(&buffer),
+			string_length(&buffer), 0600)) {
+		(void)fputs("unable to write tinc config file!\n", stderr);
+		string_free(&buffer);
+		string_free(&configfilename);
+		return 1;
+	}
+
+	string_free(&buffer);
+	string_free(&configfilename);
+
+	(void)puts(".");
 
 	return 0;
 }
