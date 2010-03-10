@@ -25,9 +25,9 @@
 #include "uncompress.h"
 #include "version.h"
 
-int r_sigterm = 0;
-int r_sigint = 0;
-struct daemon_info di_tincd;
+static int r_sigterm = 0;
+static int r_sigint = 0;
+static struct daemon_info di_tincd;
 
 extern FILE *yyin;
 
