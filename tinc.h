@@ -2,6 +2,9 @@
 #define __TINC_H
 
 #include "string/string.h"
+#include "config.h"
+
+
 #define TINC_DEFAULT_PORT "665"
 /*
    ^^ Note: This 665 is a typo, it should have been 655 instead.
