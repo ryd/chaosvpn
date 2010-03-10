@@ -81,6 +81,18 @@ main (int argc,char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	if (main_check_root()) {
+		fprintf(stderr, "Error - wrong user - please start as root user\n");
+		return 1;
+	}
+
+#ifndef BSD
+	if (tun_check_or_create()) {
+		fprintf(stderr, "Error - unable to create tun device\n");
+		return 1;
+	}
+#endif
+
 	err = main_init(config);
 	if (err) return err;
 
@@ -315,18 +327,6 @@ main_init(struct config *config)
 {
 	struct stat st; 
 	struct string privkey_name;
-
-	if (main_check_root()) {
-		fprintf(stderr, "Error - wrong user - please start as root user\n");
-		return 1;
-	}
-
-#ifndef BSD
-	if (tun_check_or_create()) {
-		fprintf(stderr, "Error - unable to create tun device\n");
-		return 1;
-	}
-#endif
 
 	yyin = fopen(CONFIG_FILE, "r");
 	if (!yyin) {
