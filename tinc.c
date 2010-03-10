@@ -179,6 +179,51 @@ tinc_generate_up(struct string* buffer, struct config *config)
 	return 0;
 }
 
+int
+tinc_generate_down(struct string* buffer, struct config *config)
+{
+	struct list_head *p;
+	struct list_head *sp;
+	struct peer_config_list *i;
+	struct string_list *si;
+
+	CONCAT(buffer, "#!/bin/sh\n\n");
+
+	list_for_each(p, &config->peer_config) {
+		i = container_of(p, struct peer_config_list, list);
+
+		if (!strcmp(i->peer_config->name, config->peerid)) {
+			continue;
+		}
+
+		if (tinc_check_if_excluded(i->peer_config->name)) {
+			CONCAT_F(buffer, "# excluded node: %s\n", i->peer_config->name);
+			continue;
+		}
+
+		CONCAT_F(buffer, "# node: %s\n", i->peer_config->name);
+		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routedel)) {
+			list_for_each(sp, &i->peer_config->network) {
+				si = container_of(sp, struct string_list, list);
+				if (string_concat_sprintf(buffer, config->routedel, si->text)) return 1;
+				string_putc(buffer, '\n');
+			}
+		}
+		
+		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(config->routedel6)) {
+			list_for_each(sp, &i->peer_config->network6) {
+				si = container_of(sp, struct string_list, list);
+				if (string_concat_sprintf(buffer, config->routedel6, si->text)) return 1;
+				string_putc(buffer, '\n');
+			}
+		}
+	}
+
+	CONCAT(buffer, "\nexit 0\n\n");
+
+	return 0;
+}
+
 static int
 tinc_add_subnet(struct string* buffer, struct list_head *network)
 {

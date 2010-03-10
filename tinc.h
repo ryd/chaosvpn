@@ -19,6 +19,7 @@
 extern int tinc_generate_config(struct string*, struct config*);
 extern int tinc_generate_peer_config(struct string*, struct peer_config*);
 extern int tinc_generate_up(struct string*, struct config*);
+extern int tinc_generate_down(struct string*, struct config*);
 extern char *tinc_get_version(struct config *config);
 
 #endif

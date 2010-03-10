@@ -57,6 +57,7 @@ static void main_updated(void);
 static int main_write_config_hosts(struct config*);
 static int main_write_config_tinc(struct config*);
 static int main_write_config_up(struct config*);
+static int main_write_config_down(struct config*);
 static void sigchild(int);
 static void sigterm(int);
 static void sigint(int);
@@ -229,6 +230,7 @@ main_fetch_config(struct config* config, struct string* oldconfig)
 	if (main_write_config_tinc(config)) return -1;
 	if (main_write_config_hosts(config)) return -1;
 	if (main_write_config_up(config)) return -1;
+	if (main_write_config_down(config)) return -1;
 
 	main_free_parsed_info(config);
 
@@ -822,6 +824,31 @@ main_write_config_up(struct config *config)
 	
 	string_free(&up_filecontents);
 	string_free(&up_filepath);
+
+	return 0;
+}
+
+static int
+main_write_config_down(struct config *config)
+{
+	struct string down_filecontents;
+	struct string down_filepath;
+
+	string_init(&down_filecontents, 8192, 2048);
+	tinc_generate_down(&down_filecontents, config);
+
+	string_init(&down_filepath, 512, 512);
+	string_concat(&down_filepath, config->base_path);
+	string_concat(&down_filepath, "/tinc-down");
+	if (fs_writecontents(string_get(&down_filepath), string_get(&down_filecontents), string_length(&down_filecontents), 0700)) {
+		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&down_filepath));
+		string_free(&down_filecontents);
+		string_free(&down_filepath);
+		return 1;
+	}
+	
+	string_free(&down_filecontents);
+	string_free(&down_filepath);
 
 	return 0;
 }
