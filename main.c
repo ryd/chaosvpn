@@ -19,6 +19,7 @@
 #include "parser.h"
 #include "tinc.h"
 #include "settings.h"
+#include "config.h"
 #include "daemon.h"
 #include "crypto.h"
 #include "ar.h"
@@ -46,7 +47,6 @@ static int main_fetch_and_apply_config(struct config* config, struct string* old
 static void main_free_parsed_info(struct config*);
 static int main_init(struct config*);
 static int main_load_previous_config(struct string*);
-/*@null@*/ static struct config* main_initialize_config(void);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(int, char**);
 static int main_request_config(struct config*, struct string*);
@@ -75,7 +75,7 @@ main (int argc,char *argv[])
 
 	main_parse_opts(argc, argv);
 
-	config = main_initialize_config();
+	config = config_alloc();
 	if (config == NULL) {
 		fprintf(stderr, "config malloc error\n");
 		exit(EXIT_FAILURE);
@@ -308,41 +308,6 @@ usage(void)
 static int
 main_check_root() {
 	return getuid() != 0;
-}
-
-/*@null@*/ static struct config*
-main_initialize_config(void)
-{
-	struct config *config;
-
-	config = malloc(sizeof(struct config));
-	if (config == NULL) return NULL;
-	memset(config, 0, sizeof(struct config));
-
-	config->peerid			= NULL;
-	config->vpn_ip			= NULL;
-	config->vpn_ip6			= NULL;
-	config->networkname		= NULL;
-	config->my_ip			= NULL;
-	config->tincd_bin		= "/usr/sbin/tincd";
-	config->routeadd		= NULL;
-	config->routeadd6		= NULL;
-	config->routedel		= NULL;
-	config->routedel6		= NULL;
-	config->ifconfig		= NULL;
-	config->ifconfig6		= NULL; // not required
-	config->master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
-	config->base_path		= "/etc/tinc";
-	config->pidfile			= "/var/run/chaosvpn.default.pid";
-	config->my_peer			= NULL;
-	config->masterdata_signkey	= NULL;
-	config->tincd_graphdumpfile	= NULL;
-	config->ifmodifiedsince = 0;
-
-	string_lazyinit(&config->privkey, 2048);
-	INIT_LIST_HEAD(&config->peer_config);
-
-	return config;
 }
 
 static int

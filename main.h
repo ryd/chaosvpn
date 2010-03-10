@@ -1,3 +1,6 @@
+#ifndef MAIN_H
+#define MAIN_H
+
 #include "string/string.h"
 #include "list.h"
 
@@ -55,3 +58,4 @@ struct config {
 	time_t ifmodifiedsince;
 };
 
+#endif
