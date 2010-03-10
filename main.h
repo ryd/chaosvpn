@@ -44,6 +44,8 @@ struct config {
 	char *tincd_version;
 	char *routeadd;
 	char *routeadd6;
+	char *routedel;
+	char *routedel6;
 	char *ifconfig;
 	char *ifconfig6;
 	char *master_url;

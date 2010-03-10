@@ -16,6 +16,8 @@ char* s_networkname = NULL;
 char* s_tincd_bin = NULL;
 char* s_routeadd = NULL;
 char* s_routeadd6 = NULL;
+char* s_routedel = NULL;
+char* s_routedel6 = NULL;
 char* s_routemetric = NULL;
 char* s_ifconfig = NULL;
 char* s_ifconfig6 = NULL;
@@ -53,6 +55,8 @@ settings_free_all(void)
 	free(s_tincd_bin);
 	free(s_routeadd);
 	free(s_routeadd6);
+	free(s_routedel);
+	free(s_routedel6);
 	free(s_routemetric);
 	free(s_ifconfig);
 	free(s_ifconfig6);

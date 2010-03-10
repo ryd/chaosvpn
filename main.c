@@ -329,6 +329,8 @@ main_initialize_config(void)
 	config->tincd_bin		= "/usr/sbin/tincd";
 	config->routeadd		= NULL;
 	config->routeadd6		= NULL;
+	config->routedel		= NULL;
+	config->routedel6		= NULL;
 	config->ifconfig		= NULL;
 	config->ifconfig6		= NULL; // not required
 	config->master_url		= "https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt";
@@ -392,6 +394,8 @@ main_init(struct config *config)
 	if (s_tincd_bin != NULL)		config->tincd_bin		= s_tincd_bin;
 	if (s_routeadd != NULL)			config->routeadd		= s_routeadd;
 	if (s_routeadd6 != NULL)		config->routeadd6		= s_routeadd6;
+	if (s_routedel != NULL)			config->routedel		= s_routedel;
+	if (s_routedel6 != NULL)		config->routedel6		= s_routedel6;
 	if (s_ifconfig != NULL)			config->ifconfig		= s_ifconfig;
 	if (s_ifconfig6 != NULL)		config->ifconfig6		= s_ifconfig6;
 	if (s_master_url != NULL)		config->master_url		= s_master_url;
@@ -410,6 +414,7 @@ main_init(struct config *config)
 	reqparam(networkname, "$networkname");
 	reqparam(vpn_ip, "$my_vpn_ip");
 	reqparam(routeadd, "$routeadd");
+	reqparam(routedel, "$routedel");
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
 

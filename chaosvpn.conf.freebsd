@@ -27,6 +27,7 @@ $my_ip			= ""; # address for tincd to listen on, empty for 0.0.0.0
 $networkname		= "chaos";
 $tincd_bin		= "/usr/local/sbin/tincd";
 $routeadd		= "/sbin/route add -net %s -interface \$INTERFACE";
+$routedel		= "/sbin/route del -net %s -interface \$INTERFACE";
 $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask $my_vpn_netmask";
 
 $master_url		= "http://www.vpn.hamburg.ccc.de/chaosvpn-data/$my_peerid.dat";

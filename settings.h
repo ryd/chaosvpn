@@ -32,6 +32,8 @@ extern char* s_networkname;
 extern char* s_tincd_bin;
 extern char* s_routeadd;
 extern char* s_routeadd6;
+extern char* s_routedel;
+extern char* s_routedel6;
 extern char* s_routemetric;
 extern char* s_ifconfig;
 extern char* s_ifconfig6;
