@@ -125,24 +125,35 @@ tinc_generate_config(struct string* buffer, struct config *config)
 }
 
 int
-tinc_generate_up(struct string* buffer, struct config *config)
+tinc_generate_updown(struct config *config, bool up)
 {
+	/* up == true:  generate tinc-up */
+	/* up == false: generate tinc-down */
+
 	struct list_head *p;
 	struct list_head *sp;
 	struct peer_config_list *i;
 	struct string_list *si;
+	struct string buffer;
+	struct string filepath;
+	const char *routecmd;
 
-	CONCAT(buffer, "#!/bin/sh\n\n");
+	/* generate contents */
 
-	if (str_is_nonempty(config->ifconfig) && str_is_nonempty(config->vpn_ip)) {
-		CONCAT_F(buffer, "%s\n", config->ifconfig);
+	string_init(&buffer, 8192, 2048);
+	CONCAT(&buffer, "#!/bin/sh\n\n");
+
+	if (up) {
+		if (str_is_nonempty(config->ifconfig) && str_is_nonempty(config->vpn_ip)) {
+			CONCAT_F(&buffer, "%s\n", config->ifconfig);
+		}
+
+		if (str_is_nonempty(config->ifconfig6) && str_is_nonempty(config->vpn_ip6)) {
+			CONCAT_F(&buffer, "%s\n", config->ifconfig6);
+		}
+
+		CONCAT(&buffer, "\n");
 	}
-
-	if (str_is_nonempty(config->ifconfig6) && str_is_nonempty(config->vpn_ip6)) {
-		CONCAT_F(buffer, "%s\n", config->ifconfig6);
-	}
-
-	CONCAT(buffer, "\n");
 
 	list_for_each(p, &config->peer_config) {
 		i = container_of(p, struct peer_config_list, list);
@@ -152,74 +163,57 @@ tinc_generate_up(struct string* buffer, struct config *config)
 		}
 
 		if (tinc_check_if_excluded(i->peer_config->name)) {
-			CONCAT_F(buffer, "# excluded node: %s\n", i->peer_config->name);
+			CONCAT_F(&buffer, "# excluded node: %s\n", i->peer_config->name);
 			continue;
 		}
 
-		CONCAT_F(buffer, "# node: %s\n", i->peer_config->name);
-		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routeadd)) {
+		CONCAT_F(&buffer, "# node: %s\n", i->peer_config->name);
+
+		if (up)
+			routecmd = config->routeadd;
+		else
+			routecmd = config->routedel;
+		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 			list_for_each(sp, &i->peer_config->network) {
 				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, config->routeadd, si->text)) return 1;
-				string_putc(buffer, '\n');
+				if (string_concat_sprintf(&buffer, routecmd, si->text)) return 1;
+				string_putc(&buffer, '\n');
 			}
 		}
 		
-		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(config->routeadd6)) {
+		if (up)
+			routecmd = config->routeadd6;
+		else
+			routecmd = config->routedel6;
+		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd)) {
 			list_for_each(sp, &i->peer_config->network6) {
 				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, config->routeadd6, si->text)) return 1;
-				string_putc(buffer, '\n');
+				if (string_concat_sprintf(&buffer, routecmd, si->text)) return 1;
+				string_putc(&buffer, '\n');
 			}
 		}
 	}
 
-	CONCAT(buffer, "\nexit 0\n\n");
+	CONCAT(&buffer, "\nexit 0\n\n");
 
-	return 0;
-}
 
-int
-tinc_generate_down(struct string* buffer, struct config *config)
-{
-	struct list_head *p;
-	struct list_head *sp;
-	struct peer_config_list *i;
-	struct string_list *si;
+	/* write contents into file */
 
-	CONCAT(buffer, "#!/bin/sh\n\n");
-
-	list_for_each(p, &config->peer_config) {
-		i = container_of(p, struct peer_config_list, list);
-
-		if (!strcmp(i->peer_config->name, config->peerid)) {
-			continue;
-		}
-
-		if (tinc_check_if_excluded(i->peer_config->name)) {
-			CONCAT_F(buffer, "# excluded node: %s\n", i->peer_config->name);
-			continue;
-		}
-
-		CONCAT_F(buffer, "# node: %s\n", i->peer_config->name);
-		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(config->routedel)) {
-			list_for_each(sp, &i->peer_config->network) {
-				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, config->routedel, si->text)) return 1;
-				string_putc(buffer, '\n');
-			}
-		}
-		
-		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(config->routedel6)) {
-			list_for_each(sp, &i->peer_config->network6) {
-				si = container_of(sp, struct string_list, list);
-				if (string_concat_sprintf(buffer, config->routedel6, si->text)) return 1;
-				string_putc(buffer, '\n');
-			}
-		}
+	string_init(&filepath, 512, 512);
+	string_concat(&filepath, config->base_path);
+	if (up)
+		string_concat(&filepath, "/tinc-up");
+	else
+		string_concat(&filepath, "/tinc-down");
+	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
+		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&filepath));
+		string_free(&buffer);
+		string_free(&filepath);
+		return 1;
 	}
-
-	CONCAT(buffer, "\nexit 0\n\n");
+	
+	string_free(&buffer);
+	string_free(&filepath);
 
 	return 0;
 }
