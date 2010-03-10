@@ -78,14 +78,14 @@ string_mkstatic(struct string* s, char* z)
 /* FUNCTIONS WORKING WITH PLAIN char* */
 /* ---------------------------------- */
 
-static inline bool str_is_empty(char *s) {
+static inline bool str_is_empty(const char *s) {
     if (s != NULL && strlen(s) > 0) {
         return false;
     } else {
         return true;
     }
 }
-static inline bool str_is_nonempty(char *s) {
+static inline bool str_is_nonempty(const char *s) {
     if (s != NULL && strlen(s) > 0) {
         return true;
     } else {
@@ -93,7 +93,7 @@ static inline bool str_is_nonempty(char *s) {
     }
 }
 
-static inline bool str_is_true(char *s, bool def) {
+static inline bool str_is_true(const char *s, bool def) {
     if (str_is_nonempty(s)) {
         if (strcmp(s, "0")==0 || strcasecmp(s,"no")==0) {
             return false;
