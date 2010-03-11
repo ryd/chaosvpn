@@ -22,6 +22,7 @@
 extern int tinc_write_config(struct config*);
 extern int tinc_write_hosts(struct config *config);
 extern int tinc_write_updown(struct config*, bool up);
+extern int tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
 
 #endif

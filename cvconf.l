@@ -33,6 +33,7 @@ static int stringcaller;
 \$tincd_restart_delay   {yylval.pval = &globalconfig->tincd_restart_delay; return KEYWORD_I;}
 \$tincd_graphdumpfile	{yylval.pval = &globalconfig->tincd_graphdumpfile; return KEYWORD_S;}
 \$update_interval {yylval.pval = &globalconfig->update_interval; return KEYWORD_I;}
+\$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_I;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "

@@ -140,6 +140,12 @@ unexpectedly terminated.
 .RS 4
 .PP
 Number of seconds to wait between refetching the remote config. Default is 3600 seconds.
+.RE
+.B $use_dynamic_routes
+(optional, experimental, special usecases only)
+.RS 4
+.PP
+Normally all network routes to vpn subnets are setup at tinc start. Using this special configuration flag subnet routes are added and removed as subnets become reachable or unreachable at runtime. This needs more CPU power at runtime, and could result in VPN traffic going outside around the VPN when the target node is unreachable at the moment. Use with care and only in special circumstances.
 .PP
 .SH SEE ALSO
 chaosvpn(5)

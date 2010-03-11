@@ -78,6 +78,7 @@ struct config {
 	struct list_head peer_config;
 	time_t ifmodifiedsince;
 	unsigned int update_interval;
+	bool use_dynamic_routes;
 
 	/* vars only used in configfile, dummy for c code: */
 	char *password;
