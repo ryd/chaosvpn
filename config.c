@@ -105,6 +105,16 @@ config_init(struct config *config)
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
 
+	if (config->use_dynamic_routes)
+		reqparam(routedel, "$routedel");
+
+	if (str_is_nonempty(config->vpn_ip6)) {
+		reqparam(ifconfig6, "$ifconfig6");
+		reqparam(routeadd6, "$routeadd6");
+		
+		if (config->use_dynamic_routes)
+			reqparam(routedel6, "$routedel6");
+	}
 
 	// create base directory
 	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0700)) {
