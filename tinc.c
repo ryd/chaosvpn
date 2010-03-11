@@ -259,8 +259,8 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 				list_for_each(sp, &i->peer_config->network) {
 					si = container_of(sp, struct string_list, list);
-					if (string_concat_sprintf(&buffer, routecmd, si->text)) return 1;
-					string_putc(&buffer, '\n');
+					CONCAT_F(&buffer, routecmd, si->text);
+					CONCAT(&buffer, "\n");
 				}
 			}
 			
@@ -271,8 +271,8 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd)) {
 				list_for_each(sp, &i->peer_config->network6) {
 					si = container_of(sp, struct string_list, list);
-					if (string_concat_sprintf(&buffer, routecmd, si->text)) return 1;
-					string_putc(&buffer, '\n');
+					CONCAT_F(&buffer, routecmd, si->text);
+					CONCAT(&buffer, "\n");
 				}
 			}
 		}
