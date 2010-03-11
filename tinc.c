@@ -216,6 +216,8 @@ tinc_write_updown(struct config *config, bool up)
 	struct string buffer;
 	struct string filepath;
 	const char *routecmd;
+	char *subnet;
+	char *weight;
 
 	/* generate contents */
 
@@ -259,8 +261,13 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 				list_for_each(sp, &i->peer_config->network) {
 					si = container_of(sp, struct string_list, list);
-					CONCAT_F(&buffer, routecmd, si->text);
+					subnet = strdup(si->text);
+					weight = strchr(subnet, '#');
+					if (weight)
+						*weight++ = 0;
+					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
+					free(subnet);
 				}
 			}
 			
@@ -271,8 +278,13 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd)) {
 				list_for_each(sp, &i->peer_config->network6) {
 					si = container_of(sp, struct string_list, list);
-					CONCAT_F(&buffer, routecmd, si->text);
+					subnet = strdup(si->text);
+					weight = strchr(subnet, '#');
+					if (weight)
+						*weight++ = 0;
+					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
+					free(subnet);
 				}
 			}
 		}
