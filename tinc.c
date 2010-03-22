@@ -351,11 +351,11 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	if (up) {
 		routecmd = config->routeadd;
 		routecmd6 = config->routeadd6;
-		logger = "logger -t \"tinc.$NETNAME.subnet-up\" -p daemon.debug \"subnet-up %s $NODE $SUBNET\" 2>/dev/null\n";
+		logger = "logger -t \"tinc.$NETNAME.subnet-up\" -p daemon.debug \"subnet-up %s $NODE $SUBNET%s\" 2>/dev/null\n";
 	} else {
 		routecmd = config->routedel;
 		routecmd6 = config->routedel6;
-		logger = "logger -t \"tinc.$NETNAME.subnet-down\" -p daemon.debug \"subnet-down %s $NODE $SUBNET\" 2>/dev/null\n";
+		logger = "logger -t \"tinc.$NETNAME.subnet-down\" -p daemon.debug \"subnet-down %s $NODE $SUBNET%s\" 2>/dev/null\n";
 	}
 
 	CONCAT_F(&buffer, "[ \"$NODE\" = '%s' ] && exit 0\n\n", config->peerid);
@@ -363,27 +363,44 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 		CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
 		CONCAT(&buffer, "\t");
-		CONCAT_F(&buffer, logger, "ipv4");
+		if (string_concat_sprintf(&buffer, logger, "ipv4", "")) return 1;
 		
 		CONCAT(&buffer, "\t");
 		CONCAT_F(&buffer, routecmd, "$SUBNET");
 		CONCAT(&buffer, "\n\texit 0\n");
 
-		CONCAT(&buffer, "\nfi\n");
+		CONCAT(&buffer, "fi\n");
+	} else {
+		CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
+		CONCAT(&buffer, "\t");
+		if (string_concat_sprintf(&buffer, logger, "ipv4", " (disabled)")) return 1;
+		
+		CONCAT(&buffer, "\texit 0\n");
+
+		CONCAT(&buffer, "fi\n");
 	}
+
 	if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd6)) {
 		CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
 		CONCAT(&buffer, "\t");
-		CONCAT_F(&buffer, logger, "ipv6");
+		if (string_concat_sprintf(&buffer, logger, "ipv6", "")) return 1;
 
 		CONCAT(&buffer, "\t");
 		CONCAT_F(&buffer, routecmd6, "$SUBNET");
 		CONCAT(&buffer, "\n\texit 0\n");
 
-		CONCAT(&buffer, "\nfi\n");
+		CONCAT(&buffer, "fi\n");
+	} else {
+		CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
+		CONCAT(&buffer, "\t");
+		if (string_concat_sprintf(&buffer, logger, "ipv6", " (disabled)")) return 1;
+
+		CONCAT(&buffer, "\texit 0\n");
+
+		CONCAT(&buffer, "fi\n");
 	}
 
-	CONCAT_F(&buffer, logger, "unknown");
+	if (string_concat_sprintf(&buffer, logger, "unknown", " (ignored)")) return 1;
 	CONCAT(&buffer, "exit 0\n\n");
 
 
