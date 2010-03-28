@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/param.h>
 #include <unistd.h>
 
@@ -463,4 +464,49 @@ tinc_get_version(struct config *config) {
 bail_out:
 	string_free(&tincd_output);
 	return retval;
+}
+
+pid_t
+tinc_get_pid(struct config *config) {
+	struct string pid_text;
+	pid_t pid = 0;
+	char cmd[1024];
+	int res;
+
+	string_init(&pid_text, 256, 128);
+
+	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+		/* tinc 1.1-git development tree does not use pid files anymore */
+
+		if (str_is_empty(config->tincctl_bin))
+			goto bail_out;
+
+		snprintf(cmd, sizeof(cmd), "%s --net=%s pid", config->tincctl_bin, config->networkname);
+		res = fs_backticks_exec(cmd, &pid_text);
+	} else {
+		/* tinc 1.0.x - use pid file */
+
+		if (str_is_empty(config->pidfile))
+			goto bail_out;
+
+		if (!fs_read_file(&pid_text, config->pidfile)) {
+			fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
+			goto bail_out;
+		}
+	}
+
+	/* NULL terminate string */
+	if (string_putc(&pid_text, 0)) goto bail_out;
+
+	if (str_is_empty(string_get(&pid_text))) {
+		fprintf(stderr, "notice: unable to find tinc pid; assuming an old tincd is not running\n");
+		goto bail_out;
+	}
+
+	res = strtol(string_get(&pid_text), NULL, 10);
+	pid = (pid_t) res;
+
+bail_out:
+	string_free(&pid_text);
+	return pid;
 }

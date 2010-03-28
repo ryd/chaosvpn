@@ -23,6 +23,7 @@
 #include "crypto.h"
 #include "ar.h"
 #include "uncompress.h"
+#include "strnatcmp.h"
 #include "version.h"
 
 static int r_sigterm = 0;
@@ -102,11 +103,8 @@ main (int argc,char *argv[])
 		(void)signal(SIGINT, sigint);
 		(void)signal(SIGCHLD, sigchild);
 	}
-	if (config->donotfork) {
-		main_terminate_old_tincd(config);
-	} else {
-		main_unlink_pidfile(config);
-	}
+	main_terminate_old_tincd(config);
+	main_unlink_pidfile(config);
 
 	main_updated(config);
 
@@ -237,26 +235,12 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 static void
 main_terminate_old_tincd(struct config *config)
 {
-	int pidfile;
-	char pidbuf[32];
-	int len;
-	long readpid;
 	pid_t pid;
 	
-
-	if (str_is_empty(config->pidfile))
+	pid = tinc_get_pid(config);
+	if (pid == 0)
 		return;
 
-	pidfile = open(config->pidfile, O_RDONLY);
-	if (pidfile == -1) {
-		(void)fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
-		return;
-	}
-	len = read(pidfile, pidbuf, 31);
-	close(pidfile);
-	pidbuf[len] = 0;
-	readpid = strtol(pidbuf, NULL, 10);
-	pid = (pid_t) readpid;
 	(void)fprintf(stdout, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
 	(void)kill(pid, SIGTERM);
 	(void)sleep(2);
@@ -634,6 +618,9 @@ bail_out:
 static void
 main_unlink_pidfile(struct config *config)
 {
+	if (str_is_empty(config->pidfile))
+		return;
+
 	(void)unlink(config->pidfile);
 }
 

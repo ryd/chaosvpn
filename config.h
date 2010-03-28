@@ -57,6 +57,7 @@ struct config {
 	char *my_ip;
 	char *tincd_bin;
 	char *tincd_version;
+	char *tincctl_bin;
 	unsigned int tincd_debuglevel;
 	unsigned int tincd_restart_delay;
 	char *routemetric;
@@ -69,6 +70,7 @@ struct config {
 	char *master_url;
 	char *base_path;
 	char *pidfile;
+	char *cookiefile;
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;
 	char *tmpconffile;

@@ -1,6 +1,7 @@
 #ifndef __TINC_H
 #define __TINC_H
 
+#include <sys/types.h>
 #include "string/string.h"
 #include "config.h"
 
@@ -24,5 +25,6 @@ extern int tinc_write_hosts(struct config *config);
 extern int tinc_write_updown(struct config*, bool up);
 extern int tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
+extern pid_t tinc_get_pid(struct config *config);
 
 #endif

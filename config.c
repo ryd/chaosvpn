@@ -14,6 +14,7 @@
 #include "config.h"
 #include "fs.h"
 #include "tinc.h"
+#include "strnatcmp.h"
 
 
 extern FILE *yyin;
@@ -37,6 +38,7 @@ config_alloc(void)
 	config->networkname		= NULL;
 	config->my_ip			= NULL;
 	config->tincd_bin		= strdup("/usr/sbin/tincd");
+	config->tincctl_bin		= NULL;
 	config->tincd_debuglevel	= 3;
 	config->tincd_restart_delay	= 20;
 	config->routemetric		= strdup("0");
@@ -48,7 +50,8 @@ config_alloc(void)
 	config->ifconfig6		= NULL; // not required
 	config->master_url		= strdup("https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt");
 	config->base_path		= strdup("/etc/tinc");
-	config->pidfile			= strdup("/var/run/chaosvpn.default.pid");
+	config->pidfile			= NULL;
+	config->cookiefile		= NULL;
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
@@ -69,6 +72,8 @@ config_init(struct config *config)
 {
 	struct stat st; 
 	struct string privkey_name;
+	char tmp[1024];
+	char *p;
 
 	globalconfig = config;
 
@@ -137,6 +142,62 @@ config_init(struct config *config)
 	config->tincd_version = tinc_get_version(config);
 	if (config->tincd_version == NULL) {
 		fprintf(stderr, "Warning: cant determine tinc version!\n");
+	}
+
+
+	/* tincctl only exists since tinc 1.1-git */
+	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+		if (config->tincctl_bin == NULL) {
+			char *slash;
+			char tincctl[1024] = "";
+			int len = 0;
+
+			slash = strrchr(config->tincd_bin, '/');
+			if (slash != NULL) {
+				len = slash - config->tincd_bin + 1;
+				if (len > sizeof(tincctl)-1) {
+					/* ugly, but unlikely to happen */
+					len = sizeof(tincctl)-1;
+				}
+				strncpy(tincctl, config->tincd_bin, len);
+				tincctl[len] = '\0';
+			}
+			snprintf(tincctl+len, sizeof(tincctl)-len, "tincctl");
+
+			config->tincctl_bin = strdup(tincctl);
+		}
+	} else {
+		free(config->tincctl_bin);
+		config->tincctl_bin = NULL;
+	}
+
+	/* setup pidfile name if not defined in configfile */
+	if (config->pidfile == NULL) {
+		snprintf(tmp, sizeof(tmp), "/var/run/tinc.%s.pid", config->networkname);
+		config->pidfile = strdup(tmp);
+	}
+
+
+	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+		/* tinc 1.1-git does not use a pid file anymore */
+
+		snprintf(tmp, sizeof(tmp), "%s", config->pidfile);
+		p = strrchr(tmp, '.');
+		if ((p != NULL) && (strcasecmp(p, ".pid") == 0)) {
+			/* replace trailing .pid with .cookie */
+			int len = p - tmp;
+			
+			snprintf(tmp+len, sizeof(tmp)-len, "%s", ".cookie");
+		}
+		
+		config->cookiefile = strdup(tmp);
+
+		free(config->pidfile);
+		config->pidfile = NULL;
+	} else {
+		/* tinc 1.0.x does not use a cookie file */
+		free(config->cookiefile);
+		config->cookiefile = NULL;
 	}
 
 	return 0;
