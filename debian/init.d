@@ -17,6 +17,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 DAEMON=/usr/sbin/chaosvpn # Introduce the server's location here
+TINCCTL=/usr/sbin/tincctl
 NAME=chaosvpn             # Introduce the short server's name here
 DESC="Agora Link"         # Introduce a short description here
 
@@ -92,17 +93,6 @@ running_pid() {
     return 0
 }
 
-running() {
-# Check if the process is running looking at /proc
-# (works for all users)
-
-    # No pidfile, probably no daemon present
-    [ ! -f "$PIDFILE" ] && return 1
-    local pid=`cat $PIDFILE`
-    running_pid $pid $DAEMON || return 1
-    return 0
-}
-
 start_server() {
 	local errcode
 # Start the process using the wrapper
@@ -166,45 +156,26 @@ start_configs() {
 	done
 }
 
-stop_server() {
-	local errcode
-# Stop the process using the wrapper
-        if [ -z "$DAEMONUSER" ] ; then
-            killproc -p $PIDFILE $DAEMON
-            errcode=$?
-        else
-# if we are using a daemonuser then look for process that match
-            start-stop-daemon --stop --quiet --pidfile $PIDFILE \
-                        --user $DAEMONUSER \
-                        --exec $DAEMON
-            errcode=$?
-        fi
-
-        return $errcode
-}
-
 stop_configs() {
 	local config
 	for config in $CONFIGS ; do
 		log_daemon_msg "Stopping $DESC " "$config"
 		extract_configinfos "$config"
-		if [ -f "$PIDFILE" ] ; then
-			killproc -p $PIDFILE /usr/sbin/tincd
+		if [ -x "$TINCCTL" ] ; then
+			# tincctl exists since tinc 1.1-git
+			"$TINCCTL" -n "$networkname" stop 2>/dev/null
 			log_end_msg $?
 		else
-			log_progress_msg "apparently not running"
-			log_end_msg 0
+			if [ -f "$PIDFILE" ] ; then
+				killproc -p $PIDFILE /usr/sbin/tincd
+				log_end_msg $?
+			else
+				log_progress_msg "apparently not running"
+				log_end_msg 0
+			fi
 		fi
 	done
 	return 0
-}
-
-reload_server() {
-    [ ! -f "$PIDFILE" ] && return 1
-    pid=pidofproc $PIDFILE # This is the daemon's pid
-    # Send a SIGHUP
-    kill -1 $pid
-    return $?
 }
 
 
