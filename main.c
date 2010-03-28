@@ -530,10 +530,9 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 	int fd;
 	static int NOTMPFILEWARNED = 0;
 
-	if (config->tmpconffile == NULL) {
+	if (str_is_empty(config->tmpconffile)) {
 		if (NOTMPFILEWARNED) return;
-		(void)fputs("Warning: not tempsaving fetched config. Set $tmpconffile\n"
-			" in chaosvpn.conf to enable.", stderr);
+		fprintf(stdout, "Warning: not tempsaving fetched config. Set $tmpconffile in chaosvpn.conf to enable.\n");
 	        NOTMPFILEWARNED = 1;
 		return;
 	}
@@ -555,7 +554,7 @@ main_load_previous_config(struct config *config, struct string* cnf)
 	intptr_t readbytes;
 	int retval = 1;
 
-	if (config->tmpconffile == NULL) return 1;
+	if (str_is_empty(config->tmpconffile)) return 1;
 
 	fd = open(config->tmpconffile, O_RDONLY);
 	if (fd == -1) return 1;
