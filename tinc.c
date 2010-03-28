@@ -490,7 +490,7 @@ tinc_get_pid(struct config *config) {
 			goto bail_out;
 
 		if (!fs_read_file(&pid_text, config->pidfile)) {
-			fprintf(stdout, "notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
+			fprintf(stdout, "Notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
 			goto bail_out;
 		}
 	}
@@ -499,7 +499,7 @@ tinc_get_pid(struct config *config) {
 	if (string_putc(&pid_text, 0)) goto bail_out;
 
 	if (str_is_empty(string_get(&pid_text))) {
-		fprintf(stderr, "notice: unable to find tinc pid; assuming an old tincd is not running\n");
+		fprintf(stderr, "Notice: unable to find tinc pid; assuming an old tincd is not running\n");
 		goto bail_out;
 	}
 

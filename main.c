@@ -241,11 +241,11 @@ main_terminate_old_tincd(struct config *config)
 	if (pid == 0)
 		return;
 
-	(void)fprintf(stdout, "notice: sending SIGTERM to old tincd instance (%d).\n", pid);
+	(void)fprintf(stdout, "Notice: sending SIGTERM to old tincd instance (%d).\n", pid);
 	(void)kill(pid, SIGTERM);
 	(void)sleep(2);
 	if (kill(pid, SIGKILL) == 0) {
-		(void)fputs("warning: tincd needed SIGKILL; unlinking its pidfile.\n", stderr);
+		(void)fputs("Warning: tincd needed SIGKILL; unlinking its pidfile.\n", stderr);
 		// SIGKILL succeeded; hence, we must manually unlink the old pidfile.
 		main_unlink_pidfile(config);
 	}
