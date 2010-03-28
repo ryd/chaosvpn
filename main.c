@@ -52,6 +52,7 @@ static void sigterm(int);
 static void sigint(int);
 static void sigint_holdon(int);
 static void usage(void);
+static void main_warn_about_old_tincd(struct config* config);
 
 int
 main (int argc,char *argv[])
@@ -92,6 +93,8 @@ main (int argc,char *argv[])
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
+
+	main_warn_about_old_tincd(config);
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 	
@@ -288,6 +291,13 @@ usage(void)
 	       "\n",
 		stderr);
 	exit(EXIT_FAILURE);
+}
+
+static void
+main_warn_about_old_tincd(struct config* config) {
+	if (strnatcmp(config->tincd_version, "1.0.12") < 0) {
+		fprintf(stderr, "Warning: Old tinc version '%s' detected, consider upgrading!\n", config->tincd_version);
+	}
 }
 
 static int
