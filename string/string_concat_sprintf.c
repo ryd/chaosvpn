@@ -17,7 +17,8 @@ defprintf(struct string* s, const char const* fmt, va_list exactlyonearg)
     return string_concatb(s, buf, len);
 }
 
-int string_concat_sprintf(struct string* s, const char *msg, ...)
+int
+string_concat_sprintf(struct string* s, const char *msg, ...)
 {
     va_list args;
     char* a_s;

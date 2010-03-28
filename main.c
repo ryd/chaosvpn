@@ -294,14 +294,16 @@ usage(void)
 }
 
 static void
-main_warn_about_old_tincd(struct config* config) {
+main_warn_about_old_tincd(struct config* config)
+{
 	if (strnatcmp(config->tincd_version, "1.0.12") < 0) {
 		fprintf(stderr, "Warning: Old tinc version '%s' detected, consider upgrading!\n", config->tincd_version);
 	}
 }
 
 static int
-main_check_root() {
+main_check_root()
+{
 	return getuid() != 0;
 }
 

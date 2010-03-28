@@ -434,7 +434,8 @@ tinc_add_subnet(struct string* buffer, struct list_head *network)
 }
 
 char *
-tinc_get_version(struct config *config) {
+tinc_get_version(struct config *config)
+{
 	struct string tincd_output;
 	char *retval = NULL;
 	char cmd[1024];
@@ -467,7 +468,8 @@ bail_out:
 }
 
 pid_t
-tinc_get_pid(struct config *config) {
+tinc_get_pid(struct config *config)
+{
 	struct string pid_text;
 	pid_t pid = 0;
 	char cmd[1024];

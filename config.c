@@ -205,6 +205,7 @@ config_init(struct config *config)
 
 /* get pointer to already allocated and initialized config structure */
 struct config*
-config_get(void) {
+config_get(void)
+{
 	return globalconfig;
 }

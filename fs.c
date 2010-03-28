@@ -22,7 +22,8 @@ static int fs_ensure_z(struct string* s);
  * Returns 0 on success, -1 on error.  errno should be set.
  * On success, path is returned intact.  On failure, path is undefined.
  */
-int fs_mkdir_p( char *path, mode_t mode ) {
+int fs_mkdir_p( char *path, mode_t mode )
+{
 	int err,pos,i;
 
 	err = mkdir( path, mode );
@@ -357,7 +358,8 @@ fs_writecontents_safe(const char const* dir, const char const* fn, const char co
 /* read file into struct string */
 /* note: not NULL terminated! binary clean */
 int
-fs_read_file(struct string *buffer, char *fname) {
+fs_read_file(struct string *buffer, char *fname)
+{
 	int retval = 1;
 	FILE *fp;
 	char chunk[4096];
@@ -380,7 +382,8 @@ bail_out:
 /* read everything from fd into struct string */
 /* note: not NULL terminated! binary clean */
 int
-fs_read_fd(struct string *buffer, int fd) {
+fs_read_fd(struct string *buffer, int fd)
+{
 	int retval = 1;
 	char chunk[4096];
 	ssize_t read_size;
@@ -397,7 +400,8 @@ bail_out:
 
 /* execute cmd, return stdout output in struct string *outputbuffer */
 int
-fs_backticks_exec(const char *cmd, struct string *outputbuffer) {
+fs_backticks_exec(const char *cmd, struct string *outputbuffer)
+{
 	int fds[2], pid = 0;
 	int retval = 1;
 
