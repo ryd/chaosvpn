@@ -481,7 +481,7 @@ tinc_get_pid(struct config *config) {
 		if (str_is_empty(config->tincctl_bin))
 			goto bail_out;
 
-		snprintf(cmd, sizeof(cmd), "%s --net=%s pid", config->tincctl_bin, config->networkname);
+		snprintf(cmd, sizeof(cmd), "%s --net=%s pid 2>/dev/null", config->tincctl_bin, config->networkname);
 		res = fs_backticks_exec(cmd, &pid_text);
 	} else {
 		/* tinc 1.0.x - use pid file */
