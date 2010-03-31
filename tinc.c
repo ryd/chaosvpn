@@ -361,6 +361,46 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 	CONCAT_F(&buffer, "[ \"$NODE\" = '%s' ] && exit 0\n\n", config->peerid);
 
+	/* Create code to check excludes */
+	if (config->exclude != NULL) {
+		struct list_head* ptr;
+		struct settings_list* etr;
+		bool haveexcludes = false;
+
+		list_for_each(ptr, &config->exclude->list) {
+			etr = list_entry(ptr, struct settings_list, list);
+			if (etr->e->etype != LIST_STRING) {
+				/* only strings allowed */
+				continue;
+			}
+
+			if (!haveexcludes) {
+				/* first exclude, write prefix */
+				
+				CONCAT(&buffer, "\n");
+				CONCAT(&buffer, "case \"$NODE\" in\n");
+				
+				haveexcludes = true;
+			} else {
+				/* second or further exclude */
+				/* let previous pattern match fall through */
+				CONCAT(&buffer, "\t\t;&\n");
+			}
+			
+			CONCAT_F(&buffer, "\t%s)\n", etr->e->evalue.s);
+		}
+		
+		if (haveexcludes) {
+			/* at least one exclude in config, write exclude footer */
+			
+			CONCAT(&buffer, "\t\t");
+			if (string_concat_sprintf(&buffer, logger, "ignore", " (excluded)")) return 1;
+			CONCAT(&buffer, "\t\texit 0\n");
+			CONCAT(&buffer, "\t\t;;\n");
+			CONCAT(&buffer, "esac\n\n");
+		}
+	}
+
 	if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 		CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
 		CONCAT(&buffer, "\t");
