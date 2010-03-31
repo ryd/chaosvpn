@@ -175,6 +175,14 @@ tinc_write_config(struct config *config)
 			continue;
 		}
 
+		if ((strnatcmp(config->tincd_version, "1.0.12") > 0) &&
+				(!str_is_true(i->peer_config->primary, false))) {
+			/* tinc 1.0.12+git++ - only connect to primary hosts */
+			/* tinc peer2peer will do the rest for us */
+			/* this reduces the number of tcp connections */
+			continue;
+		}
+		
 		if (str_is_nonempty(i->peer_config->gatewayhost) &&
 				!str_is_true(i->peer_config->hidden, false)) {
 			CONCAT_F(&buffer, "ConnectTo=%s\n", i->peer_config->name);
