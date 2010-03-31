@@ -42,6 +42,7 @@ struct peer_config {
 	char *cipher;
 	char *compression;
 	char *digest;
+	char *primary;
 };
 
 struct peer_config_list {

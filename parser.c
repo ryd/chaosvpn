@@ -66,6 +66,7 @@ parser_create_config(char *name)
 	my_config->cipher = strdup("");
 	my_config->compression = strdup("");
 	my_config->digest = strdup("");
+	my_config->primary = strdup("");
 
 	return 0;
 }
@@ -100,6 +101,7 @@ parser_free_peer_config(struct peer_config *config)
 	free(config->cipher);
 	free(config->compression);
 	free(config->digest);
+	free(config->primary);
 	parser_delete_string_list(&config->network);
 	parser_delete_string_list(&config->network6);
 	parser_delete_string_list(&config->route_network);
@@ -195,6 +197,8 @@ parser_parse_line(char *line, struct list_head *configlist)
 		parser_replace_item(&my_config->compression, item);
 	} else if ((item = parser_check_configitem(line, "digest="))) {
 		parser_replace_item(&my_config->digest, item);
+	} else if ((item = parser_check_configitem(line, "primary="))) {
+		parser_replace_item(&my_config->primary, item);
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
 		free(my_config->key);
 		my_config->key = calloc(sizeof(char), strlen(line) + 2);
