@@ -175,11 +175,14 @@ tinc_write_config(struct config *config)
 			continue;
 		}
 
-		if ((strnatcmp(config->tincd_version, "1.0.12") > 0) &&
+		if (config->connect_only_to_primary_nodes &&
+				(strnatcmp(config->tincd_version, "1.0.12") > 0) &&
 				(!str_is_true(i->peer_config->primary, false))) {
 			/* tinc 1.0.12+git++ - only connect to primary hosts */
 			/* tinc peer2peer will do the rest for us */
 			/* this reduces the number of tcp connections */
+			/* not enabled by default (yet) because old tinc */
+			/* nodes with TunnelServer=yes don't like it */
 			continue;
 		}
 		
