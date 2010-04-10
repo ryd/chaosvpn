@@ -3,6 +3,7 @@
 
 #define NOERR   (0)
 
+#include <sys/stat.h>
 #include "string/string.h"
 
 extern int fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode);

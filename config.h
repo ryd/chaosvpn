@@ -1,6 +1,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#include <time.h>
 #include "string/string.h"
 #include "list.h"
 #include "main.h"

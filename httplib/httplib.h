@@ -1,6 +1,7 @@
 #ifndef __HTTPLIB_H
 #define __HTTPLIB_H
 
+#include <time.h>
 #include "../string/string.h"
 
 static const int HTTP_EOK = 0;
