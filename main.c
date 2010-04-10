@@ -107,7 +107,6 @@ main (int argc,char *argv[])
 		(void)signal(SIGCHLD, sigchild);
 	}
 	main_terminate_old_tincd(config);
-	main_unlink_pidfile(config);
 
 	main_updated(config);
 
@@ -641,7 +640,6 @@ sigchild(int sig /*__unused*/)
 	struct config *config = config_get();
 
 	fprintf(stderr, "\x1B[31;1mtincd terminated. Restarting in %d seconds.\x1B[0m\n", config->tincd_restart_delay);
-	main_unlink_pidfile(config);
 	if (daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
 		fputs("\x1B[31;1munable to restart tincd. Terminating.\x1B[0m\n", stderr);
 		exit(EXIT_FAILURE);
