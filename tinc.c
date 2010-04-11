@@ -304,6 +304,10 @@ tinc_write_updown(struct config *config, bool up)
 		}
 	}
 
+	CONCAT(&buffer, "\n");
+	CONCAT(&buffer, "[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
+	CONCAT(&buffer, "\n");
+
 	CONCAT(&buffer, "\nexit 0\n\n");
 
 
