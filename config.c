@@ -114,6 +114,11 @@ config_init(struct config *config)
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
 
+	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
+		fprintf(stderr, "error: you have to change $my_vpn_ip in %s\n", config->configfile);
+		return 1;
+	}
+
 	if (config->use_dynamic_routes)
 		reqparam(routedel, "$routedel");
 
