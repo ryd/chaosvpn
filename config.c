@@ -56,7 +56,7 @@ config_alloc(void)
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
 	config->use_dynamic_routes	= false;
-	config->connect_only_to_primary_nodes = false;
+	config->connect_only_to_primary_nodes = true;
 	config->update_interval		= 0;
 	config->ifmodifiedsince		= 0;
 
