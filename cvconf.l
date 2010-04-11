@@ -35,8 +35,8 @@ static int stringcaller;
 \$tincd_interface	{yylval.pval = &globalconfig->tincd_interface; return KEYWORD_S;}
 \$tincd_device	{yylval.pval = &globalconfig->tincd_device; return KEYWORD_S;}
 \$update_interval {yylval.pval = &globalconfig->update_interval; return KEYWORD_I;}
-\$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_I;}
-\$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_I;}
+\$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_B;}
+\$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_B;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
     fprintf(stderr, "parse error: unknown configuration variable "
