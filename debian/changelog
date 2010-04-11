@@ -1,3 +1,18 @@
+chaosvpn (2.0-0) unstable; urgency=low
+
+  * Finally released chaosvpn 2.0
+  * Only create meta connections to a selected subset of nodes ("primary")
+    when using tinc newer than 1.0.12, less load and tcp connections
+    on end nodes.
+    This breaks communication with nodes using tinc 1.0.12 and older,
+    use config option $connect_only_to_primary_nodes=0 for old method
+    of connecting to all non-hidden nodes.
+  * New experimental config option $use_dynamic_routes
+  * Include support to use tinc 1.1-git
+  * Some basic compile fixes for FreeBSD
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 11 Apr 2010 17:48:44 +0200
+
 chaosvpn (2.0~rc11-0.0) unstable; urgency=low
 
   * Replace usage of TunnelServer=yes with StrictSubnets=yes
