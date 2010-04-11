@@ -8,10 +8,10 @@ Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: tinc (>= 1.0.11), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0)
+Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0)
 Provides: agoralink
 Description: Client to setup connection to ChaosVPN
- This VPN is also known as KrautVPN. It is intended to replace
+ This VPN is also known as AgoraLink. It is intended to replace
  the "old" ChaosVPN from 2006.
  .
  The ChaosVPN is a intended VPN to connect Chaos. First services
