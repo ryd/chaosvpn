@@ -25,15 +25,6 @@ This is your network name - it has to be unique in the master configuration.
 Your IPv4 address within the network.
 .PP
 .RE
-.B $my_vpn_netmask
-.RS 4
-.PP
-The netmask for your IPv4 address. If you only use one IP address in
-your network, or route the rest of your IP addresses to other devices
-use "255.255.255.255" - in 99% of all usages you should keep this at
-"255.255.255.255".
-.PP
-.RE
 .B $my_vpn_ip6
 .RS 4
 .PP
@@ -160,6 +151,16 @@ Only create tinc metadata connections to primary nodes (UDP data still flows dir
 .RS 4
 .PP
 Manually specify the VPN interface name or tuntap device. Normally the defaults of interface name and tuntap path should work for everyone. See tinc.conf manpage about Device= and Interface= for further infos.
+.PP
+.RE
+.B $my_vpn_netmask
+(obsolete)
+.RS 4
+.PP
+The netmask for your IPv4 address. If you only use one IP address in
+your network, or route the rest of your IP addresses to other devices
+use "255.255.255.255" - in 99% of all usages you should keep this at
+"255.255.255.255".
 .PP
 .SH SEE ALSO
 chaosvpn(5)
