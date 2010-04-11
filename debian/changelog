@@ -8,6 +8,8 @@ chaosvpn (2.0-0) unstable; urgency=low
     use config option $connect_only_to_primary_nodes=0 for old method
     of connecting to all non-hidden nodes.
   * New experimental config option $use_dynamic_routes
+  * Optional configfile settings to specify VPN network interface name
+    and path to tuntap device.
   * Include support to use tinc 1.1-git
   * Some basic compile fixes for FreeBSD
 
