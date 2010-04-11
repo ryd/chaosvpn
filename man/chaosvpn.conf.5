@@ -1,4 +1,4 @@
-.TH CHAOSVPN 5 "March 2010" "Discordian coreutils" ""
+.TH CHAOSVPN 5 "April 2010" "Discordian coreutils" ""
 .SH NAME
 chaosvpn.conf - configuration file for chaosvpn
 .SH DESCRIPTION
@@ -146,6 +146,20 @@ Number of seconds to wait between refetching the remote config. Default is 3600 
 .RS 4
 .PP
 Normally all network routes to vpn subnets are setup at tinc start. Using this special configuration flag subnet routes are added and removed as subnets become reachable or unreachable at runtime. This needs more CPU power at runtime, and could result in VPN traffic going outside around the VPN when the target node is unreachable at the moment. Use with care and only in special circumstances.
+.PP
+.RE
+.B $connect_only_to_primary_nodes
+(optional, default=1)
+.RS 4
+.PP
+Only create tinc metadata connections to primary nodes (UDP data still flows directly if possible). As this greatly reduces load and connection-churn on small devices this is the default when using together with tinc 1.0.13+. Disable (set to 0) this on primary nodes or if connections to old (pre 1.0.13) tinc is important.
+.PP
+.RE
+.B $tincd_interface and $tincd_device
+(optional, special usecases only)
+.RS 4
+.PP
+Manually specify the VPN interface name or tuntap device. Normally the defaults of interface name and tuntap path should work for everyone. See tinc.conf manpage about Device= and Interface= for further infos.
 .PP
 .SH SEE ALSO
 chaosvpn(5)
