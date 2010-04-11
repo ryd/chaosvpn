@@ -141,7 +141,7 @@ tinc_write_config(struct config *config)
 	CONCAT(&buffer, "Mode=router\n");
 	CONCAT_F(&buffer, "Name=%s\n", config->peerid);
 	CONCAT(&buffer, "Hostnames=no\n");
-	CONCAT(&buffer, "PingTimeout=10\n");
+	CONCAT(&buffer, "PingTimeout=60\n");
 
 	if (strnatcmp(config->tincd_version, "1.0.12") > 0) {
 		/* this option is only available since 1.0.12+git / 1.0.13 */
