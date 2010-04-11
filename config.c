@@ -55,6 +55,8 @@ config_alloc(void)
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
+	config->tincd_device		= NULL;
+	config->tincd_interface		= NULL;
 	config->use_dynamic_routes	= false;
 	config->connect_only_to_primary_nodes = true;
 	config->update_interval		= 0;
@@ -122,6 +124,26 @@ config_init(struct config *config)
 		if (config->use_dynamic_routes)
 			reqparam(routedel6, "$routedel6");
 	}
+
+#ifndef BSD
+	/* Linux */
+	if (str_is_empty(config->tincd_device)) {
+		free(config->tincd_device);
+		config->tincd_device = strdup("/dev/net/tun");
+	}
+	if (str_is_empty(config->tincd_interface)) {
+		free(config->tincd_interface);
+		snprintf(tmp, sizeof(tmp), "%s_vpn", config->networkname);
+		config->tincd_interface = strdup(tmp);
+	}
+#else
+	/* BSD */
+	if (str_is_nonempty(config->tincd_interface) && str_is_empty(config->tincd_device)) {
+		free(config->tincd_device);
+		snprintf(tmp, sizeof(tmp), "/dev/%s", config->tincd_interface);
+		config->tincd_device = strdup(tmp);
+	}
+#endif
 
 	// create base directory
 	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0700)) {

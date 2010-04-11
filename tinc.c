@@ -133,10 +133,12 @@ tinc_write_config(struct config *config)
 
 	CONCAT(&buffer, "AddressFamily=ipv4\n");
 
-#ifndef BSD
-	CONCAT(&buffer, "Device=/dev/net/tun\n");
-	CONCAT_F(&buffer, "Interface=%s_vpn\n", config->networkname);
-#endif
+	if (str_is_nonempty(config->tincd_interface)) {
+		CONCAT_F(&buffer, "Interface=%s\n", config->tincd_interface);
+	}
+	if (str_is_nonempty(config->tincd_device)) {
+		CONCAT_F(&buffer, "Device=%s\n", config->tincd_device);
+	}
 
 	CONCAT(&buffer, "Mode=router\n");
 	CONCAT_F(&buffer, "Name=%s\n", config->peerid);

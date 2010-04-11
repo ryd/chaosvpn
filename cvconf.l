@@ -32,6 +32,8 @@ static int stringcaller;
 \$tmpconffile	{yylval.pval = &globalconfig->tmpconffile; return KEYWORD_S;}
 \$tincd_restart_delay   {yylval.pval = &globalconfig->tincd_restart_delay; return KEYWORD_I;}
 \$tincd_graphdumpfile	{yylval.pval = &globalconfig->tincd_graphdumpfile; return KEYWORD_S;}
+\$tincd_interface	{yylval.pval = &globalconfig->tincd_interface; return KEYWORD_S;}
+\$tincd_device	{yylval.pval = &globalconfig->tincd_device; return KEYWORD_S;}
 \$update_interval {yylval.pval = &globalconfig->update_interval; return KEYWORD_I;}
 \$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_I;}
 \$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_I;}

@@ -76,6 +76,8 @@ struct config {
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;
 	char *tmpconffile;
+	char *tincd_device;
+	char *tincd_interface;
 	struct string privkey;
 	struct settings_list *exclude;
 	struct peer_config *my_peer;
