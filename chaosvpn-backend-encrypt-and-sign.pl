@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use constant VERSION => "0.1";
+use constant VERSION => "0.2";
 
 #
 # this is the backend postprocessing for the chaosvpn client
@@ -23,6 +23,8 @@ use constant VERSION => "0.1";
 
 # v0.01 20100127 haegar@ccc.de
 # - first revision, based on old chaosvpn perl client
+# v0.02 20100412 haegar@ccc.de
+# - disabled cleartext config file in webtree
 
 use strict;
 use Data::Dumper;
@@ -43,8 +45,8 @@ if (!defined($GIT_DIR) || $GIT_DIR eq "" || !-d $GIT_DIR ) {
 
 my $destdir = `git config chaosvpn.destdir 2>/dev/null`;
 $destdir =~ s/\s*$//s;
-my $cleartextconfig = `git config chaosvpn.cleartextconfig 2>/dev/null`;
-$cleartextconfig =~ s/\s*$//s;
+#my $cleartextconfig = `git config chaosvpn.cleartextconfig 2>/dev/null`;
+#$cleartextconfig =~ s/\s*$//s;
 my $signkey = "$GIT_DIR/chaosvpn-private/clearprivkey.pem";
 my $signpubkey = "$GIT_DIR/chaosvpn-private/pubkey.pem";
 
@@ -61,10 +63,10 @@ if (!$destdir) {
   print STDERR "'git config chaosvpn.destdir' NOT DEFINED!\n";
   exit(1);
 }
-if (!$cleartextconfig) {
-  print STDERR "'git config chaosvpn.cleartextconfig' NOT DEFINED!\n";
-  exit(1);
-}
+#if (!$cleartextconfig) {
+#  print STDERR "'git config chaosvpn.cleartextconfig' NOT DEFINED!\n";
+#  exit(1);
+#}
 
 
 my $config = read_file_into_string("<$GIT_DIR/export/chaosvpn-data.conf") || die "config read error\n";
@@ -85,10 +87,10 @@ $config =
   $config;
 
 # first: compatibility for old perl script:
-write_string_into_file(">$cleartextconfig", $config);
+#write_string_into_file(">$cleartextconfig", $config);
 # second: compatibility for old sign method:
-my $signature = rsa_sign_data($config, $sign_secret_key);
-write_string_into_file(">$cleartextconfig.sig", $signature);
+#my $signature = rsa_sign_data($config, $sign_secret_key);
+#write_string_into_file(">$cleartextconfig.sig", $signature);
 
 
 # third: new sign and encrypt
