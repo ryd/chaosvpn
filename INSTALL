@@ -1,0 +1,103 @@
+Preparation
+===========
+On Debian you need some packages. Best practice would be use haegars repository:
+
+# echo "deb     http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
+# echo "deb-src http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
+
+Also you need to install the signing key:
+
+# wget -q http://debian.sdinet.de/signkey.asc -O- | apt-key add -
+
+Then you can update the apt cache and install tinc. Tinc has a dependency on
+liblzo. So please install it together.
+
+# apt-get update
+# apt-get install tinc
+
+As tinc was installed, you have to create the needed folders and the key files
+for your machine. In this example, we call the network "chaos" and tinc will
+create public and private keys for your machine with 2048 bit.
+
+# mkdir -p /etc/tinc/chaos/hosts
+# tincd -n chaos -K 2048
+
+You can save the generated key files on their default location.
+
+
+Requirements
+============
+To compile the chaosvpn software, you also need to install some required packages.
+
+* git-core
+* make
+* bison
+* flex
+* byacc
+* gcc
+* g++
+* libssl-dev
+
+# apt-get install git-core make bison flex byacc gcc g++ libssl-dev
+
+Please install required dependencies also.
+
+
+Build ChaosVPN
+==============
+Now you can clone the chaosvpn source code to your local machine.
+
+# cd /usr/src
+# git clone git://github.com/ryd/chaosvpn.git
+
+When finished, you can compile the source code and install it.
+
+# cd chaosvpn
+# make
+# make install
+
+As the binary was installed on your machine, you have to modify your
+local chaosvpn configuration to your needs. The first few lines are
+important as it controls the behaviour of your machine.
+
+# vi /etc/tinc/chaosvpn.conf
+
+
+Publish your details
+====================
+
+Now we need some details from your machine to publish it to all
+other nodes within the ChaosVPN. You can fill your details into
+this template:
+
+----------------------------------------------------------------
+# The address where your machine is reachable. leave empty if no
+# incoming connections could be made.
+gatewayhost=[PUBLIC_STATIC_IP_OR_DYNDNS_HOSTNAME]
+
+# The port number on which your tinc is listening to.
+port=4200
+
+# Your name and email address which we can contact in case of
+# trouble or issues.
+owner="John Doe <jdoe@example.net>"
+
+# The IPv4 network address/es or ranges which your machine is
+# responsible for. You can add as many entries as you need.
+network=192.0.2.1/32
+network=198.51.100.192/28
+network=203.0.113.0/24
+
+# The IPv6 network address/es or ranges which your machine is
+# responsible for. You can add as many entries as you need.
+# Leave empty if your do not have or need IPv6 addresses.
+network6=2001:0DB8:1234:5678:0000:0000:0000:0000/64
+network6=2001:0DB8:1234:ABCD:0000:0000:0000:0000/64
+----------------------------------------------------------------
+
+Now, please send the template to (still haegar or chaosvpn@hamburg.ccc.de???) and attach this file to your email:
+
+* /etc/tinc/chaos/rsa_key.pub
+
+* TODO: crontab for chaosvpn binary
+* TODO: running in foreground
