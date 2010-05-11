@@ -49,10 +49,15 @@ install:
 
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/sbin
 	install -m 0755 $(NAME) $(DESTDIR)$(PREFIX)/sbin/
-	@if [ ! -e $(DESTDIR)$(TINCDIR)/$(NAME).conf ] ; then \
+	@if [ ! -e $(DESTDIR)$(TINCDIR)/chaosvpn.conf ] ; then \
 		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
-		install -m 0600 chaosvpn.conf $(DESTDIR)$(TINCDIR)/$(NAME).conf ; \
+		install -m 0600 chaosvpn.conf $(DESTDIR)$(TINCDIR)/chaosvpn.conf ; \
 		echo "Created config File $(TINCDIR)/chaosvpn.conf"; \
+	fi
+	@if [ ! -e $(DESTDIR)$(TINCDIR)/warzone.conf ] ; then \
+		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
+		install -m 0600 warzone.conf $(DESTDIR)$(TINCDIR)/warzone.conf ; \
+		echo "Created config File $(TINCDIR)/warzone.conf"; \
 	fi
 
 splint:
