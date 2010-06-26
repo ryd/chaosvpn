@@ -17,3 +17,6 @@ $(NAME): test.o $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -o $(patsubst %.c,%.o,$<) -c $<
 
+clean:
+	rm -f *.o $(NAME)
+
