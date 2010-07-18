@@ -340,8 +340,6 @@ main_request_config(struct config *config, struct string *http_response)
 	string_lazyinit(&aes_key, 64);
 	string_lazyinit(&aes_iv, 64);
 
-	//(void)fputs("Fetching information:", stdout);
-	//void)fflush(stdout);
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
