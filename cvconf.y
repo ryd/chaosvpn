@@ -130,7 +130,7 @@ int
 yyerror(char* msg)
 {
     fprintf(stderr, "parse error: %s in line %d\n", msg, yylineno);
-    return 0;
+    exit(1);
 }
 
 static char*
