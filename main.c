@@ -15,6 +15,7 @@
 #include "fs.h"
 #include "list.h"
 #include "main.h"
+#include "log.h"
 #include "tun.h"
 #include "parser.h"
 #include "tinc.h"
@@ -64,6 +65,8 @@ main (int argc,char *argv[])
 
 	string_init(&HTTP_USER_AGENT, 64, 16);
 	string_concat_sprintf(&HTTP_USER_AGENT, "ChaosVPN/%s", VERSION);
+
+	log_init(&argc, &argv, LOG_PID|LOG_PERROR, LOG_DAEMON);
 
 	printf("ChaosVPN/AgoraLink client v%s starting.\n", VERSION);
 
