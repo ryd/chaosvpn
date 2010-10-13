@@ -5,8 +5,82 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "daemon.h"
+
+static void
+fix_fds (void)
+{
+    /* Bad Things Happen if stdin, stdout, and stderr have been closed
+       (as by the `sh incantation "attraction >&- 2>&-").  When you do
+       that, the X connection gets allocated to one of these fds, and
+       then some random library writes to stderr, and random bits get
+       stuffed down the X pipe, causing "Xlib: sequence lost" errors.
+       So, we cause the first three file descriptors to be open to
+       /dev/null if they aren't open to something else already.  This
+       must be done before any other files are opened (or the closing
+       of that other file will again free up one of the "magic" first
+       three FDs.)
+
+       We do this by opening /dev/null three times, and then closing
+       those fds, *unless* any of them got allocated as #0, #1, or #2,
+       in which case we leave them open.  Gag.
+
+       Really, this crap is technically required of *every* X program,
+       if you want it to be robust in the face of "2>&-".
+     */
+    int fd0 = open ("/dev/null", O_RDWR);
+    int fd1 = open ("/dev/null", O_RDWR);
+    int fd2 = open ("/dev/null", O_RDWR);
+    if (fd0 > 2) close (fd0);
+    if (fd1 > 2) close (fd1);
+    if (fd2 > 2) close (fd2);
+}
+
+bool
+daemonize(void)
+{
+    pid_t pid, sid;
+
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid < 0) {
+        return false;
+    }
+    
+    /* If we got a good PID, then we are the parent and can exit */
+    if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
+    
+    /* now in forked child */
+    
+    /* Change the file mode mask */
+    umask(0);
+    
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid < 0) {
+        /* we should log something here... */
+        return false;
+    }
+
+    /* Change the current working directory */
+    (void)chdir("/"); /* ignore errors */
+
+    /* Close out the standard file descriptors */
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO),
+    close(STDERR_FILENO);
+    
+    /* Replace standard file descriptors with /dev/null */
+    fix_fds();
+    
+    return true;
+}
 
 int
 daemon_init(struct daemon_info* di, char* path, ...)

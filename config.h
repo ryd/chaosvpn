@@ -93,6 +93,7 @@ struct config {
 
 	/* commandline parameter: */
 	char *configfile;
+	bool daemonmode;
 	bool oneshot;
 };
 

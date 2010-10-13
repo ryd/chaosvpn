@@ -66,7 +66,8 @@ config_alloc(void)
 	INIT_LIST_HEAD(&config->peer_config);
 
 	config->configfile		= strdup("/etc/tinc/chaosvpn.conf");
-	config->oneshot		= false;
+	config->daemonmode		= false;
+	config->oneshot			= false;
 
 	return config;
 }

@@ -97,7 +97,14 @@ main (int argc,char *argv[])
 	main_warn_about_old_tincd(config);
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
-	
+
+	if (config->daemonmode) {
+		if (!daemonize()) {
+			fprintf(stderr, "daemonizing into the background failed - aborting\n");
+			exit(1);
+		}
+	}
+		
 	if (config->oneshot) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
@@ -259,7 +266,7 @@ main_parse_opts(struct config *config, int argc, char** argv)
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "c:aofr")) != -1) {
+	while ((c = getopt(argc, argv, "c:aofrd")) != -1) {
 		switch (c) {
 		case 'c':
 			config->configfile = optarg;
@@ -267,11 +274,18 @@ main_parse_opts(struct config *config, int argc, char** argv)
 
 		case 'a': /* legacy */
 		case 'o':
+			config->daemonmode = false;
 			config->oneshot = true;
 			break;
 
 		case 'f': /* legacy */
 		case 'r':
+			config->daemonmode = false;
+			config->oneshot = false;
+			break;
+
+		case 'd':
+			config->daemonmode = true;
 			config->oneshot = false;
 			break;
 
@@ -288,7 +302,8 @@ usage(void)
 	       "Usage: chaosvpn [OPTION...]\n\n"
 	       "  -c FILE  use this user configuration file\n"
 	       "  -o       oneshot config update and tincd restart, then exit\n"
-	       "  -f       keep running, controlling tincd (default)\n"
+	       "  -r       keep running, controlling tincd (default)\n"
+	       "  -d       daemon mode, fork into background and keep running\n"
 	       "\n",
 		stderr);
 	exit(EXIT_FAILURE);
