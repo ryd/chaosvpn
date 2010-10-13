@@ -11,6 +11,7 @@ chaosvpn (2.01-0) unstable; urgency=low
   * Standards-Version: 3.9.1
   * Renamed config option "-a" to "-o" for 'oneshot mode' - describes
     better what it is really doing.
+  * Renamed config option "-f" to "-r" for 'keep running'.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 13 Oct 2010 22:16:17 +0200
 

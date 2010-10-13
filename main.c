@@ -259,7 +259,7 @@ main_parse_opts(struct config *config, int argc, char** argv)
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "c:aof")) != -1) {
+	while ((c = getopt(argc, argv, "c:aofr")) != -1) {
 		switch (c) {
 		case 'c':
 			config->configfile = optarg;
@@ -270,7 +270,8 @@ main_parse_opts(struct config *config, int argc, char** argv)
 			config->oneshot = true;
 			break;
 
-		case 'f':
+		case 'f': /* legacy */
+		case 'r':
 			config->oneshot = false;
 			break;
 
