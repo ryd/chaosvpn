@@ -1,8 +1,15 @@
 chaosvpn (2.01-0) unstable; urgency=low
 
+  * Configfile parser fixups.
+  * Make default configfiles a little bit simpler.
+  * Manpage: mark $my_vpn_netmask as obsolete and move it to the bottom.
+  * Allow admin to create tinc-up.local and tinc-down.local
+  * Allow admin to create subnet-up.local and subnet-down.local
+  * Fix test for httplib
+  * Instantly abort on parse errors
   * crypto.c: Unlink tempfiles, do not let them lie around.
 
- -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 13 Oct 2010 22:09:20 +0200
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 13 Oct 2010 22:11:32 +0200
 
 chaosvpn (2.0-0) unstable; urgency=low
 
