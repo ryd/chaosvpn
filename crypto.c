@@ -53,11 +53,12 @@ crypto_load_key(const char *key, bool is_private)
         /* create tempfile and store key into it */
         tmpname = strdup("/tmp/chaosvpn.tmp.XXXXXX");
         keyfd = mkstemp(tmpname);
-        free(tmpname);
         if (keyfd == -1) {
             fprintf(stderr, "crypto_load_key: error creating tempfile\n");
             return NULL;
         }
+        unlink(tmpname);
+        free(tmpname);
         if (write(keyfd, key, strlen(key)) != strlen(key)) {
             close(keyfd);
             fprintf(stderr, "crypto_load_key: tempfile write error\n");

@@ -1,3 +1,9 @@
+chaosvpn (2.01-0) unstable; urgency=low
+
+  * crypto.c: Unlink tempfiles, do not let them lie around.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 13 Oct 2010 22:09:20 +0200
+
 chaosvpn (2.0-0) unstable; urgency=low
 
   * Finally released chaosvpn 2.0
