@@ -51,7 +51,7 @@ crypto_load_key(const char *key, bool is_private)
 	FILE *keyfp;
     
         /* create tempfile and store key into it */
-        tmpname = strdup("/tmp/tmp.XXXXXX");
+        tmpname = strdup("/tmp/chaosvpn.tmp.XXXXXX");
         keyfd = mkstemp(tmpname);
         free(tmpname);
         if (keyfd == -1) {
