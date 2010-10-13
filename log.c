@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "log.h"
 
 void

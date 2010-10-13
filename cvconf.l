@@ -1,5 +1,6 @@
 %{
 #include "config.h"
+#include "log.h"
 #include "y.tab.h"
 
 extern struct config *globalconfig; /* private from config.c */
@@ -39,7 +40,7 @@ static int stringcaller;
 \$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_B;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
-    fprintf(stderr, "parse error: unknown configuration variable "
+    log_err("parse error: unknown configuration variable "
             "\"%s\" in line %d\n", yytext, yylineno);
     exit(1);
 }

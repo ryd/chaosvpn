@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "list.h"
+#include "log.h"
 #include "config.h"
 
 extern struct config *globalconfig; /* private from config.c */
@@ -72,7 +73,7 @@ list: listentry LISTCLOSE { $$ = list_add_elem(list_allocate(), $1); }
 string: { $$ = strdup(""); /* ugly */ }
     | KEYWORD_S string { 
         if (*(char**)$1 == NULL) {
-            fprintf(stderr, "error: access to uninitialized configuration variable in line %d\n", yylineno);
+            log_err("error: access to uninitialized configuration variable in line %d", yylineno);
             exit(1);
         }
         $$ = catandfree(*(char**)$1, $2, 0, 1); 
@@ -129,7 +130,7 @@ list_add_elem(struct settings_list* list, struct settings_list_entry* item)
 int
 yyerror(char* msg)
 {
-    fprintf(stderr, "parse error: %s in line %d\n", msg, yylineno);
+    log_err("parse error: %s in line %d", msg, yylineno);
     exit(1);
 }
 

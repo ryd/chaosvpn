@@ -1,5 +1,7 @@
 /* UNUSED! */
 
+#include "log.h"
+
 int
 pidfile_create_pidfile()
 {
@@ -11,7 +13,7 @@ pidfile_create_pidfile()
 	int retval = 0;
 
 	if (str_is_empty(s_pidfile) {
-		fputs("create_pidfile: no PIDFILE is set.\n", stderr);
+		log_debug("create_pidfile: no PIDFILE is set.");
 		return 2;
 	}
 
@@ -21,7 +23,7 @@ pidfile_create_pidfile()
     
 	fh_lockfile = open(string_get(&lockfile), O_CREAT | O_EXCL, 0600);
 	if (fh_lockfile == -1) {
-		fputs("create_pidfile: lockfile already exists.\n", stderr);
+		log_info("create_pidfile: lockfile already exists.");
 		return 111;
 	}
 	close(fh_lockfile);
@@ -37,7 +39,7 @@ pidfile_create_pidfile()
 bail_out:
 	close(fh_pidfile);
 	if (unlink(string_get(&lockfile))) {
-		fprintf(stderr, "create_pidfile: warning: couldn't remove lockfile %s\n", string_get(&lockfile));
+		log_warn("create_pidfile: warning: couldn't remove lockfile %s", string_get(&lockfile));
 	}
 	return retval;
 }

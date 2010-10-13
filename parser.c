@@ -4,6 +4,7 @@
 #include "list.h"
 #include "main.h"
 #include "config.h"
+#include "log.h"
 #include "parser.h"
 
 static struct peer_config *my_config = NULL;
@@ -212,7 +213,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 		if (parse_key_mode) {
 			parser_extend_key(line);
 		} else {
-			printf("parser: warning: unparsed: %s\n", line);
+			log_warn("parser: warning: unparsed: %s\n", line);
 		}
 	}
 	return 0;

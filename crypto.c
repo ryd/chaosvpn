@@ -9,6 +9,7 @@
 #include <openssl/ssl.h>
 #include "string/string.h"
 #include "fs.h"
+#include "log.h"
 
 /*
 
@@ -54,20 +55,20 @@ crypto_load_key(const char *key, bool is_private)
         tmpname = strdup("/tmp/chaosvpn.tmp.XXXXXX");
         keyfd = mkstemp(tmpname);
         if (keyfd == -1) {
-            fprintf(stderr, "crypto_load_key: error creating tempfile\n");
+            log_err("crypto_load_key: error creating tempfile\n");
             return NULL;
         }
         unlink(tmpname);
         free(tmpname);
         if (write(keyfd, key, strlen(key)) != strlen(key)) {
             close(keyfd);
-            fprintf(stderr, "crypto_load_key: tempfile write error\n");
+            log_err("crypto_load_key: tempfile write error\n");
             return NULL;
         }
         keyfp = fdopen(keyfd, "rw");
         if (keyfp == NULL) {
             close(keyfd);
-            fprintf(stderr, "crypto_load_key: tempfile fdopen() failed\n");
+            log_err("crypto_load_key: tempfile fdopen() failed\n");
             return NULL;
         }
         fseek(keyfp, 0, SEEK_SET);
@@ -80,7 +81,7 @@ crypto_load_key(const char *key, bool is_private)
         }
         fclose(keyfp);
         if (pkey == NULL) {
-            fprintf(stderr, "crypto_load_key: loading and parsing key failed\n");
+            log_err("crypto_load_key: loading and parsing key failed\n");
             ERR_print_errors_fp(stderr);
             return NULL;
         }
@@ -99,13 +100,13 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
 	/* load public key into openssl structure */
         pkey = crypto_load_key(pubkey, false);
         if (pkey == NULL) {
-            fprintf(stderr, "crypto_verify_signature: key loading failed\n");
+            log_err("crypto_verify_signature: key loading failed\n");
             return 1;
         }
         
         /* Verify the signature */
         if (EVP_VerifyInit(&md_ctx, EVP_sha512()) != 1) {
-            fprintf(stderr, "crypto_verify_signature: libcrypto verify init failed\n");
+            log_err("crypto_verify_signature: libcrypto verify init failed\n");
             EVP_PKEY_free(pkey);
             return 1;
         }
@@ -114,7 +115,7 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
         EVP_PKEY_free(pkey);
         
         if (err != 1) {
-            fprintf(stderr, "crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
+            log_err("crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
             ERR_print_errors_fp(stderr);
             err = 1;
             goto bailout_ctx_cleanup;
@@ -125,7 +126,7 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
 bailout_ctx_cleanup:
         EVP_MD_CTX_cleanup(&md_ctx);
 
-        //printf ("Signature Verified Ok.\n");
+        //log_info("Signature Verified Ok.\n");
 	return err;
 }
 
@@ -138,13 +139,13 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
         /* load private key into openssl */
         pkey = crypto_load_key(privkey, true);
         if (pkey == NULL) {
-            fprintf(stderr, "crypto_rsa_decrypt: key loading failed.\n");
+            log_err("crypto_rsa_decrypt: key loading failed.\n");
             return 1;
         }
 
         /* check length of ciphertext */
         if (string_length(ciphertext) != EVP_PKEY_size(pkey)) {
-            fprintf(stderr, "crypto_rsa_decrypt: ciphertext should match length of key (%" PRIuPTR " vs %d).\n",
+            log_err("crypto_rsa_decrypt: ciphertext should match length of key (%" PRIuPTR " vs %d).\n",
                     string_length(ciphertext),EVP_PKEY_size(pkey));
             goto bail_out;
         }
@@ -152,7 +153,7 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
         string_free(decrypted); /* just to be sure */
         string_init(decrypted, EVP_PKEY_size(pkey), 512);
         if (string_size(decrypted) < EVP_PKEY_size(pkey)) {
-            fprintf(stderr, "crypto_rsa_decrypt: malloc error.\n");
+            log_err("crypto_rsa_decrypt: malloc error.\n");
         }
         
         retval = RSA_private_decrypt(string_length(ciphertext),
@@ -166,7 +167,7 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
             retval = 0;
         } else {
             retval = 1;
-            fprintf(stderr, "crypto_rsa_decrypt: rsa decrypt failed.\n");
+            log_err("crypto_rsa_decrypt: rsa decrypt failed.\n");
             ERR_print_errors_fp(stderr);
         }
 
@@ -187,19 +188,19 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
     if (!EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL,
         (unsigned char *)string_get(aes_key),
         (unsigned char *)string_get(aes_iv))) {
-        fprintf(stderr, "crypto_aes_decrypt: init failed\n");
+        log_err("crypto_aes_decrypt: init failed\n");
         ERR_print_errors_fp(stderr);
         goto bail_out;
     }
     EVP_CIPHER_CTX_set_padding(&ctx, 1);
     
     if (string_length(aes_key) != EVP_CIPHER_CTX_key_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid key size (%" PRIuPTR " vs expected %d)\n",
+        log_err("crypto_aes_decrypt: invalid key size (%" PRIuPTR " vs expected %d)\n",
                 string_length(aes_key), EVP_CIPHER_CTX_key_length(&ctx));
         goto bail_out;
     }
     if (string_length(aes_iv) != EVP_CIPHER_CTX_iv_length(&ctx)) {
-        fprintf(stderr, "crypto_aes_decrypt: invalid iv size (%" PRIuPTR " vs expected %d)\n",
+        log_err("crypto_aes_decrypt: invalid iv size (%" PRIuPTR " vs expected %d)\n",
                 string_length(aes_iv), EVP_CIPHER_CTX_iv_length(&ctx));
         goto bail_out;
     }
@@ -209,7 +210,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
     string_free(decrypted); /* free previous buffer */
     string_init(decrypted, decryptspace, 1024);
     if (string_size(decrypted) < decryptspace) {
-        fprintf(stderr, "crypto_aes_decrypt: decrypt buffer malloc error\n");
+        log_err("crypto_aes_decrypt: decrypt buffer malloc error\n");
         goto bail_out;
     }
     
@@ -219,7 +220,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         /* TODO: need cleaner way: */
         decrypted->_u._s.length = decryptdone;
     } else {
-        fprintf(stderr, "crypto_aes_decrypt: decrypt failed\n");
+        log_err("crypto_aes_decrypt: decrypt failed\n");
         ERR_print_errors_fp(stderr);
         goto bail_out;
     }
@@ -230,7 +231,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         /* TODO: need cleaner way: */
         decrypted->_u._s.length += decryptdone;
     } else {
-        fprintf(stderr, "crypto_aes_decrypt: decrypt final failed\n");
+        log_err("crypto_aes_decrypt: decrypt final failed\n");
         ERR_print_errors_fp(stderr);
         goto bail_out;
     }

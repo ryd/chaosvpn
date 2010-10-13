@@ -13,6 +13,7 @@
 #include "fs.h"
 #include "tinc.h"
 #include "strnatcmp.h"
+#include "log.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
@@ -87,7 +88,7 @@ tinc_write_hosts(struct config *config)
 		struct peer_config_list *i = container_of(p, 
 				struct peer_config_list, list);
 
-		printf("Writing config file for peer %s:", i->peer_config->name);
+		log_debug("Writing config file for peer %s", i->peer_config->name);
 		(void)fflush(stdout);
 
 		if (string_init(&peer_config, 2048, 512)) return 1;
@@ -100,13 +101,12 @@ tinc_write_hosts(struct config *config)
 		if (fs_writecontents_safe(string_get(&hostfilepath), 
 				i->peer_config->name, string_get(&peer_config),
 				string_length(&peer_config), 0600)) {
-			fputs("unable to write host config file.\n", stderr);
+			log_err("unable to write host config file %s/%s.", string_get(&hostfilepath), i->peer_config->name);
 			string_free(&peer_config);
 			return 1;
 		}
 
 		string_free(&peer_config);
-		(void)puts(".");
 	}
 
 	string_free(&hostfilepath);
@@ -121,8 +121,7 @@ tinc_write_config(struct config *config)
 	struct string configfilename;
 	struct string buffer;
 
-	(void)fputs("Writing global config file:", stdout);
-	(void)fflush(stdout);
+	log_debug("Writing global config file.");
 
 	string_init(&buffer, 8192, 2048);
 
@@ -203,7 +202,7 @@ tinc_write_config(struct config *config)
 
 	if (fs_writecontents(string_get(&configfilename), string_get(&buffer),
 			string_length(&buffer), 0600)) {
-		(void)fputs("unable to write tinc config file!\n", stderr);
+		log_err("unable to write tinc config file!");
 		string_free(&buffer);
 		string_free(&configfilename);
 		return 1;
@@ -211,8 +210,6 @@ tinc_write_config(struct config *config)
 
 	string_free(&buffer);
 	string_free(&configfilename);
-
-	(void)puts(".");
 
 	return 0;
 }
@@ -320,7 +317,7 @@ tinc_write_updown(struct config *config, bool up)
 	else
 		string_concat(&filepath, "/tinc-down");
 	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
-		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&filepath));
+		log_err("unable to write to %s!", string_get(&filepath));
 		string_free(&buffer);
 		string_free(&filepath);
 		return 1;
@@ -485,7 +482,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	unlink(string_get(&filepath)); /* unlink first, may be a symlink */
 
 	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
-		(void)fprintf(stderr, "unable to write to %s!\n", string_get(&filepath));
+		log_err("unable to write to %s!\n", string_get(&filepath));
 		string_free(&buffer);
 		string_free(&filepath);
 		return 1;
@@ -533,11 +530,11 @@ tinc_get_version(struct config *config)
 		*p = '\0';
 	}
 	
-	//printf("tinc version output: '%s'\n", string_get(&tincd_output));
+	//log_debug("tinc version output: '%s'\n", string_get(&tincd_output));
 
 	retval = strdup(string_get(&tincd_output)+13);
 
-	//printf("tinc version: '%s'\n", retval);
+	//log_debug("tinc version: '%s'\n", retval);
 
 bail_out:
 	string_free(&tincd_output);
@@ -566,12 +563,12 @@ tinc_get_pid(struct config *config)
 		/* tinc 1.0.x - use pid file */
 
 		if (str_is_empty(config->pidfile)) {
-			fprintf(stdout, "Notice: tinc pidfile not specified!\n");
+			log_warn("Notice: tinc pidfile not specified!");
 			goto bail_out;
 		}
 
 		if (fs_read_file(&pid_text, config->pidfile)) {
-			fprintf(stdout, "Notice: unable to open pidfile '%s'; assuming an old tincd is not running\n", config->pidfile);
+			log_info("Notice: unable to open pidfile '%s'; assuming an old tincd is not running", config->pidfile);
 			goto bail_out;
 		}
 	}
@@ -580,7 +577,7 @@ tinc_get_pid(struct config *config)
 	if (string_putc(&pid_text, 0)) goto bail_out;
 
 	if (str_is_empty(string_get(&pid_text))) {
-		fprintf(stdout, "Notice: unable to find tinc pid; assuming an old tincd is not running\n");
+		log_info("Notice: unable to find tinc pid; assuming an old tincd is not running");
 		goto bail_out;
 	}
 

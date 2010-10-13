@@ -14,6 +14,7 @@ chaosvpn (2.01-0) unstable; urgency=low
   * Renamed config option "-f" to "-r" for 'keep running'.
   * New commandline option "-d" for a real daemon mode with forking into
     the background.
+  * Redirected (nearly) all output messages to syslog.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 13 Oct 2010 23:03:41 +0200
 

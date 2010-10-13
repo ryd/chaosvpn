@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "log.h"
 #include "tun.h"
 
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
@@ -27,7 +28,7 @@ int
 tun_check_or_create()
 {
 	if (!EXISTS(TUN_DEV)) {
-		printf("tun device does't exists - trying to create it.");
+		log_info("tun device %s does't exists - trying to create it.", TUN_DEV);
 		return tun_create_dev();
 	}
 	return 0;

@@ -5,6 +5,7 @@
 #include <ar.h>
 
 #include "string/string.h"
+#include "log.h"
 #include "fs.h"
 #include "ar.h"
 
@@ -22,11 +23,11 @@ ar_parseheaderlength(const char *inh, size_t len)
   char *endp;
   
   if (memchr(inh,0,len)) {
-    fprintf(stderr, "ar_parseheaderlength: contains zero-bytes\n");
+    log_warn("ar_parseheaderlength: contains zero-bytes\n");
     return -1;
   }
   if (len > sizeof(lintbuf)) {
-    fprintf(stderr, "ar_parseheaderlength: length too big\n");
+    log_warn("ar_parseheaderlength: length too big\n");
     return -1;
   }
   memcpy(lintbuf,inh,len);
@@ -34,11 +35,11 @@ ar_parseheaderlength(const char *inh, size_t len)
   *strchr(lintbuf, ' ') = '\0';
   r = strtol(lintbuf, &endp, 10);
   if (r < 0) {
-    fprintf(stderr, "ar_parseheaderlength: negative member length\n");
+    log_warn("ar_parseheaderlength: negative member length\n");
     return -1;
   }
   if (*endp) {
-    fprintf(stderr, "ar_parseheaderlength: contains non-digits\n");
+    log_warn("ar_parseheaderlength: contains non-digits\n");
     return -1;
   }
   return r;
@@ -50,11 +51,11 @@ ar_compare_name(char *inh, size_t len, char *searchname)
   char lintbuf[32];
   
   if (memchr(inh,0,len)) {
-    fprintf(stderr, "ar_compare_name: header contains zero-bytes\n");
+    log_warn("ar_compare_name: header contains zero-bytes\n");
     return -1;
   }
   if (len > sizeof(lintbuf)) {
-    fprintf(stderr, "ar_compare_name: length too big\n");
+    log_warn("ar_compare_name: length too big\n");
     return -1;
   }
   memcpy(lintbuf,inh,len);
@@ -71,12 +72,12 @@ bool
 ar_is_ar_file(struct string *archive)
 {
   if (string_length(archive) < SARMAG) {
-    fprintf(stderr, "ar_extract: buffer contents too short\n");
+    log_warn("ar_extract: buffer contents too short\n");
     return false;
   }
   
   if (strncmp(string_get(archive), ARMAG, sizeof(ARMAG)-1) != 0) {
-    fprintf(stderr, "ar_extract: no .ar header at the beginning\n");
+    log_warn("ar_extract: no .ar header at the beginning\n");
     return false;
   }
   
@@ -95,14 +96,14 @@ ar_extract(struct string *archive, char *membername, struct string *result)
 
   len = string_length(archive);
   if (len < SARMAG) {
-    fprintf(stderr, "ar_extract: buffer contents too short\n");
+    log_warn("ar_extract: buffer contents too short\n");
     return 1;
   }
   
   pos = string_get(archive);
   
   if (strncmp(pos, ARMAG, sizeof(ARMAG)-1) != 0) {
-    fprintf(stderr, "ar_extract: no .ar header at the beginning\n");
+    log_warn("ar_extract: no .ar header at the beginning\n");
     return 1;
   }
   pos += sizeof(ARMAG)-1;
@@ -110,7 +111,7 @@ ar_extract(struct string *archive, char *membername, struct string *result)
 
   for (;;) {
     if (len < sizeof(struct ar_hdr)) {
-      fprintf(stderr, "ar_extract: buffer contents too short\n");
+      log_warn("ar_extract: buffer contents too short\n");
       return 1;
     }
     arh = (struct ar_hdr *)pos;
@@ -118,25 +119,25 @@ ar_extract(struct string *archive, char *membername, struct string *result)
     len -= sizeof(struct ar_hdr);
 
     if (memcmp(arh->ar_fmag,ARFMAG,sizeof(arh->ar_fmag))) {
-      fprintf(stderr, "ar_extract: buffer corrupt - bad magic at end of header\n");
+      log_warn("ar_extract: buffer corrupt - bad magic at end of header\n");
       return 1;
     }
 
     memberlen = ar_parseheaderlength(arh->ar_size, sizeof(arh->ar_size));
     if (memberlen < 0) {
-      fprintf(stderr, "ar_extract: buffer corrupt - invalid length field in header\n");
+      log_warn("ar_extract: buffer corrupt - invalid length field in header\n");
       return 1;
     }
     
     if (memberlen+(memberlen&1) > len) {
-      fprintf(stderr, "ar_extract: buffer corrupt - header length bigger than rest of buffer\n");
+      log_warn("ar_extract: buffer corrupt - header length bigger than rest of buffer\n");
       return 1;
     }
     
     if (ar_compare_name(arh->ar_name, sizeof(arh->ar_name), membername)) {
       // found!
       if (string_concatb(result, pos, memberlen)) {
-        fprintf(stderr, "ar_extract: extract copy failed\n");
+        log_warn("ar_extract: extract copy failed\n");
         return 1;
       }
 
@@ -151,7 +152,7 @@ ar_extract(struct string *archive, char *membername, struct string *result)
       return 1;
     } else if (len < 0) {
       // should not happen
-      fprintf(stderr, "ar_extract: buffer corrupt - buffer too short\n");
+      log_warn("ar_extract: buffer corrupt - buffer too short\n");
       return 1;
     }
   }

@@ -10,6 +10,7 @@
 #include <dirent.h>
 
 #include "string/string.h"
+#include "log.h"
 #include "fs.h"
 
 
@@ -168,7 +169,7 @@ handledir(struct string* src, struct string* dst)
 			if (fs_ensure_suffix(dst)) goto bail_out;
 			if (handledir(src, dst)) goto bail_out;
 			if (utimes(string_get(dst), tv)) {
-				(void)fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
 			}
 			src->_u._s.length = srcdirlen;
 			dst->_u._s.length = dstdirlen;
@@ -181,7 +182,7 @@ handledir(struct string* src, struct string* dst)
 			if (fs_ensure_z(dst)) goto bail_out;
 			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
 			if (utimes(string_get(dst), tv)) {
-				(void)fprintf(stderr, "fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
 			}
 			dst->_u._s.length = dstdirlen;
 		}
@@ -236,7 +237,7 @@ fs_cp_r(char* src, char* dest)
 bail_out:
 	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
 	if (chdir(string_get(&curwd))) {
-		(void)fprintf(stderr, "fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
+		log_err("fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
 
 nrcwd_bail_out:
@@ -291,7 +292,7 @@ fs_empty_dir(char* dest)
 			dstdirlen = dst._u._s.length;
 			if (string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
 			if (unlink(string_get(&dst))) {
-				fprintf(stderr, "fs_empty_dir: failed to unlink %s\n", string_get(&dst));
+				log_err("fs_empty_dir: failed to unlink %s\n", string_get(&dst));
 			}
 			dst._u._s.length = dstdirlen;
 		}
@@ -306,7 +307,7 @@ bail_out_closedir:
 bail_out:
 	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
 	if (chdir(string_get(&curwd))) {
-		(void)fprintf(stderr, "fs_empty_dir: couldn't restore old cwd %s\n", string_get(&curwd));
+		log_err("fs_empty_dir: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
 
 nrcwd_bail_out:
@@ -406,13 +407,13 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 	int retval = 1;
 
 	if (pipe(fds)) {
-		fprintf(stderr, "fs_backticks_exec: pipe() failed\n");
+		log_err("fs_backticks_exec: pipe() failed\n");
 		goto bail_out;
 	}
 	
 	pid = fork();
 	if (pid < 0) {
-		fprintf(stderr, "fs_backticks_exec: fork() failed\n");
+		log_err("fs_backticks_exec: fork() failed\n");
 		close(fds[0]);
 		close(fds[1]);
 		goto bail_out;
@@ -439,7 +440,7 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 		} while (p != NULL);
 		close(fds[1]);
 		execv(argv[0], argv);
-		fprintf(stderr, "fs_backticks_exec: exec of %s failed\n", argv[0]);
+		log_err("fs_backticks_exec: exec of %s failed\n", argv[0]);
 		free(mycmd);
 		exit(0);
 	}

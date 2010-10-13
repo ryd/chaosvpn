@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include "list.h"
 #include "string/string.h"
+#include "log.h"
 #include "main.h"
 #include "config.h"
 #include "fs.h"
@@ -84,27 +85,27 @@ config_init(struct config *config)
 
 	yyin = fopen(config->configfile, "r");
 	if (!yyin) {
-		(void)fprintf(stderr, "Error: unable to open %s\n", config->configfile);
+		log_err("Error: unable to open %s\n", config->configfile);
 		return 1;
 	}
 	yyparse();
 	fclose(yyin);
 
 	if ((config->update_interval == 0) && (!config->oneshot)) {
-		(void)fputs("Error: you have not configured a remote config update interval.\n" \
-				"($update_interval) Please configure an interval (3600 - 7200 seconds\n" \
-				"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
+		log_err("Error: you have not configured a remote config update interval.");
+		log_err("($update_interval) Please configure an interval (3600 - 7200 seconds");
+		log_err("are recommended) or activate legacy (cron) mode by using the -a flag.");
 		exit(1);
 	}
 	if ((config->update_interval < 60) && (!config->oneshot)) {
-		(void)fputs("Error: $update_interval may not be <60.\n", stderr);
+		log_err("Error: $update_interval may not be <60.");
 		exit(1);
 	}
 
 
 	// check required params
 	#define reqparam(paramfield, label) if (str_is_empty(config->paramfield)) { \
-		fprintf(stderr, "%s is missing or empty in %s\n", label, config->configfile); \
+		log_err("%s is missing or empty in %s\n", label, config->configfile); \
 		return 1; \
 		}
 
@@ -116,7 +117,7 @@ config_init(struct config *config)
 	reqparam(base_path, "$base");
 
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
-		fprintf(stderr, "error: you have to change $my_vpn_ip in %s\n", config->configfile);
+		log_err("error: you have to change $my_vpn_ip in %s\n", config->configfile);
 		return 1;
 	}
 
@@ -153,7 +154,7 @@ config_init(struct config *config)
 
 	// create base directory
 	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0700)) {
-		fprintf(stderr, "error: unable to mkdir %s\n", config->base_path);
+		log_err("error: unable to mkdir %s\n", config->base_path);
 		return 1;
 	}
 
@@ -162,7 +163,7 @@ config_init(struct config *config)
 
 	string_free(&config->privkey); /* just to be sure */
 	if (fs_read_file(&config->privkey, string_get(&privkey_name))) {
-		fprintf(stderr, "error: can't read private rsa key at %s\n", string_get(&privkey_name));
+		log_err("error: can't read private rsa key at %s\n", string_get(&privkey_name));
 		string_free(&privkey_name);
 		return 1;
 	}
@@ -171,7 +172,7 @@ config_init(struct config *config)
 
 	config->tincd_version = tinc_get_version(config);
 	if (config->tincd_version == NULL) {
-		fprintf(stderr, "Warning: cant determine tinc version!\n");
+		log_warn("Warning: cant determine tinc version!\n");
 	}
 
 
