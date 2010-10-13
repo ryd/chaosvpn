@@ -98,7 +98,7 @@ main (int argc,char *argv[])
 
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 	
-	if (config->donotfork) {
+	if (config->oneshot) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
@@ -116,7 +116,7 @@ main (int argc,char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (!config->donotfork) {
+	if (!config->oneshot) {
 		do {
 		ml_cont:
 			main_updated(config);
@@ -259,18 +259,19 @@ main_parse_opts(struct config *config, int argc, char** argv)
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "c:af")) != -1) {
+	while ((c = getopt(argc, argv, "c:aof")) != -1) {
 		switch (c) {
 		case 'c':
 			config->configfile = optarg;
 			break;
 
-		case 'a':
-			config->donotfork = true;
+		case 'a': /* legacy */
+		case 'o':
+			config->oneshot = true;
 			break;
 
 		case 'f':
-			config->donotfork = false;
+			config->oneshot = false;
 			break;
 
 		default:
@@ -285,8 +286,8 @@ usage(void)
 	(void)fputs("chaosvpn - connect to the chaos vpn.\n"
 	       "Usage: chaosvpn [OPTION...]\n\n"
 	       "  -c FILE  use this user configuration file\n"
-	       "  -a       do not fork, onetime update and tincd restart\n"
-	       "  -f       fork into background to be daemon, control tincd (default)\n"
+	       "  -o       oneshot config update and tincd restart, then exit\n"
+	       "  -f       keep running, controlling tincd (default)\n"
 	       "\n",
 		stderr);
 	exit(EXIT_FAILURE);

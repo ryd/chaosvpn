@@ -66,7 +66,7 @@ config_alloc(void)
 	INIT_LIST_HEAD(&config->peer_config);
 
 	config->configfile		= strdup("/etc/tinc/chaosvpn.conf");
-	config->donotfork		= false;
+	config->oneshot		= false;
 
 	return config;
 }
@@ -89,13 +89,13 @@ config_init(struct config *config)
 	yyparse();
 	fclose(yyin);
 
-	if ((config->update_interval == 0) && (!config->donotfork)) {
+	if ((config->update_interval == 0) && (!config->oneshot)) {
 		(void)fputs("Error: you have not configured a remote config update interval.\n" \
 				"($update_interval) Please configure an interval (3600 - 7200 seconds\n" \
 				"are recommended) or activate legacy (cron) mode by using the -a flag.\n", stderr);
 		exit(1);
 	}
-	if ((config->update_interval < 60) && (!config->donotfork)) {
+	if ((config->update_interval < 60) && (!config->oneshot)) {
 		(void)fputs("Error: $update_interval may not be <60.\n", stderr);
 		exit(1);
 	}

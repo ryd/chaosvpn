@@ -93,7 +93,7 @@ struct config {
 
 	/* commandline parameter: */
 	char *configfile;
-	bool donotfork;
+	bool oneshot;
 };
 
 extern struct config* config_alloc(void);

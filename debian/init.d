@@ -30,9 +30,9 @@ test -x $DAEMON || exit 0
 
 # Default options, these can be overriden by the information
 # at /etc/default/$NAME
-DAEMON_OPTS="-a"        # Additional options given to the server
-# -a == do not run as daemon, onetime fetch+update of config and tincd
-#       restart
+DAEMON_OPTS="-o"        # Additional options given to the server
+# -o == oneshot mode, do not run as daemon, onetime fetch+update of config
+#       and tincd restart
 
 DIETIME=10              # Time to wait for the server to die, in seconds
                         # If this value is set too low you might not

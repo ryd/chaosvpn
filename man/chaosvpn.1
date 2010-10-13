@@ -3,7 +3,7 @@
 chaosvpn - manage tincd to connect to the chaosvpn
 .SH SYNOPSIS
 .BI chaosvpn
-[-c CONFIGFILE] [-a] [-f]
+[-c CONFIGFILE] [-o] [-f]
 .SH DESCRIPTION
 .B chaosvpn
 is a utility that simplifies the process of connecting to the chaosvpn.
@@ -38,7 +38,7 @@ instance.
 .TP
 \fB-c CONFIGFILE\fP Use CONFIGFILE as configuration file instead of ./chaosvpn.conf
 .TP
-\fB-a\fP Legacy mode. After configuration files are updated, try to
+\fB-o\fP Oneshot legacy mode. After configuration files are updated, try to
 kill an already running tincd by reading its pid from the PIDFILE
 specified in chaosvpn.conf. After a new tincd is launched, terminate
 the chaosvpn utility instead of controlling tincd.
