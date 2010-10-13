@@ -10,14 +10,10 @@ Package: chaosvpn
 Architecture: any
 Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0)
 Provides: agoralink
-Description: Client to setup connection to ChaosVPN
- This VPN is also known as AgoraLink. It is intended to replace
- the "old" ChaosVPN from 2006.
+Description: Config generator to setup connection to ChaosVPN
+ This VPN is also known as AgoraLink. It replaces the "old" ChaosVPN
+ from 2006.
  .
- The ChaosVPN is a intended VPN to connect Chaos. First services
- that will use it will be the warzone project and ChaosPhone.
- .
- You will find some more information at: (German)
- http://wiki.hamburg.ccc.de/index.php/ChaosVPN#ChaosVPN_2.0
- .
- Further information will come.
+ The ChaosVPN is a VPN intended to connect Chaos and Hackerspaces. First
+ services that will use it will be the warzone project and ChaosPhone.
+Homepage: http://wiki.hamburg.ccc.de/index.php/ChaosVPN
