@@ -1,3 +1,11 @@
+chaosvpn (2.02-1) unstable; urgency=low
+
+  * Busybox ash does not support "case" statement fall-through, repeat
+    the needed blocks instead.
+    Repairs $use_dynamic_routes feature on embedded machines.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 11 Nov 2010 17:11:02 +0100
+
 chaosvpn (2.01-0) unstable; urgency=low
 
   * Configfile parser fixups.
