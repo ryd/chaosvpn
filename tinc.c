@@ -407,23 +407,19 @@ tinc_write_subnetupdown(struct config *config, bool up)
 				CONCAT(&buffer, "case \"$NODE\" in\n");
 				
 				haveexcludes = true;
-			} else {
-				/* second or further exclude */
-				/* let previous pattern match fall through */
-				CONCAT(&buffer, "\t\t;&\n");
 			}
 			
 			CONCAT_F(&buffer, "\t%s)\n", etr->e->evalue.s);
-		}
-		
-		if (haveexcludes) {
-			/* at least one exclude in config, write exclude footer */
-			
 			CONCAT(&buffer, "\t\t");
 			if (string_concat_sprintf(&buffer, logger, "ignore", " (excluded)")) return 1;
 			CONCAT(&buffer, "\t\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 			CONCAT(&buffer, "\t\texit 0\n");
 			CONCAT(&buffer, "\t\t;;\n");
+		}
+		
+		if (haveexcludes) {
+			/* at least one exclude in config, write exclude footer */
+			
 			CONCAT(&buffer, "esac\n\n");
 		}
 	}
