@@ -21,8 +21,6 @@ log_raw(int priority, const char *format, ...)
   FILE *out;
   va_list args;
 
-  va_start(args, format);
-
   out=stderr;
   switch (priority) {
     case LOG_EMERG:
@@ -53,13 +51,17 @@ log_raw(int priority, const char *format, ...)
       prefix="<INFO> ";
       out=stdout;
   }
-  
+
+  va_start(args, format);
   vsyslog(priority, format, args);
+  va_end(args);
+
   if (out) {
+    va_start(args, format);
     (void)fprintf(out, "%s ", prefix);
     (void)vfprintf(out, format, args);
     (void)fprintf(out, "\n");
+    va_end(args);
   }
-  va_end(args);
 }
 

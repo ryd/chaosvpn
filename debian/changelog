@@ -1,3 +1,14 @@
+chaosvpn (2.05-0) unstable; urgency=low
+
+  * Fixing segfault in log.c on 64bit linux (32bit linux worked).
+    The combination of va_start(), vsyslog(), vfprintf(), va_end()
+    seems invalid using 64bit glibc, in 32bit using the same version
+    everything is great.
+    va_start(), vsyslog(), va_end(), va_start(), vfprintf(), va_end()
+    seems to work on both architectures.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Mon, 22 Nov 2010 00:25:17 +0100
+
 chaosvpn (2.04-1) unstable; urgency=low
 
   * Logging changes: do not output everything to stderr, only errors.
