@@ -1,3 +1,10 @@
+chaosvpn (2.03-1) unstable; urgency=low
+
+  * dash does not support $RADOM, which is used in Debian cronjob.
+    Package now requires bash instead until I find a better solution.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 21 Nov 2010 21:31:07 +0100
+
 chaosvpn (2.02-1) unstable; urgency=low
 
   * Busybox ash does not support "case" statement fall-through, repeat
