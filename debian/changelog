@@ -1,3 +1,10 @@
+chaosvpn (2.04-1) unstable; urgency=low
+
+  * Logging changes: do not output everything to stderr, only errors.
+    Way nicer for cronjobs.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 21 Nov 2010 22:06:01 +0100
+
 chaosvpn (2.03-1) unstable; urgency=low
 
   * dash does not support $RADOM, which is used in Debian cronjob.
