@@ -1,3 +1,12 @@
+chaosvpn (2.06-0) unstable; urgency=low
+
+  * Check that the OpenSSL headers used match the version of the
+    OpenSSL library used.
+    Output a warning if not.
+    (Suggestion from wopot)
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 24 Nov 2010 14:33:08 +0100
+
 chaosvpn (2.05-0) unstable; urgency=low
 
   * Fixing segfault in log.c on 64bit linux (32bit linux worked).

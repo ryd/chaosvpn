@@ -256,3 +256,18 @@ crypto_finish(void)
     ERR_free_strings();
 }
 
+void
+crypto_warn_openssl_version_changed(void)
+{
+    /*
+     * Check that the OpenSSL headers used match the version of the
+     * OpenSSL library used.
+     * Output a warning if not.
+     */
+    if (SSLeay() != OPENSSL_VERSION_NUMBER) {
+        log_info("Note: compiled using OpenSSL version '%s' headers, but linked to "
+          "OpenSSL version '%s' library",
+          OPENSSL_VERSION_TEXT,
+          SSLeay_version(SSLEAY_VERSION));
+    }
+}

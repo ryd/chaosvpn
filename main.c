@@ -70,6 +70,8 @@ main (int argc,char *argv[])
 
 	log_info("ChaosVPN/AgoraLink client v%s starting.", VERSION);
 
+	crypto_warn_openssl_version_changed();
+
 	config = config_alloc();
 	if (config == NULL) {
 		log_err("config malloc error\n");
