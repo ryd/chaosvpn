@@ -230,10 +230,10 @@ extern void parser_free_config(struct list_head* configlist);
 
 
 
-extern int tinc_write_config(struct config*);
-extern int tinc_write_hosts(struct config *config);
-extern int tinc_write_updown(struct config*, bool up);
-extern int tinc_write_subnetupdown(struct config*, bool up);
+extern bool tinc_write_config(struct config*);
+extern bool tinc_write_hosts(struct config *config);
+extern bool tinc_write_updown(struct config*, bool up);
+extern bool tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
 extern pid_t tinc_get_pid(struct config *config);
 

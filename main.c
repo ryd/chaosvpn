@@ -222,12 +222,12 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 		return -1;
 	}
 
-	if (tinc_write_config(config)) return -1;
-	if (tinc_write_hosts(config)) return -1;
-	if (tinc_write_updown(config, true)) return -1;
-	if (tinc_write_updown(config, false)) return -1;
-	if (tinc_write_subnetupdown(config, true)) return -1;
-	if (tinc_write_subnetupdown(config, false)) return -1;
+	if (!tinc_write_config(config)) return -1;
+	if (!tinc_write_hosts(config)) return -1;
+	if (!tinc_write_updown(config, true)) return -1;
+	if (!tinc_write_updown(config, false)) return -1;
+	if (!tinc_write_subnetupdown(config, true)) return -1;
+	if (!tinc_write_subnetupdown(config, false)) return -1;
 	unroot(config);
 
 	main_free_parsed_info(config);
