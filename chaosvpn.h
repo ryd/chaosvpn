@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <openssl/evp.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <syslog.h>
 
@@ -11,6 +12,27 @@
 #include "string/string.h"
 #include "httplib/httplib.h"
 #include "strnatcmp.h"
+#include "version.h"
+
+
+#define TINC_DEFAULT_PORT "665"
+/*
+   ^^ Note: This 665 is a typo, it should have been 655 instead.
+            But fixing this may mean creating imcompatibiliies between
+            older versions of this program and current versions, peers
+            using the default port would have to change their firewall
+            rules - so just keep it.
+            (The ancient perl version correctly used 655)
+ */
+
+#define TINC_DEFAULT_CIPHER "blowfish"
+#define TINC_DEFAULT_COMPRESSION "0"
+#define TINC_DEFAULT_DIGEST "sha1"
+
+#define TUN_DEV   "/dev/net/tun"
+#define TUN_PATH  "/dev/net"
+
+
 
 #define NOERR   (0)
 
@@ -115,9 +137,9 @@ struct config {
 	bool daemonmode;
 	bool oneshot;
 
-    /* used to set various file permissions */
-    uid_t tincd_uid;
-    gid_t tincd_gid;
+	/* used to set various file permissions */
+	uid_t tincd_uid;
+	gid_t tincd_gid;
 };
 
 extern struct config* config_alloc(void);
@@ -157,9 +179,6 @@ extern int daemon_stop(struct daemon_info*, unsigned int);
 extern int daemon_sigchld(struct daemon_info*, unsigned int);
 
 
-
-#include <sys/stat.h>
-#include "string/string.h"
 
 extern int fs_writecontents_safe(const char const*, const char const*, const char const*, const int, const int, const uid_t, const gid_t);
 extern int fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode, const uid_t, const gid_t);
@@ -211,20 +230,6 @@ extern void parser_free_config(struct list_head* configlist);
 
 
 
-#define TINC_DEFAULT_PORT "665"
-/*
-   ^^ Note: This 665 is a typo, it should have been 655 instead.
-            But fixing this may mean creating imcompatibiliies between
-            older versions of this program and current versions, peers
-            using the default port would have to change their firewall
-            rules - so just keep it.
-            (The ancient perl version correctly used 655)
- */
-
-#define TINC_DEFAULT_CIPHER "blowfish"
-#define TINC_DEFAULT_COMPRESSION "0"
-#define TINC_DEFAULT_DIGEST "sha1"
-
 extern int tinc_write_config(struct config*);
 extern int tinc_write_hosts(struct config *config);
 extern int tinc_write_updown(struct config*, bool up);
@@ -232,9 +237,6 @@ extern int tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
 extern pid_t tinc_get_pid(struct config *config);
 
-
-#define TUN_DEV   "/dev/net/tun"
-#define TUN_PATH  "/dev/net"
 
 extern int tun_check_or_create(); 
 
@@ -244,7 +246,5 @@ extern int uncompress_inflate(struct string *compressed, struct string *uncompre
 
 void unroot(struct config*);
 void root(void);
-
-#include "version.h"
 
 #endif
