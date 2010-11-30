@@ -172,7 +172,7 @@ config_init(struct config *config)
 
 	config->tincd_version = tinc_get_version(config);
 	if (config->tincd_version == NULL) {
-		log_warn("Warning: cant determine tinc version!\n");
+		log_warn("Warning: can't determine tinc version!\n");
 	}
 
 

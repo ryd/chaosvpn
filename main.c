@@ -399,7 +399,7 @@ main_request_config(struct config *config, struct string *http_response)
 	/* check chaosvpn-version in received ar archive */
 	if (ar_extract(&archive, "chaosvpn-version", &chaosvpn_version)) {
 		string_free(&chaosvpn_version);
-		log_err("chaosvpn-version missing - cant work with this config\n");
+		log_err("chaosvpn-version missing - can't work with this config\n");
 		goto bail_out;
 	}
 	string_putc(&chaosvpn_version, '\0');
@@ -415,7 +415,7 @@ main_request_config(struct config *config, struct string *http_response)
 		/* expect cleartext part */
 
 		if (ar_extract(&archive, "cleartext", http_response)) {
-			log_err("cleartext part missing - cant work with this config\n");
+			log_err("cleartext part missing - can't work with this config\n");
 			goto bail_out;
 		}
 
