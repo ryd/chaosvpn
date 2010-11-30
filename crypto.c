@@ -44,9 +44,9 @@ openssl dgst \
 */
 
 EVP_PKEY *
-crypto_load_key(const char *key, bool is_private)
+crypto_load_key(const char *key, const bool is_private)
 {
-    EVP_PKEY *pkey;
+	EVP_PKEY *pkey;
 	char *tmpname;
 	int keyfd;
 	FILE *keyfp;
@@ -132,7 +132,7 @@ bailout_ctx_cleanup:
 }
 
 bool
-crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted)
+crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string *decrypted)
 {
         bool retval = false;
         int len;
