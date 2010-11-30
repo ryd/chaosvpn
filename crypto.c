@@ -7,9 +7,8 @@
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
-#include "string/string.h"
-#include "fs.h"
-#include "log.h"
+
+#include "chaosvpn.h"
 
 /*
 

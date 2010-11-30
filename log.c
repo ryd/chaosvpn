@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "log.h"
+#include "chaosvpn.h"
 
 void
 log_init(int *argc, char ***argv, int logopt, int logfac)

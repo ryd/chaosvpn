@@ -9,14 +9,8 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "list.h"
-#include "string/string.h"
-#include "log.h"
-#include "main.h"
-#include "config.h"
-#include "fs.h"
-#include "tinc.h"
-#include "strnatcmp.h"
+
+#include "chaosvpn.h"
 
 
 extern FILE *yyin;

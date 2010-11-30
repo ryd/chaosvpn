@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "daemon.h"
+#include "chaosvpn.h"
 
 static void
 fix_fds (void)

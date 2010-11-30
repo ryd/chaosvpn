@@ -1,0 +1,250 @@
+#ifndef __CHAOSVPN_H
+#define __CHAOSVPN_H
+
+#include <stdbool.h>
+#include <time.h>
+#include <openssl/evp.h>
+#include <sys/types.h>
+#include <syslog.h>
+
+#include "list.h"
+#include "string/string.h"
+#include "httplib/httplib.h"
+#include "strnatcmp.h"
+
+#define NOERR   (0)
+
+extern bool ar_is_ar_file(struct string *archive);
+extern int ar_extract(struct string *archive, char *membername, struct string *result);
+
+
+
+struct string_list {
+    struct list_head list;
+    char *text;
+};
+
+typedef enum E_settings_list_entry_type {
+	LIST_STRING,
+	LIST_INTEGER,
+	LIST_LIST /* reserved */
+} settings_list_entry_type;
+
+struct settings_list_entry {
+	settings_list_entry_type etype;
+	union {
+		char* s;
+		int i;
+	} evalue;
+};
+
+struct settings_list {
+	struct list_head list;
+	struct settings_list_entry* e;
+};
+
+
+struct peer_config {
+	char *name;
+	char *gatewayhost;
+	char *owner;
+	char *use_tcp_only;
+	struct list_head network;
+	struct list_head network6;
+	struct list_head route_network;
+	struct list_head route_network6;
+	char *hidden;
+	char *silent;
+	char *port;
+	char *indirectdata;
+	char *key;
+	char *cipher;
+	char *compression;
+	char *digest;
+	char *primary;
+};
+
+struct peer_config_list {
+	struct list_head list;
+	struct peer_config *peer_config;
+};
+
+struct config {
+	char *peerid;
+	char *vpn_ip;
+	char *vpn_ip6;
+	char *networkname;
+	char *my_ip;
+	char *tincd_bin;
+	char *tincd_version;
+	char *tincctl_bin;
+	unsigned int tincd_debuglevel;
+	unsigned int tincd_restart_delay;
+	char *routemetric;
+	char *routeadd;
+	char *routeadd6;
+	char *routedel;
+	char *routedel6;
+	char *ifconfig;
+	char *ifconfig6;
+	char *master_url;
+	char *base_path;
+	char *pidfile;
+	char *cookiefile;
+	char *masterdata_signkey;
+	char *tincd_graphdumpfile;
+	char *tmpconffile;
+	char *tincd_device;
+	char *tincd_interface;
+	char *tincd_user;
+	struct string privkey;
+	struct settings_list *exclude;
+	struct peer_config *my_peer;
+	struct list_head peer_config;
+	time_t ifmodifiedsince;
+	unsigned int update_interval;
+	bool use_dynamic_routes;
+	bool connect_only_to_primary_nodes;
+
+	/* vars only used in configfile, dummy for c code: */
+	char *password;
+	char *vpn_netmask;
+
+	/* commandline parameter: */
+	char *configfile;
+	bool daemonmode;
+	bool oneshot;
+
+    /* used to set various file permissions */
+    uid_t tincd_uid;
+    gid_t tincd_gid;
+};
+
+extern struct config* config_alloc(void);
+extern int config_init(struct config *config);
+
+/* get pointer to already allocated and initialized config structure */
+extern struct config* config_get(void);
+
+
+
+extern void crypto_init(void);
+extern void crypto_finish(void);
+
+extern EVP_PKEY *crypto_load_key(const char *key, bool is_private);
+extern int crypto_rsa_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey);
+extern int crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted);
+extern int crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted);
+extern void crypto_warn_openssl_version_changed(void);
+
+
+
+struct daemon_info {
+    char* di_path;
+    int di_numarguments;
+    char** di_arguments;
+    char** di_envp;
+
+    pid_t di_pid;
+};
+
+extern bool daemonize(void);
+extern int daemon_init(struct daemon_info*, char*, ...);
+extern int daemon_addparam(struct daemon_info*, const char*);
+extern void daemon_free(struct daemon_info*);
+extern int daemon_start(struct daemon_info*);
+extern int daemon_stop(struct daemon_info*, unsigned int);
+extern int daemon_sigchld(struct daemon_info*, unsigned int);
+
+
+
+#include <sys/stat.h>
+#include "string/string.h"
+
+extern int fs_writecontents_safe(const char const*, const char const*, const char const*, const int, const int, const uid_t, const gid_t);
+extern int fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode, const uid_t, const gid_t);
+extern int fs_mkdir_p(char *, mode_t, uid_t uid, gid_t gid);
+extern int fs_cp_r(char*, char*);
+extern int fs_empty_dir(char*);
+extern int fs_get_cwd(struct string*);
+extern int fs_read_file(struct string *buffer, char *fname);
+extern int fs_read_fd(struct string *buffer, int fd);
+
+extern int fs_backticks_exec(const char *cmd, struct string *outputbuffer);
+
+
+
+
+#define log_emerg(fmt , args...)      log_raw(LOG_EMERG,  (fmt) , ## args)
+#define log_alert(fmt , args...)      log_raw(LOG_ALERT,  (fmt) , ## args)
+#define log_err(fmt , args...)        log_raw(LOG_ERR,    (fmt) , ## args)
+#define log_warn(fmt , args...)       log_raw(LOG_WARNING,(fmt) , ## args)
+#define log_crit(fmt , args...)       log_raw(LOG_ERR,    (fmt) , ## args)
+#define log_note(fmt , args...)       log_raw(LOG_NOTICE, (fmt) , ## args)
+#define log_info(fmt , args...)       log_raw(LOG_INFO,   (fmt) , ## args)
+#define log_debug(fmt , args...)      log_raw(LOG_DEBUG,  (fmt) , ## args)
+
+#define LOG_CRASH(fmt, args...) \
+  do { \
+    log_raw(LOG_ERR, "CRASH @ " __FILE__ ":%d " fmt, __LINE__, ## args); \
+    closelog(); \
+    exit(2); \
+  } while (0)
+
+#define LOG_ERREXIT(fmt, args...) \
+  do { \
+    log_raw(LOG_ERR, "ERREXIT: %s @ " __FILE__ ":%d (%s) " fmt, \
+      strerror(errno), \
+      __LINE__, \
+      __PRETTY_FUNCTION__, ## args); \
+    closelog(); \
+    exit(2); \
+  } while (0)
+
+
+extern void log_init(int *argc, char ***argv, int logopt, int logfac);
+extern void log_raw(int priority, const char *format, ...);
+
+
+extern int parser_parse_config (char *data, struct list_head *config_list); 
+extern void parser_free_config(struct list_head* configlist);
+
+
+
+#define TINC_DEFAULT_PORT "665"
+/*
+   ^^ Note: This 665 is a typo, it should have been 655 instead.
+            But fixing this may mean creating imcompatibiliies between
+            older versions of this program and current versions, peers
+            using the default port would have to change their firewall
+            rules - so just keep it.
+            (The ancient perl version correctly used 655)
+ */
+
+#define TINC_DEFAULT_CIPHER "blowfish"
+#define TINC_DEFAULT_COMPRESSION "0"
+#define TINC_DEFAULT_DIGEST "sha1"
+
+extern int tinc_write_config(struct config*);
+extern int tinc_write_hosts(struct config *config);
+extern int tinc_write_updown(struct config*, bool up);
+extern int tinc_write_subnetupdown(struct config*, bool up);
+extern char *tinc_get_version(struct config *config);
+extern pid_t tinc_get_pid(struct config *config);
+
+
+#define TUN_DEV   "/dev/net/tun"
+#define TUN_PATH  "/dev/net"
+
+extern int tun_check_or_create(); 
+
+
+extern int uncompress_inflate(struct string *compressed, struct string *uncompressed);
+
+
+void unroot(struct config*);
+void root(void);
+
+#include "version.h"
+
+#endif

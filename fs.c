@@ -9,9 +9,7 @@
 #include <stdio.h>
 #include <dirent.h>
 
-#include "string/string.h"
-#include "log.h"
-#include "fs.h"
+#include "chaosvpn.h"
 
 
 static int fs_ensure_suffix(struct string*);

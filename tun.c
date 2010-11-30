@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "log.h"
-#include "tun.h"
+#include "chaosvpn.h"
 
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
 #define NOERR   (0)

@@ -1,7 +1,7 @@
-
 #include <stdio.h>
 #include <zlib.h>
-#include "string/string.h"
+
+#include "chaosvpn.h"
 
 int
 uncompress_inflate(struct string *compressed, struct string *uncompressed)

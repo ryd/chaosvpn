@@ -1,6 +1,6 @@
 %{
-#include "config.h"
-#include "log.h"
+
+#include "chaosvpn.h"
 #include "y.tab.h"
 
 extern struct config *globalconfig; /* private from config.c */

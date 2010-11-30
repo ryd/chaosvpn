@@ -3,9 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "list.h"
-#include "log.h"
-#include "config.h"
+#include "chaosvpn.h"
 
 extern struct config *globalconfig; /* private from config.c */
 

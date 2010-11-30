@@ -6,14 +6,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 
-#include "main.h"
-#include "config.h"
-#include "string/string.h"
-#include "list.h"
-#include "fs.h"
-#include "tinc.h"
-#include "strnatcmp.h"
-#include "log.h"
+#include "chaosvpn.h"
 
 #define CONCAT(buffer, value)	if (string_concat(buffer, value)) return 1
 #define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return 1
@@ -144,7 +137,8 @@ tinc_write_config(struct config *config)
 	CONCAT(&buffer, "Hostnames=no\n");
 	CONCAT(&buffer, "PingTimeout=60\n");
 
-	if (strnatcmp(config->tincd_version, "1.0.12") > 0) {
+	if (config->tincd_version &&
+		(strnatcmp(config->tincd_version, "1.0.12") > 0)) {
 		/* this option is only available since 1.0.12+git / 1.0.13 */
 		CONCAT(&buffer, "StrictSubnets=yes\n");
 	} else {
@@ -177,6 +171,7 @@ tinc_write_config(struct config *config)
 		}
 
 		if (config->connect_only_to_primary_nodes &&
+				config->tincd_version &&
 				(strnatcmp(config->tincd_version, "1.0.12") > 0) &&
 				(!str_is_true(i->peer_config->primary, false))) {
 			/* tinc 1.0.12+git++ - only connect to primary hosts */

@@ -10,22 +10,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "string/string.h"
-#include "httplib/httplib.h"
-#include "fs.h"
-#include "list.h"
-#include "main.h"
-#include "log.h"
-#include "tun.h"
-#include "parser.h"
-#include "tinc.h"
-#include "config.h"
-#include "daemon.h"
-#include "crypto.h"
-#include "ar.h"
-#include "uncompress.h"
-#include "strnatcmp.h"
-#include "version.h"
+#include "chaosvpn.h"
 
 static int r_sigterm = 0;
 static int r_sigint = 0;
@@ -95,6 +80,9 @@ main (int argc,char *argv[])
 	err = config_init(config);
 	if (err) return err;
 
+	/* At this point, we've read and parsed our config file. */
+
+	unroot(config);
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
@@ -123,15 +111,16 @@ main (int argc,char *argv[])
 		daemon_addparam(&di_tincd, config->tincd_user);
 	}
 
-	main_terminate_old_tincd(config);
-
 	main_updated(config);
 
+	root();
+	main_terminate_old_tincd(config);
 	log_info("Starting tincd.");
 	if (daemon_start(&di_tincd)) {
 		log_err("error: unable to run tincd.");
 		exit(EXIT_FAILURE);
 	}
+	unroot(config);
 
 	if (!config->oneshot) {
 		do {
@@ -220,6 +209,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	string_free(oldconfig);
 	string_move(&http_response, oldconfig);
 
+	root();
 	log_debug("Backing up old configs.");
 	if (main_create_backup(config)) {
 		log_err("Unable to complete config backup.");
@@ -238,6 +228,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	if (tinc_write_updown(config, false)) return -1;
 	if (tinc_write_subnetupdown(config, true)) return -1;
 	if (tinc_write_subnetupdown(config, false)) return -1;
+	unroot(config);
 
 	main_free_parsed_info(config);
 

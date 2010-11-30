@@ -1,11 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "list.h"
-#include "main.h"
-#include "config.h"
-#include "log.h"
-#include "parser.h"
+
+#include "chaosvpn.h"
 
 static struct peer_config *my_config = NULL;
 static int parse_key_mode;

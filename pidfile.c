@@ -1,6 +1,6 @@
 /* UNUSED! */
 
-#include "log.h"
+#include "chaosvpn.h"
 
 int
 pidfile_create_pidfile()
