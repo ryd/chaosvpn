@@ -58,6 +58,7 @@ config_alloc(void)
 	config->tincd_graphdumpfile	= NULL;
 	config->tincd_device		= NULL;
 	config->tincd_interface		= NULL;
+	config->tincd_user		= NULL;
 	config->use_dynamic_routes	= false;
 	config->connect_only_to_primary_nodes = true;
 	config->update_interval		= 0;

@@ -118,6 +118,11 @@ main (int argc,char *argv[])
 		(void)signal(SIGINT, sigint);
 		(void)signal(SIGCHLD, sigchild);
 	}
+	if (config->tincd_user) {
+		daemon_addparam(&di_tincd, "--user");
+		daemon_addparam(&di_tincd, config->tincd_user);
+	}
+
 	main_terminate_old_tincd(config);
 
 	main_updated(config);
