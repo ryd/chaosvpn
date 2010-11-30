@@ -71,7 +71,7 @@ main (int argc,char *argv[])
 	}
 
 #ifndef BSD
-	if (tun_check_or_create()) {
+	if (!tun_check_or_create()) {
 		log_err("Error - unable to create tun device\n");
 		return 1;
 	}

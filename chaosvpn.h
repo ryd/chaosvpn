@@ -238,7 +238,7 @@ extern char *tinc_get_version(struct config *config);
 extern pid_t tinc_get_pid(struct config *config);
 
 
-extern int tun_check_or_create(); 
+extern bool tun_check_or_create(); 
 
 
 extern int uncompress_inflate(struct string *compressed, struct string *uncompressed);
