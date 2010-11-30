@@ -12,21 +12,21 @@
 
 #include "chaosvpn.h"
 
-static int r_sigterm = 0;
-static int r_sigint = 0;
+static bool r_sigterm = false;
+static bool r_sigint = false;
 static struct daemon_info di_tincd;
 
 static time_t nextupdate = 0;
 static struct string HTTP_USER_AGENT;
 
 
-static int main_check_root(void);
-static int main_create_backup(struct config*);
-static int main_cleanup_hosts_subdir(struct config*);
+static bool main_check_root(void);
+static bool main_create_backup(struct config*);
+static bool main_cleanup_hosts_subdir(struct config*);
 static int main_fetch_and_apply_config(struct config* config, struct string* oldconfig);
 static void main_free_parsed_info(struct config*);
-static int main_load_previous_config(struct config*, struct string*);
-static int main_parse_config(struct config*, struct string*);
+static bool main_load_previous_config(struct config*, struct string*);
+static bool main_parse_config(struct config*, struct string*);
 static void main_parse_opts(struct config*, int, char**);
 static bool main_request_config(struct config*, struct string*);
 static void main_tempsave_fetched_config(struct config*, struct string*);
@@ -65,7 +65,7 @@ main (int argc,char *argv[])
 
 	main_parse_opts(config, argc, argv);
 
-	if (main_check_root()) {
+	if (!main_check_root()) {
 		log_err("Error - wrong user - please start as root user\n");
 		return 1;
 	}
@@ -184,7 +184,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	err = !main_request_config(config, &http_response);
 	if (err) {
 		string_free(&http_response);
-		if (main_load_previous_config(config, &http_response)) {
+		if (!main_load_previous_config(config, &http_response)) {
 			return err;
 		}
 		log_warn("Warning: Unable to fetch config; using last stored config.");
@@ -195,7 +195,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 		return 1;
 	}
 
-	err = main_parse_config(config, &http_response);
+	err = !main_parse_config(config, &http_response);
 	if (err) {
 		string_free(&http_response);
 		return -1;
@@ -211,13 +211,13 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	root();
 	log_debug("Backing up old configs.");
-	if (main_create_backup(config)) {
+	if (!main_create_backup(config)) {
 		log_err("Unable to complete config backup.");
 		return -1;
 	}
 
 	log_debug("Cleanup previous host entries.");
-	if (main_cleanup_hosts_subdir(config)) {
+	if (!main_cleanup_hosts_subdir(config)) {
 		log_err("Unable to remove previous host subconfigs.");
 		return -1;
 	}
@@ -311,10 +311,10 @@ main_warn_about_old_tincd(struct config* config)
 	}
 }
 
-static int
+static bool
 main_check_root()
 {
-	return getuid() != 0;
+	return getuid() == 0;
 }
 
 static bool
@@ -512,14 +512,14 @@ bail_out:
 	return retval;
 }
 
-static int
+static bool
 main_parse_config(struct config *config, struct string *http_response)
 {
 	struct list_head *p = NULL;
 
 	if (!parser_parse_config(string_get(http_response), &config->peer_config)) {
 		log_err("\nUnable to parse config\n");
-		return 1;
+		return false;
 	}
 
 	list_for_each(p, &config->peer_config) {
@@ -532,10 +532,10 @@ main_parse_config(struct config *config, struct string *http_response)
 
 	if (config->my_peer == NULL) {
 		log_err("Unable to find %s in config.\n", config->peerid);
-		return 1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 static void
@@ -566,20 +566,20 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 	close(fd);
 }
 
-static int
+static bool
 main_load_previous_config(struct config *config, struct string* cnf)
 {
 	int fd;
 	struct stat sb;
 	intptr_t readbytes;
-	int retval = 1;
+	bool retval = false;
 
-	if (str_is_empty(config->tmpconffile)) return 1;
+	if (str_is_empty(config->tmpconffile)) return false;
 
 	fd = open(config->tmpconffile, O_RDONLY);
-	if (fd == -1) return 1;
+	if (fd == -1) return false;
 
-	if (fstat(fd, &sb)) return 1;
+	if (fstat(fd, &sb)) return false;
 	if (string_read(cnf, fd, sb.st_size, &readbytes)) {
 		log_err("Error: not enough memory to read stored config file.");
 		string_clear(cnf);
@@ -592,23 +592,23 @@ main_load_previous_config(struct config *config, struct string* cnf)
 		goto bail_out;
 	}
 
-	retval = 0;
+	retval = true;
 bail_out:
 	close(fd);
 	return retval;
 }
 
-static int
+static bool
 main_create_backup(struct config *config)
 {
-	int retval = 1;
+	int retval = false;
 	struct string base_backup_fn;
 
-	if (string_init(&base_backup_fn, 512, 512)) return 1; /* don't goto bail_out here */
+	if (string_init(&base_backup_fn, 512, 512)) return false; /* don't goto bail_out here */
 	if (string_concat(&base_backup_fn, config->base_path)) goto bail_out;
 	if (string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
 
-	retval = fs_cp_r(config->base_path, string_get(&base_backup_fn));
+	retval = !fs_cp_r(config->base_path, string_get(&base_backup_fn));
 
 	/* fall through */
 bail_out:
@@ -616,17 +616,17 @@ bail_out:
 	return retval;
 }
 
-static int
+static bool
 main_cleanup_hosts_subdir(struct config *config)
 {
-	int retval = 1;
+	bool retval = false;
 	struct string hosts_dir;
-	
-	if (string_init(&hosts_dir, 512, 512)) return 1; /* don't goto bail_out here */
+
+	if (string_init(&hosts_dir, 512, 512)) return false; /* don't goto bail_out here */
 	if (string_concat(&hosts_dir, config->base_path)) goto bail_out;
 	if (string_concat(&hosts_dir, "/hosts")) goto bail_out;
 
-	retval = fs_empty_dir(string_get(&hosts_dir));
+	retval = !fs_empty_dir(string_get(&hosts_dir));
 
 	/* fall through */
 bail_out:
@@ -658,13 +658,13 @@ sigchild(int sig /*__unused*/)
 static void
 sigterm(int sig /*__unused*/)
 {
-	r_sigterm = 1;
+	r_sigterm = true;
 }
 
 static void
 sigint(int sig /*__unused*/)
 {
-	r_sigint = 1;
+	r_sigint = true;
 }
 
 static void
