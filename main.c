@@ -359,16 +359,16 @@ main_request_config(struct config *config, struct string *http_response)
 	if ((retval = http_get(&httpurl, &archive, config->ifmodifiedsince, &HTTP_USER_AGENT, &httpres, NULL))) {
 		if (retval == HTTP_ESRVERR) {
 			if (httpres == 304) {
-				log_info("Not fetching %s - got HTTP %d - not modified\n", config->master_url, httpres);
+				log_info("Not fetching %s - got HTTP %d - not modified\n", string_get(&httpurl), httpres);
 				retval = false;
 			} else {
-				log_info("Unable to fetch %s - got HTTP %d\n", config->master_url, httpres);
+				log_info("Unable to fetch %s - got HTTP %d\n", string_get(&httpurl), httpres);
 			}
 		} else if (retval == HTTP_EINVURL) {
-			log_err("\x1B[41;37;1mInvalid URL %s. Only http:// is supported.\x1B[0m\n", config->master_url);
+			log_err("\x1B[41;37;1mInvalid URL %s. Only http:// is supported.\x1B[0m\n", string_get(&httpurl));
 			exit(1);
 		} else {
-			log_warn("Unable to fetch %s - maybe server is down\n", config->master_url);
+			log_warn("Unable to fetch %s - maybe server is down. Error code %d.\n", string_get(&httpurl), retval);
 		}
 		goto bail_out;
 	}
