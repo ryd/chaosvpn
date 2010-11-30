@@ -323,6 +323,7 @@ static bool
 main_request_config(struct config *config, struct string *http_response)
 {
 	bool retval = false;
+	int httpretval;
 	int httpres;
 	struct string httpurl;
 	struct string archive;
@@ -356,19 +357,19 @@ main_request_config(struct config *config, struct string *http_response)
 	string_concat_sprintf(&httpurl, "%s?id=%s",
 		config->master_url, config->peerid);
 
-	if ((retval = http_get(&httpurl, &archive, config->ifmodifiedsince, &HTTP_USER_AGENT, &httpres, NULL))) {
-		if (retval == HTTP_ESRVERR) {
+	if ((httpretval = http_get(&httpurl, &archive, config->ifmodifiedsince, &HTTP_USER_AGENT, &httpres, NULL))) {
+		if (httpretval == HTTP_ESRVERR) {
 			if (httpres == 304) {
 				log_info("Not fetching %s - got HTTP %d - not modified\n", string_get(&httpurl), httpres);
 				retval = false;
 			} else {
 				log_info("Unable to fetch %s - got HTTP %d\n", string_get(&httpurl), httpres);
 			}
-		} else if (retval == HTTP_EINVURL) {
+		} else if (httpretval == HTTP_EINVURL) {
 			log_err("\x1B[41;37;1mInvalid URL %s. Only http:// is supported.\x1B[0m\n", string_get(&httpurl));
 			exit(1);
 		} else {
-			log_warn("Unable to fetch %s - maybe server is down. Error code %d.\n", string_get(&httpurl), retval);
+			log_warn("Unable to fetch %s - maybe server is down. Error code %d.\n", string_get(&httpurl), httpretval);
 		}
 		goto bail_out;
 	}
