@@ -441,7 +441,6 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 		close(fds[1]);
 		execv(argv[0], argv);
 		log_err("fs_backticks_exec: exec of %s failed\n", argv[0]);
-		free(mycmd);
 		exit(0);
 	}
 	
