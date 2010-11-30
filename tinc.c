@@ -548,7 +548,8 @@ tinc_get_pid(struct config *config)
 
 	string_init(&pid_text, 256, 128);
 
-	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+	if (config->tincd_version &&
+		(strnatcmp(config->tincd_version, "1.1") > 0)) {
 		/* tinc 1.1-git development tree does not use pid files anymore */
 
 		if (str_is_empty(config->tincctl_bin))

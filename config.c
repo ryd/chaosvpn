@@ -177,7 +177,8 @@ config_init(struct config *config)
 
 
 	/* tincctl only exists since tinc 1.1-git */
-	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+	if (config->tincd_version &&
+		(strnatcmp(config->tincd_version, "1.1") > 0)) {
 		if (config->tincctl_bin == NULL) {
 			char *slash;
 			char tincctl[1024] = "";
@@ -209,7 +210,8 @@ config_init(struct config *config)
 	}
 
 
-	if (strnatcmp(config->tincd_version, "1.1") > 0) {
+	if (config->tincd_version &&
+		(strnatcmp(config->tincd_version, "1.1") > 0)) {
 		/* tinc 1.1-git does not use a pid file anymore */
 
 		snprintf(tmp, sizeof(tmp), "%s", config->pidfile);
