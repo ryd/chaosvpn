@@ -149,7 +149,8 @@ tinc_write_config(struct config *config)
 		CONCAT_F(&buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
 	}
 
-	if (str_is_nonempty(config->my_ip) && 
+	if (config->my_ip &&
+			str_is_nonempty(config->my_ip) && 
 			strcmp(config->my_ip, "127.0.0.1") &&
 			strcmp(config->my_ip, "0.0.0.0")) {
 		CONCAT_F(&buffer, "BindToAddress=%s\n", config->my_ip);
@@ -236,7 +237,7 @@ tinc_write_updown(struct config *config, bool up)
 			CONCAT_F(&buffer, "%s\n", config->ifconfig);
 		}
 
-		if (str_is_nonempty(config->ifconfig6) && str_is_nonempty(config->vpn_ip6)) {
+		if (str_is_nonempty(config->ifconfig6) && config->vpn_ip6 && str_is_nonempty(config->vpn_ip6)) {
 			CONCAT_F(&buffer, "%s\n", config->ifconfig6);
 		}
 
