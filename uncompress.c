@@ -1,9 +1,10 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <zlib.h>
 
 #include "chaosvpn.h"
 
-int
+bool
 uncompress_inflate(struct string *compressed, struct string *uncompressed)
 {
     int retval;
@@ -18,7 +19,7 @@ uncompress_inflate(struct string *compressed, struct string *uncompressed)
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
     if (inflateInit(&strm) != Z_OK)
-        return 1;
+        return false;
 
     strm.avail_in = string_length(compressed);
     strm.next_in = (unsigned char*)string_get(compressed);
@@ -30,14 +31,14 @@ uncompress_inflate(struct string *compressed, struct string *uncompressed)
         switch (retval) {
             case Z_STREAM_ERROR:
                 /* state clobbered */
-                return 1;
+                return false;
                 break;
             case Z_NEED_DICT:
                 retval = Z_DATA_ERROR; /* and fall through */
             case Z_DATA_ERROR:
             case Z_MEM_ERROR:
                 (void)inflateEnd(&strm);
-                return 1;
+                return false;
         }
         
         have = sizeof(outbuf) - strm.avail_out;
@@ -48,8 +49,8 @@ uncompress_inflate(struct string *compressed, struct string *uncompressed)
 
     if (retval != Z_STREAM_END) {
         fprintf(stderr, "decompression failed\n");
-        return 1;
+        return false;
     }
     
-    return 0;
+    return true;
 }

@@ -469,7 +469,7 @@ main_request_config(struct config *config, struct string *http_response)
 		goto bail_out;
 	}
 	string_free(&encrypted);
-	if (uncompress_inflate(&compressed, http_response)) {
+	if (!uncompress_inflate(&compressed, http_response)) {
 		log_err("data uncompress failed\n");
 		goto bail_out;
 	}
