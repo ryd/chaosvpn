@@ -651,10 +651,12 @@ sigchild(int sig /*__unused*/)
 	struct config *config = config_get();
 
 	log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
+	root();
 	if (!daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
 		log_err("unable to restart tincd. Terminating.");
 		exit(EXIT_FAILURE);
 	}
+	nonroot(config);
 }
 
 static void
