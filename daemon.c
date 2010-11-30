@@ -82,8 +82,8 @@ daemonize(void)
     return true;
 }
 
-int
-daemon_init(struct daemon_info* di, char* path, ...)
+bool
+daemon_init(struct daemon_info* di, const char* path, ...)
 {
     int i;
     int numargs;
@@ -122,7 +122,7 @@ daemon_init(struct daemon_info* di, char* path, ...)
     di->di_envp[0] = NULL;
 
     di->di_pid = -1;
-    return 0;
+    return true;
 
 bail_out:
     if (di->di_path != NULL) {
@@ -139,10 +139,10 @@ bail_out:
     /* XXX: for now */
     free(di->di_envp);
     di->di_envp = NULL;
-    return 1;
+    return false;
 }
 
-int
+bool
 daemon_addparam(struct daemon_info* di, const char* param)
 {
     int numargs;
@@ -158,7 +158,7 @@ daemon_addparam(struct daemon_info* di, const char* param)
     ++di->di_numarguments;
     di->di_arguments[numargs - 2] = dparam;
     di->di_arguments[numargs - 1] = NULL;
-    return 0;
+    return true;
 }
 
 void
@@ -179,7 +179,7 @@ daemon_free(struct daemon_info* di)
     di->di_pid = -1;
 }
 
-int
+bool
 daemon_start(struct daemon_info* di)
 {
     pid_t pid;
@@ -189,37 +189,37 @@ daemon_start(struct daemon_info* di)
         (void)execve(di->di_path, di->di_arguments, di->di_envp);
         exit(EXIT_FAILURE);
     case -1:
-        return -1;
+        return false;
     default:
         di->di_pid = pid;
-        return 0;
+        return true;
     }
 }
 
-int
-daemon_stop(struct daemon_info* di, unsigned int sleepdelay)
+void
+daemon_stop(struct daemon_info* di, const unsigned int sleepdelay)
 {
     pid_t pgid;
 
     pgid = di->di_pid; //__getpgid(di->di_pid);
     if (pgid == -1) {
-        return 0;
+        return;
     }
     if (kill(pgid, SIGTERM)) {
         if (errno != ESRCH) {
-            return 1;
+            return;
         }
     }
     if (sleepdelay == 0) {
         /* no sigkill at all */
-        return 0;
+        return;
     }
     (void)sleep(sleepdelay);
     (void)kill(pgid, SIGKILL);
-    return 0;
+    return;
 }
 
-int
+bool
 daemon_sigchld(struct daemon_info* di, unsigned int waitbeforerestart)
 {
     pid_t pid;

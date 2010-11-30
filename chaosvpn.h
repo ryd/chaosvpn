@@ -171,12 +171,12 @@ struct daemon_info {
 };
 
 extern bool daemonize(void);
-extern int daemon_init(struct daemon_info*, char*, ...);
-extern int daemon_addparam(struct daemon_info*, const char*);
+extern bool daemon_init(struct daemon_info* di, const char* path, ...);
+extern bool daemon_addparam(struct daemon_info* di, const char* param);
 extern void daemon_free(struct daemon_info*);
-extern int daemon_start(struct daemon_info*);
-extern int daemon_stop(struct daemon_info*, unsigned int);
-extern int daemon_sigchld(struct daemon_info*, unsigned int);
+extern bool daemon_start(struct daemon_info*);
+extern void daemon_stop(struct daemon_info*, const unsigned int sleepdelay);
+extern bool daemon_sigchld(struct daemon_info*, unsigned int waitbeforerestart);
 
 
 

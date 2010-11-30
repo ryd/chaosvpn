@@ -116,7 +116,7 @@ main (int argc,char *argv[])
 	root();
 	main_terminate_old_tincd(config);
 	log_info("Starting tincd.");
-	if (daemon_start(&di_tincd)) {
+	if (!daemon_start(&di_tincd)) {
 		log_err("error: unable to run tincd.");
 		exit(EXIT_FAILURE);
 	}
@@ -649,7 +649,7 @@ sigchild(int sig /*__unused*/)
 	struct config *config = config_get();
 
 	log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
-	if (daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
+	if (!daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
 		log_err("unable to restart tincd. Terminating.");
 		exit(EXIT_FAILURE);
 	}
