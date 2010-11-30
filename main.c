@@ -92,10 +92,12 @@ main (int argc,char *argv[])
 	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 
 	if (config->daemonmode) {
+		root();
 		if (!daemonize()) {
 			log_err("daemonizing into the background failed - aborting\n");
 			exit(1);
 		}
+		nonroot(config);
 	}
 		
 	if (config->oneshot) {
