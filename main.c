@@ -28,7 +28,7 @@ static void main_free_parsed_info(struct config*);
 static int main_load_previous_config(struct config*, struct string*);
 static int main_parse_config(struct config*, struct string*);
 static void main_parse_opts(struct config*, int, char**);
-static int main_request_config(struct config*, struct string*);
+static bool main_request_config(struct config*, struct string*);
 static void main_tempsave_fetched_config(struct config*, struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(struct config*);
@@ -181,7 +181,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	string_init(&http_response, 4096, 512);
 
-	err = main_request_config(config, &http_response);
+	err = !main_request_config(config, &http_response);
 	if (err) {
 		string_free(&http_response);
 		if (main_load_previous_config(config, &http_response)) {
@@ -317,10 +317,10 @@ main_check_root()
 	return getuid() != 0;
 }
 
-static int
+static bool
 main_request_config(struct config *config, struct string *http_response)
 {
-	int retval = 1;
+	bool retval = false;
 	int httpres;
 	struct string httpurl;
 	struct string archive;
@@ -358,7 +358,7 @@ main_request_config(struct config *config, struct string *http_response)
 		if (retval == HTTP_ESRVERR) {
 			if (httpres == 304) {
 				log_info("Not fetching %s - got HTTP %d - not modified\n", config->master_url, httpres);
-				retval = 1;
+				retval = false;
 			} else {
 				log_info("Unable to fetch %s - got HTTP %d\n", config->master_url, httpres);
 			}
@@ -384,7 +384,7 @@ main_request_config(struct config *config, struct string *http_response)
 			string_free(http_response);
 			string_move(&archive, http_response);
 
-			retval = 0; /* no error */
+			retval = true; /* no error */
 		} else {
 			log_err("Invalid data format received from %s\n", config->master_url);
 		}
@@ -416,7 +416,7 @@ main_request_config(struct config *config, struct string *http_response)
 		}
 
 		/* return success */
-		retval = 0;
+		retval = true;
 		goto bail_out;
 	}
 
@@ -426,7 +426,7 @@ main_request_config(struct config *config, struct string *http_response)
 		log_err("rsa part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
-	if (crypto_rsa_decrypt(&encrypted, string_get(&config->privkey), &rsa_decrypted)) {
+	if (!crypto_rsa_decrypt(&encrypted, string_get(&config->privkey), &rsa_decrypted)) {
 		log_err("rsa decrypt failed\n");
 		goto bail_out;
 	}
@@ -464,7 +464,7 @@ main_request_config(struct config *config, struct string *http_response)
 		log_err("encrypted data part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
-	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &compressed)) {
+	if (!crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &compressed)) {
 		log_err("data decrypt failed\n");
 		goto bail_out;
 	}
@@ -480,7 +480,7 @@ main_request_config(struct config *config, struct string *http_response)
 		log_err("signature part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
-	if (crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &signature)) {
+	if (!crypto_aes_decrypt(&encrypted, &aes_key, &aes_iv, &signature)) {
 		log_err("signature decrypt failed\n");
 		goto bail_out;
 	}

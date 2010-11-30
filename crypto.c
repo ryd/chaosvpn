@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <openssl/rsa.h>
@@ -89,10 +90,11 @@ crypto_load_key(const char *key, bool is_private)
 }
 
 
-int
+bool
 crypto_rsa_verify_signature(struct string *databuffer, struct string *signature, const char *pubkey)
 {
 	int err;
+	bool retval;
 	EVP_MD_CTX md_ctx;
 	EVP_PKEY *pkey;
 
@@ -100,14 +102,14 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
         pkey = crypto_load_key(pubkey, false);
         if (pkey == NULL) {
             log_err("crypto_verify_signature: key loading failed\n");
-            return 1;
+            return false;
         }
         
         /* Verify the signature */
         if (EVP_VerifyInit(&md_ctx, EVP_sha512()) != 1) {
             log_err("crypto_verify_signature: libcrypto verify init failed\n");
             EVP_PKEY_free(pkey);
-            return 1;
+            return false;
         }
         EVP_VerifyUpdate(&md_ctx, string_get(databuffer), string_length(databuffer));
         err = EVP_VerifyFinal(&md_ctx, (unsigned char*)string_get(signature), string_length(signature), pkey);
@@ -116,30 +118,31 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
         if (err != 1) {
             log_err("crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
             ERR_print_errors_fp(stderr);
-            err = 1;
+            retval = false;
             goto bailout_ctx_cleanup;
         }
 
-        err = 0;
+        retval = true;
 
 bailout_ctx_cleanup:
         EVP_MD_CTX_cleanup(&md_ctx);
 
         //log_info("Signature Verified Ok.\n");
-	return err;
+	return retval;
 }
 
-int
+bool
 crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decrypted)
 {
-        int retval = 1;
+        bool retval = false;
+        int len;
         EVP_PKEY *pkey;
 
         /* load private key into openssl */
         pkey = crypto_load_key(privkey, true);
         if (pkey == NULL) {
             log_err("crypto_rsa_decrypt: key loading failed.\n");
-            return 1;
+            return false;
         }
 
         /* check length of ciphertext */
@@ -155,17 +158,17 @@ crypto_rsa_decrypt(struct string *ciphertext, char *privkey, struct string *decr
             log_err("crypto_rsa_decrypt: malloc error.\n");
         }
         
-        retval = RSA_private_decrypt(string_length(ciphertext),
+        len = RSA_private_decrypt(string_length(ciphertext),
             (unsigned char*)string_get(ciphertext),
             (unsigned char*)string_get(decrypted),
             pkey->pkey.rsa,
             RSA_PKCS1_OAEP_PADDING);
-        if (retval >= 0) {
+        if (len >= 0) {
             /* TODO: need cleaner way: */
-            decrypted->_u._s.length = retval;
-            retval = 0;
+            decrypted->_u._s.length = len;
+            retval = true;
         } else {
-            retval = 1;
+            retval = false;
             log_err("crypto_rsa_decrypt: rsa decrypt failed.\n");
             ERR_print_errors_fp(stderr);
         }
@@ -175,10 +178,10 @@ bail_out:
         return retval;
 }
 
-int
+bool
 crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct string *aes_iv, struct string *decrypted)
 {
-    int retval = 1;
+    bool retval = false;
     EVP_CIPHER_CTX ctx;
     int decryptspace;
     int decryptdone;
@@ -235,7 +238,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         goto bail_out;
     }
 
-    retval = 0;
+    retval = true;
 
 bail_out:
     EVP_CIPHER_CTX_cleanup(&ctx);
