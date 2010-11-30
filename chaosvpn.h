@@ -225,7 +225,7 @@ extern void log_init(int *argc, char ***argv, int logopt, int logfac);
 extern void log_raw(int priority, const char *format, ...);
 
 
-extern int parser_parse_config (char *data, struct list_head *config_list); 
+extern bool parser_parse_config (char *data, struct list_head *config_list); 
 extern void parser_free_config(struct list_head* configlist);
 
 

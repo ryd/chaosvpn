@@ -517,7 +517,7 @@ main_parse_config(struct config *config, struct string *http_response)
 {
 	struct list_head *p = NULL;
 
-	if (parser_parse_config(string_get(http_response), &config->peer_config)) {
+	if (!parser_parse_config(string_get(http_response), &config->peer_config)) {
 		log_err("\nUnable to parse config\n");
 		return 1;
 	}

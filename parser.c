@@ -1,11 +1,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "chaosvpn.h"
 
 static struct peer_config *my_config = NULL;
-static int parse_key_mode;
+static bool parse_key_mode;
 
 static char*
 parser_check_configitem(char *line, char *config)
@@ -39,11 +40,11 @@ parser_extend_key(char *line)
 	strcat(my_config->key, "\n");
 }
 
-static int
+static bool
 parser_create_config(char *name)
 {
 	my_config = malloc(sizeof(struct peer_config));
-	if (my_config == NULL) return 1;
+	if (my_config == NULL) return false;
 
 	memset(my_config, 0, sizeof(struct peer_config));
 
@@ -66,7 +67,7 @@ parser_create_config(char *name)
 	my_config->digest = strdup("");
 	my_config->primary = strdup("");
 
-	return 0;
+	return true;
 }
 
 static void
@@ -130,7 +131,7 @@ parser_replace_item(char **var, char *newitem)
 	*var = strdup(newitem);
 }
 
-static int
+static bool
 parser_parse_line(char *line, struct list_head *configlist)
 {
 	int len;
@@ -139,13 +140,13 @@ parser_parse_line(char *line, struct list_head *configlist)
 	len = strlen(line);
 	if ((*line == '[') && (line[len - 1] == ']')) {
 		struct peer_config_list *i;
-		parse_key_mode = 0;
+		parse_key_mode = false;
 
 		item = calloc(sizeof(char), len - 1);
 		if (item == NULL) {
 			free(my_config);
 			my_config = NULL;
-			return 1;
+			return false;
 		}
 		memcpy(item, line + 1, len - 2);
 		item[len - 2] = 0;
@@ -155,7 +156,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 			free(my_config);
 			my_config = NULL;
 			free(item);
-			return 1;
+			return false;
 		}
 
 		parser_create_config(item);
@@ -166,7 +167,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 		/* we did not start with a [...] header */
 		/* and my_config is not allocated+initialized yet */
 		/* skip until after first valid header initialized a config section */
-		return 0;
+		return true;
 	} else if ((item = parser_check_configitem(line, "gatewayhost="))) {
 		parser_replace_item(&my_config->gatewayhost, item);
 	} else if ((item = parser_check_configitem(line, "owner="))) {
@@ -202,10 +203,10 @@ parser_parse_line(char *line, struct list_head *configlist)
 		my_config->key = calloc(sizeof(char), strlen(line) + 2);
 		memcpy(my_config->key, line, strlen(line));
 		strcat(my_config->key, "\n");
-		parse_key_mode = 1;
+		parse_key_mode = true;
 	} else if ((item = parser_check_configitem(line, "-----END RSA PUBLIC KEY-----"))) {
 		parser_extend_key(line);
-		parse_key_mode = 0;
+		parse_key_mode = false;
 	} else {
 		if (parse_key_mode) {
 			parser_extend_key(line);
@@ -213,10 +214,10 @@ parser_parse_line(char *line, struct list_head *configlist)
 			log_warn("parser: warning: unparsed: %s\n", line);
 		}
 	}
-	return 0;
+	return true;
 }
 
-int
+bool
 parser_parse_config (char *data, struct list_head *config_list)
 {
 	char *token;
@@ -229,14 +230,14 @@ parser_parse_config (char *data, struct list_head *config_list)
 	token = strtok_r(data, search, &tmp);
 	while (token) {
 		if (strncmp(token, "#", 1) &&
-				parser_parse_line(token, config_list))  {
+				!parser_parse_line(token, config_list))  {
 			free(data);
-			return 1;
+			return false;
 		}
 		token = strtok_r(NULL, search, &tmp);
 	}
 	free(data);
 
-	return 0;
+	return true;
 }
 
