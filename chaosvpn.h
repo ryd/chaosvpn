@@ -143,7 +143,7 @@ struct config {
 };
 
 extern struct config* config_alloc(void);
-extern int config_init(struct config *config);
+extern bool config_init(struct config *config);
 
 /* get pointer to already allocated and initialized config structure */
 extern struct config* config_get(void);

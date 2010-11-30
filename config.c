@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -72,7 +73,7 @@ config_alloc(void)
 	return config;
 }
 
-int
+bool
 config_init(struct config *config)
 {
 	struct stat st; 
@@ -87,7 +88,7 @@ config_init(struct config *config)
 	yyin = fopen(config->configfile, "r");
 	if (!yyin) {
 		log_err("Error: unable to open %s\n", config->configfile);
-		return 1;
+		return false;
 	}
 	yyparse();
 	fclose(yyin);
@@ -107,7 +108,7 @@ config_init(struct config *config)
 	// check required params
 	#define reqparam(paramfield, label) if (str_is_empty(config->paramfield)) { \
 		log_err("%s is missing or empty in %s\n", label, config->configfile); \
-		return 1; \
+		return false; \
 		}
 
 	reqparam(peerid, "$my_peerid");
@@ -122,7 +123,7 @@ config_init(struct config *config)
 	if (stat(config->tincd_bin, &stat_buf) ||
 		(!(stat_buf.st_mode & S_IXUSR))) {
 		log_err("tinc binary %s not executable.", config->tincd_bin);
-		return 1;
+		return false;
 	}
 
     /* Note on the beauty of the POSIX API:
@@ -131,14 +132,14 @@ config_init(struct config *config)
 	pwentry = getpwnam(config->tincd_user);
 	if (!pwentry) {
 		log_err("tincd_user %s does not exist.", config->tincd_user);
-		return 1;
+		return false;
 	}
 	config->tincd_uid = pwentry->pw_uid;
 	config->tincd_gid = pwentry->pw_gid;
 
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
 		log_err("error: you have to change $my_vpn_ip in %s\n", config->configfile);
-		return 1;
+		return false;
 	}
 
 	if (config->use_dynamic_routes)
@@ -175,7 +176,7 @@ config_init(struct config *config)
 	// create base directory
 	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0750, 0, config->tincd_gid)) {
 		log_err("error: unable to mkdir %s\n", config->base_path);
-		return 1;
+		return false;
 	}
 
 	string_init(&privkey_name, 1024, 512);
@@ -185,7 +186,7 @@ config_init(struct config *config)
 	if (fs_read_file(&config->privkey, string_get(&privkey_name))) {
 		log_err("error: can't read private rsa key at %s\n", string_get(&privkey_name));
 		string_free(&privkey_name);
-		return 1;
+		return false;
 	}
 	string_free(&privkey_name);
 
@@ -253,7 +254,7 @@ config_init(struct config *config)
 		config->cookiefile = NULL;
 	}
 
-	return 0;
+	return true;
 }
 
 /* get pointer to already allocated and initialized config structure */

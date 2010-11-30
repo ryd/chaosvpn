@@ -77,7 +77,7 @@ main (int argc,char *argv[])
 	}
 #endif
 
-	err = config_init(config);
+	err = !config_init(config);
 	if (err) return err;
 
 	/* At this point, we've read and parsed our config file. */
