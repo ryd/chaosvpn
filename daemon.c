@@ -55,8 +55,16 @@ daemonize(void)
     if (pid > 0) {
         exit(EXIT_SUCCESS);
     }
-    
+
     /* now in forked child */
+
+    /* Fork again, to become a real daemon */
+    pid = fork();
+    if (pid < 0) {
+        exit(1);
+    } else if (pid > 0) {
+        exit(EXIT_SUCCESS);
+    }
     
     /* Change the file mode mask */
     umask(0);
