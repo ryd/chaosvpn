@@ -87,6 +87,7 @@ list_allocate(void)
     struct settings_list* sl = (struct settings_list*)
             malloc(sizeof(struct settings_list));
     if (sl == NULL) exit(111);
+    memset(sl, 0, sizeof(struct settings_list));
     INIT_LIST_HEAD(&sl->list);
     return sl;
 }
@@ -98,6 +99,7 @@ list_mkientry(int i)
     struct settings_list_entry* entry;
     entry = malloc(sizeof(struct settings_list_entry));
     if (entry == NULL) exit(111);
+    memset(entry, 0, sizeof(struct settings_list_entry));
     entry->etype = LIST_INTEGER;
     entry->evalue.i = i;
     return entry;
@@ -109,6 +111,7 @@ list_mksentry(const char const* s)
     struct settings_list_entry* entry;
     entry = malloc(sizeof(struct settings_list_entry));
     if (entry == NULL) exit(111);
+    memset(entry, 0, sizeof(struct settings_list_entry));
     entry->etype = LIST_STRING;
     entry->evalue.s = strdup(s);
     return entry;
@@ -120,6 +123,7 @@ list_add_elem(struct settings_list* list, struct settings_list_entry* item)
     struct settings_list* listitem;
     listitem = (struct settings_list*) malloc(sizeof(struct settings_list));
     if (listitem == NULL) exit(111);
+    memset(listitem, 0, sizeof(struct settings_list));
     listitem->e = item;
     list_add(&listitem->list, &list->list);
     return list;
