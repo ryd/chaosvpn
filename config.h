@@ -96,6 +96,10 @@ struct config {
 	char *configfile;
 	bool daemonmode;
 	bool oneshot;
+
+    /* used to set various file permissions */
+    uid_t tincd_uid;
+    gid_t tincd_gid;
 };
 
 extern struct config* config_alloc(void);

@@ -23,7 +23,7 @@ static int fs_ensure_z(struct string* s);
  * Returns 0 on success, -1 on error.  errno should be set.
  * On success, path is returned intact.  On failure, path is undefined.
  */
-int fs_mkdir_p( char *path, mode_t mode )
+int fs_mkdir_p( char *path, mode_t mode, uid_t uid, gid_t gid )
 {
 	int err,pos,i;
 
@@ -42,7 +42,7 @@ int fs_mkdir_p( char *path, mode_t mode )
 			return -1;
 
 		path[ pos ] = '\0';
-		err = fs_mkdir_p( path, mode );
+		err = fs_mkdir_p( path, mode, uid, gid );
 		if( err != NOERR )
 			return err;
 
@@ -50,7 +50,8 @@ int fs_mkdir_p( char *path, mode_t mode )
 		err = mkdir( path, mode );
 	}
 
-	return err;
+    if (err) return err;
+    return chown(path, uid, gid);
 }
 
 int
@@ -317,7 +318,12 @@ nrcwd_bail_out:
 }
 
 int
-fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode)
+fs_writecontents(const char const* fn,
+                 const char const* cnt,
+                 const size_t len,
+                 const int mode,
+                 const uid_t uid,
+                 const gid_t gid)
 {
 	int fh;
 	size_t bw;
@@ -328,13 +334,19 @@ fs_writecontents(const char const* fn, const char const* cnt, const size_t len, 
 	/* ABABAB: should throw proper error here */
 	bw = write(fh, cnt, len);
 	(void)close(fh);
-	(void)chmod(fn, mode);
-	return (len != bw);
+	if (len != bw) return 1;
+    return chown(fn, uid, gid);
 }
 
 
 int
-fs_writecontents_safe(const char const* dir, const char const* fn, const char const* cnt, const int len, const int mode)
+fs_writecontents_safe(const char const* dir,
+                      const char const* fn,
+                      const char const* cnt,
+                      const int len,
+                      const int mode,
+                      const uid_t uid,
+                      const gid_t gid)
 {
 	char *buf = NULL, *ptr = NULL;
 	int res;
@@ -351,7 +363,7 @@ fs_writecontents_safe(const char const* dir, const char const* fn, const char co
 	*(ptr + dlen) = '\0';
 	strcat(ptr, fn);
 	for(ptr=buf+dlen;'\0' != *ptr;ptr++) if('/' == *ptr) *ptr='_';
-	res = fs_writecontents(buf, cnt, len, mode);
+	res = fs_writecontents(buf, cnt, len, mode, uid, gid);
 	free(buf);
 	return res;
 }

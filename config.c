@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "list.h"
@@ -71,6 +72,9 @@ config_alloc(void)
 	config->daemonmode		= false;
 	config->oneshot			= false;
 
+	config->tincd_uid		= 0;
+	config->tincd_gid		= 0;
+
 	return config;
 }
 
@@ -82,6 +86,7 @@ config_init(struct config *config)
 	char tmp[1024];
 	char *p;
 	struct stat stat_buf;
+	struct passwd* pwentry;
 
 	globalconfig = config;
 
@@ -117,6 +122,7 @@ config_init(struct config *config)
 	reqparam(routeadd, "$routeadd");
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
+	reqparam(tincd_user, "$tincd_user");
 	reqparam(tincd_bin, "$tincd_bin");
 
 	if (stat(config->tincd_bin, &stat_buf) ||
@@ -124,6 +130,17 @@ config_init(struct config *config)
 		log_err("tinc binary %s not executable.", config->tincd_bin);
 		return 1;
 	}
+
+    /* Note on the beauty of the POSIX API:
+     * although pwentry is dynamically allocated here (maybe),
+     * it /must not/ be freed after use. */
+	pwentry = getpwnam(config->tincd_user);
+	if (!pwentry) {
+		log_err("tincd_user %s does not exist.", config->tincd_user);
+		return 1;
+	}
+	config->tincd_uid = pwentry->pw_uid;
+	config->tincd_gid = pwentry->pw_gid;
 
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
 		log_err("error: you have to change $my_vpn_ip in %s\n", config->configfile);
@@ -162,7 +179,7 @@ config_init(struct config *config)
 #endif
 
 	// create base directory
-	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0700)) {
+	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0750, 0, config->tincd_gid)) {
 		log_err("error: unable to mkdir %s\n", config->base_path);
 		return 1;
 	}
