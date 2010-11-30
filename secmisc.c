@@ -6,8 +6,8 @@
 void
 unroot(struct config* config)
 {
-    if (setegid(config->tincd_uid) |
-        seteuid(config->tincd_gid)) {
+    if (setegid(config->tincd_gid) |
+        seteuid(config->tincd_uid)) {
         log_err("Unable to seteuid/setegid to %d/%d.", config->tincd_uid, config->tincd_gid);
         exit(1);
     }
