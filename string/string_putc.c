@@ -13,6 +13,7 @@ string_putc(struct string* s, char c)
         growby = s->_u._s.growby;
         buf = realloc(s->s, s->_u._s.size + growby);
         if (!buf) return 1;
+        memset(buf+s->_u._s.size, 0, growby);
         s->_u._s.size += growby;
         s->s = buf;
     }

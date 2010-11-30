@@ -20,6 +20,7 @@ string_read(struct string* s, int fd, uintptr_t len, intptr_t* bytes_read)
         }
         buf = realloc(s->s, s->_u._s.size + growby);
         if (!buf) return 1;
+        memset(buf+s->_u._s.size, 0, growby);
         s->_u._s.size += growby;
         s->s = buf;
     }
