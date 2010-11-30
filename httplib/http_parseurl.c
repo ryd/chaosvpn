@@ -21,7 +21,7 @@ http_parseurl(struct string* url, struct string* hostname, int* port, struct str
     l = string_length(url);
     if (l < 7) return HTTP_EINVURL;
     if (memcmp(s, "http://", 7)) { retval=HTTP_EINVURL; goto bail_out; }
-    if (string_concat(path, "/")) { retval=HTTP_EINVURL; goto bail_out; }
+    if (string_concat(path, "/")) { retval=HTTP_ENOMEM; goto bail_out; }
     for (i = 7; i < l; i++) {
         switch(urlpart) {
         case 0:
