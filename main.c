@@ -393,7 +393,7 @@ main_request_config(struct config *config, struct string *http_response)
 
 
 	/* check chaosvpn-version in received ar archive */
-	if (ar_extract(&archive, "chaosvpn-version", &chaosvpn_version)) {
+	if (!ar_extract(&archive, "chaosvpn-version", &chaosvpn_version)) {
 		string_free(&chaosvpn_version);
 		log_err("chaosvpn-version missing - can't work with this config\n");
 		goto bail_out;
@@ -410,7 +410,7 @@ main_request_config(struct config *config, struct string *http_response)
 		/* no public key defined, nothing to verify against or to decrypt with */
 		/* expect cleartext part */
 
-		if (ar_extract(&archive, "cleartext", http_response)) {
+		if (!ar_extract(&archive, "cleartext", http_response)) {
 			log_err("cleartext part missing - can't work with this config\n");
 			goto bail_out;
 		}
@@ -422,7 +422,7 @@ main_request_config(struct config *config, struct string *http_response)
 
 
 	/* get and decrypt rsa data block */
-	if (ar_extract(&archive, "rsa", &encrypted)) {
+	if (!ar_extract(&archive, "rsa", &encrypted)) {
 		log_err("rsa part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
@@ -460,7 +460,7 @@ main_request_config(struct config *config, struct string *http_response)
 	string_concatb(&aes_iv, buf+2+buf[0], buf[1]);
 
 	/* get, decrypt and uncompress config data */
-	if (ar_extract(&archive, "encrypted", &encrypted)) {
+	if (!ar_extract(&archive, "encrypted", &encrypted)) {
 		log_err("encrypted data part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}
@@ -476,7 +476,7 @@ main_request_config(struct config *config, struct string *http_response)
 	string_free(&compressed);
 
 	/* get and decrypt signature */
-	if (ar_extract(&archive, "signature", &encrypted)) {
+	if (!ar_extract(&archive, "signature", &encrypted)) {
 		log_err("signature part in data from %s missing\n", config->master_url);
 		goto bail_out;
 	}

@@ -81,7 +81,7 @@ ar_is_ar_file(struct string *archive)
   return true;
 }
 
-int
+bool
 ar_extract(struct string *archive, char *membername, struct string *result)
 {
   ssize_t len;
@@ -94,14 +94,14 @@ ar_extract(struct string *archive, char *membername, struct string *result)
   len = string_length(archive);
   if (len < SARMAG) {
     log_warn("ar_extract: buffer contents too short\n");
-    return 1;
+    return false;
   }
   
   pos = string_get(archive);
   
   if (strncmp(pos, ARMAG, sizeof(ARMAG)-1) != 0) {
     log_warn("ar_extract: no .ar header at the beginning\n");
-    return 1;
+    return false;
   }
   pos += sizeof(ARMAG)-1;
   len -= sizeof(ARMAG)-1;
@@ -109,7 +109,7 @@ ar_extract(struct string *archive, char *membername, struct string *result)
   for (;;) {
     if (len < sizeof(struct ar_hdr)) {
       log_warn("ar_extract: buffer contents too short\n");
-      return 1;
+      return false;
     }
     arh = (struct ar_hdr *)pos;
     pos += sizeof(struct ar_hdr);
@@ -117,28 +117,28 @@ ar_extract(struct string *archive, char *membername, struct string *result)
 
     if (memcmp(arh->ar_fmag,ARFMAG,sizeof(arh->ar_fmag))) {
       log_warn("ar_extract: buffer corrupt - bad magic at end of header\n");
-      return 1;
+      return false;
     }
 
     memberlen = ar_parseheaderlength(arh->ar_size, sizeof(arh->ar_size));
     if (memberlen < 0) {
       log_warn("ar_extract: buffer corrupt - invalid length field in header\n");
-      return 1;
+      return false;
     }
     
     if (memberlen+(memberlen&1) > len) {
       log_warn("ar_extract: buffer corrupt - header length bigger than rest of buffer\n");
-      return 1;
+      return false;
     }
     
     if (ar_compare_name(arh->ar_name, sizeof(arh->ar_name), membername)) {
       // found!
       if (string_concatb(result, pos, memberlen)) {
         log_warn("ar_extract: extract copy failed\n");
-        return 1;
+        return false;
       }
 
-      return 0;
+      return true;
     }
 
     pos += memberlen+(memberlen&1);
@@ -150,7 +150,7 @@ ar_extract(struct string *archive, char *membername, struct string *result)
     } else if (len < 0) {
       // should not happen
       log_warn("ar_extract: buffer corrupt - buffer too short\n");
-      return 1;
+      return false;
     }
   }
 }
