@@ -60,7 +60,9 @@ log_raw(int priority, const char *format, ...)
     va_start(args, format);
     (void)fprintf(out, "%s ", prefix);
     (void)vfprintf(out, format, args);
-    (void)fprintf(out, "\n");
+    if (format[strlen(format) - 1] != '\n') {
+        (void)fprintf(out, "\n");
+    }
     va_end(args);
   }
 }
