@@ -82,7 +82,7 @@ main (int argc,char *argv[])
 
 	/* At this point, we've read and parsed our config file. */
 
-	unroot(config);
+	nonroot(config);
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
@@ -120,7 +120,7 @@ main (int argc,char *argv[])
 		log_err("error: unable to run tincd.");
 		exit(EXIT_FAILURE);
 	}
-	unroot(config);
+	nonroot(config);
 
 	if (!config->oneshot) {
 		do {
@@ -228,7 +228,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	if (!tinc_write_updown(config, false)) return -1;
 	if (!tinc_write_subnetupdown(config, true)) return -1;
 	if (!tinc_write_subnetupdown(config, false)) return -1;
-	unroot(config);
+	nonroot(config);
 
 	main_free_parsed_info(config);
 

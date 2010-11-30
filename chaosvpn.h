@@ -244,7 +244,7 @@ extern bool tun_check_or_create();
 extern bool uncompress_inflate(struct string *compressed, struct string *uncompressed);
 
 
-void unroot(struct config*);
+void nonroot(struct config*);
 void root(void);
 
 #endif

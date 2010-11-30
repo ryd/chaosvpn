@@ -4,7 +4,7 @@
 #include "chaosvpn.h"
 
 void
-unroot(struct config* config)
+nonroot(struct config* config)
 {
     if (setegid(config->tincd_gid) |
         seteuid(config->tincd_uid)) {
