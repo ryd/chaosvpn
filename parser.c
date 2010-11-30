@@ -25,6 +25,7 @@ parser_stringlist(char *item)
 {
 	struct string_list *i = malloc(sizeof(struct string_list));
 	if (i == NULL) return NULL;
+	memset(i, 0, sizeof(struct string_list));
 	i->text = strdup(item);
 	return &i->list;
 }
@@ -36,6 +37,10 @@ parser_extend_key(char *line)
 			my_config->key, 
 			strlen(my_config->key) + strlen(line) + 2
 	);
+	if (my_config->key == NULL) {
+		log_err("parser_extend_key: realloc() failed!\n");
+		exit(1);
+	}
 	strcat(my_config->key, line);
 	strcat(my_config->key, "\n");
 }
@@ -158,6 +163,8 @@ parser_parse_line(char *line, struct list_head *configlist)
 			free(item);
 			return false;
 		}
+
+		memset(i, 0, sizeof(struct peer_config_list));
 
 		parser_create_config(item);
 		i->peer_config = my_config;

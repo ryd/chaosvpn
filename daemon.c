@@ -109,6 +109,7 @@ daemon_init(struct daemon_info* di, const char* path, ...)
     if (di->di_arguments == NULL) {
         goto bail_out;
     }
+    memset(di->di_arguments, 0, sizeof(char*) * numargs);
     di->di_numarguments = numargs;
     va_start(ap, path);
     for (i = 0; i < numargs; i++) {

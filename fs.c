@@ -69,6 +69,7 @@ fs_get_cwd(struct string* s)
 	if (errno != ERANGE) return 1;
 	for (bta = 4096; bta < 65536; bta+=4096) {
 		path = malloc(bta);
+		if (path == NULL) { return 1; }
 		if (getcwd(path, bta) != NULL) {
 			retval = string_concat(s, path);
 			free(path);
