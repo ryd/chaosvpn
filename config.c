@@ -81,6 +81,7 @@ config_init(struct config *config)
 	struct string privkey_name;
 	char tmp[1024];
 	char *p;
+	struct stat stat_buf;
 
 	globalconfig = config;
 
@@ -116,6 +117,13 @@ config_init(struct config *config)
 	reqparam(routeadd, "$routeadd");
 	reqparam(ifconfig, "$ifconfig");
 	reqparam(base_path, "$base");
+	reqparam(tincd_bin, "$tincd_bin");
+
+	if (stat(config->tincd_bin, &stat_buf) ||
+		(!(stat_buf.st_mode & S_IXUSR))) {
+		log_err("tinc binary %s not executable.", config->tincd_bin);
+		return 1;
+	}
 
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
 		log_err("error: you have to change $my_vpn_ip in %s\n", config->configfile);
