@@ -13,6 +13,7 @@ uncompress_inflate(struct string *compressed, struct string *uncompressed)
     int have;
 
     /* allocate inflate state */
+    memset(&strm, 0, sizeof(strm)); /* paranoia */
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
