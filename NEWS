@@ -1,0 +1,11 @@
+== Nov 30th 2010 ==
+
+- Added configuration variable tincd_user.
+- tincd_user is now a mandatory setting.
+- various small cleanups, including a header file cleanup
+- chaosvpn now drops its privileges as well in most situations
+
+Tinc is asked to restrict its right to the ones of that user once it's
+done setting up everything it can only set up as root. You must make
+sure the user specified with tincd_user has access rights to the
+public and private key.
