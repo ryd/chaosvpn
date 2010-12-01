@@ -74,7 +74,7 @@ tinc_write_hosts(struct config *config)
 	string_concat(&hostfilepath, config->base_path);
 	string_concat(&hostfilepath, "/hosts/");
 
-	fs_mkdir_p(string_get(&hostfilepath), 0750, 0, config->tincd_gid);
+	fs_mkdir_p(string_get(&hostfilepath), 0700, 0, config->tincd_gid);
 
 	list_for_each(p, &config->peer_config) {
 		struct string peer_config;
@@ -93,7 +93,7 @@ tinc_write_hosts(struct config *config)
 
 		if (fs_writecontents_safe(string_get(&hostfilepath), 
 				i->peer_config->name, string_get(&peer_config),
-				string_length(&peer_config), 0640, 0, config->tincd_gid)) {
+				string_length(&peer_config), 0600, 0, config->tincd_gid)) {
 			log_err("unable to write host config file %s/%s.", string_get(&hostfilepath), i->peer_config->name);
 			string_free(&peer_config);
 			return false;
@@ -197,7 +197,7 @@ tinc_write_config(struct config *config)
 	string_concat(&configfilename, "/tinc.conf");
 
 	if (fs_writecontents(string_get(&configfilename), string_get(&buffer),
-			string_length(&buffer), 0640, 0, config->tincd_gid)) {
+			string_length(&buffer), 0600, 0, config->tincd_gid)) {
 		log_err("unable to write tinc config file!");
 		string_free(&buffer);
 		string_free(&configfilename);
@@ -312,7 +312,7 @@ tinc_write_updown(struct config *config, bool up)
 		string_concat(&filepath, "/tinc-up");
 	else
 		string_concat(&filepath, "/tinc-down");
-	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0750, 0, config->tincd_gid)) {
+	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700, 0, config->tincd_gid)) {
 		log_err("unable to write to %s!", string_get(&filepath));
 		string_free(&buffer);
 		string_free(&filepath);
@@ -474,7 +474,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	
 	unlink(string_get(&filepath)); /* unlink first, may be a symlink */
 
-	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0750, 0, config->tincd_gid)) {
+	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700, 0, config->tincd_gid)) {
 		log_err("unable to write to %s!\n", string_get(&filepath));
 		string_free(&buffer);
 		string_free(&filepath);

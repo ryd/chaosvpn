@@ -240,7 +240,7 @@ config_init(struct config *config)
 #endif
 
 	// create base directory
-	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0750, 0, config->tincd_gid)) {
+	if (stat(config->base_path, &st) & fs_mkdir_p(config->base_path, 0700, 0, config->tincd_gid)) {
 		log_err("error: unable to mkdir %s\n", config->base_path);
 		return false;
 	}
