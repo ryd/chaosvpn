@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <openssl/rsa.h>
 #include <openssl/evp.h>
 #include <openssl/objects.h>
@@ -50,10 +52,13 @@ crypto_load_key(const char *key, const bool is_private)
 	char *tmpname;
 	int keyfd;
 	FILE *keyfp;
-    
+	mode_t oldumask;
+
         /* create tempfile and store key into it */
         tmpname = strdup("/tmp/chaosvpn.tmp.XXXXXX");
+        oldumask = umask(077);
         keyfd = mkstemp(tmpname);
+        umask(oldumask);
         if (keyfd == -1) {
             log_err("crypto_load_key: error creating tempfile\n");
             return NULL;
