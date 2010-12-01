@@ -130,6 +130,7 @@ config_free(struct config *config)
 	free_settings_list(config->exclude);
 	parser_free_config(&config->peer_config);
 	free(config->configfile);
+	free(config->tincd_version);
 
 	if (globalconfig == config) {
 		globalconfig = NULL;
