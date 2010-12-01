@@ -52,6 +52,13 @@ typedef enum E_settings_list_entry_type {
 	LIST_LIST /* reserved */
 } settings_list_entry_type;
 
+enum {
+	HANDLER_START_TINCD=0,
+	HANDLER_RESTART_TINCD=1,
+	HANDLER_STOP=2
+};
+
+
 struct settings_list_entry {
 	settings_list_entry_type etype;
 	union {
@@ -181,9 +188,9 @@ extern bool daemon_sigchld(struct daemon_info*, unsigned int waitbeforerestart);
 
 
 
-extern int fs_writecontents_safe(const char const*, const char const*, const char const*, const int, const int, const uid_t, const gid_t);
-extern int fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode, const uid_t, const gid_t);
-extern int fs_mkdir_p(char *, mode_t, uid_t uid, gid_t gid);
+extern int fs_writecontents_safe(const char const*, const char const*, const char const*, const int, const int);
+extern int fs_writecontents(const char const* fn, const char const* cnt, const size_t len, const int mode);
+extern int fs_mkdir_p(char *, mode_t);
 extern int fs_cp_r(char*, char*);
 extern int fs_empty_dir(char*);
 extern int fs_get_cwd(struct string*);
@@ -244,8 +251,5 @@ extern bool tun_check_or_create();
 
 extern bool uncompress_inflate(struct string *compressed, struct string *uncompressed);
 
-
-void nonroot(struct config*);
-void root(void);
 
 #endif

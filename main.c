@@ -9,12 +9,18 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include "chaosvpn.h"
 
 static bool r_sigterm = false;
 static bool r_sigint = false;
 static struct daemon_info di_tincd;
+static int tincd_started = 0;
+static char tincd_debugparam[32];
+
+static pid_t pid_tincd_handler;
+static int fd_tincd_handler;
 
 static time_t nextupdate = 0;
 static struct string HTTP_USER_AGENT;
@@ -33,20 +39,39 @@ static void main_tempsave_fetched_config(struct config*, struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(struct config*);
 static void main_updated(struct config*);
-static void sigchild(int);
-static void sigterm(int);
-static void sigint(int);
-static void sigint_holdon(int);
 static void usage(void);
 static void main_warn_about_old_tincd(struct config* config);
+
+static void p_sigchild(int);
+static void p_sigint(int);
+static void p_sigterm(int);
+
+/* slave process handler functions */
+static pid_t fire_up_tincd_handler(struct config* config);
+static void handler_start_tincd(void);
+static void handler_restart_tincd(void);
+static void handler_stop(void);
+
+/* functions only used by slave process */
+static void sigchild(int);
+static void sigterm(int);
+static void sigusr1(int);
+static void sigusr2(int);
+static void sighup(int);
+
 
 int
 main (int argc,char *argv[])
 {
 	struct config *config;
-	char tincd_debugparam[32];
 	int err;
 	struct string oldconfig;
+
+	/* first things first */
+	if (!main_check_root()) {
+		log_err("Error - wrong user - please start as root user\n");
+		return 1;
+	}
 
 	string_init(&HTTP_USER_AGENT, 64, 16);
 	string_concat_sprintf(&HTTP_USER_AGENT, "ChaosVPN/%s", VERSION);
@@ -65,11 +90,6 @@ main (int argc,char *argv[])
 
 	main_parse_opts(config, argc, argv);
 
-	if (!main_check_root()) {
-		log_err("Error - wrong user - please start as root user\n");
-		return 1;
-	}
-
 #ifndef BSD
 	if (!tun_check_or_create()) {
 		log_err("Error - unable to create tun device\n");
@@ -80,49 +100,38 @@ main (int argc,char *argv[])
 	err = !config_init(config);
 	if (err) return err;
 
-	/* At this point, we've read and parsed our config file. */
-
-	nonroot(config);
-
-	string_init(&oldconfig, 4096, 4096);
-	main_fetch_and_apply_config(config, &oldconfig);
-
-	main_warn_about_old_tincd(config);
-
-	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
-
 	if (config->daemonmode) {
-		root();
 		if (!daemonize()) {
 			log_err("daemonizing into the background failed - aborting\n");
 			exit(1);
 		}
-		nonroot(config);
 	}
-		
-	if (config->oneshot) {
-		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
-	} else {
-		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
-		(void)signal(SIGTERM, sigterm);
-		(void)signal(SIGINT, sigint);
-		(void)signal(SIGCHLD, sigchild);
+
+	/* At this point, we've read and parsed our config file */
+
+	/* Fire up the tincd handler which needs root privileges */
+	pid_tincd_handler = fire_up_tincd_handler(config);
+
+	/* Permanently surrender root privileges */
+	if (setgid(config->tincd_gid) ||
+		setuid(config->tincd_uid)) {
+		log_err("setuid failed.");
+		exit(1);
 	}
-	if (config->tincd_user) {
-		daemon_addparam(&di_tincd, "--user");
-		daemon_addparam(&di_tincd, config->tincd_user);
-	}
+
+	(void)signal(SIGINT, p_sigint);
+	(void)signal(SIGINT, p_sigterm);
+
+	string_init(&oldconfig, 4096, 4096);
+	main_fetch_and_apply_config(config, &oldconfig);
+	main_warn_about_old_tincd(config);
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 
 	main_updated(config);
 
-	root();
 	main_terminate_old_tincd(config);
-	log_info("Starting tincd.");
-	if (!daemon_start(&di_tincd)) {
-		log_err("error: unable to run tincd.");
-		exit(EXIT_FAILURE);
-	}
-	nonroot(config);
+	log_info("signalling worker <%d> to start tincd.", pid_tincd_handler);
+	handler_start_tincd();
 
 	if (!config->oneshot) {
 		do {
@@ -148,19 +157,15 @@ main (int argc,char *argv[])
 
 			default:;
 			}
-			log_info("Terminating old tincd.");
-			daemon_stop(&di_tincd, 5);
+			log_info("Restarting tincd.");
+			handler_restart_tincd();
 		} while (!r_sigterm && !r_sigint);
 
 		bail_out:
-		log_info("Terminating old tincd.");
-		(void)signal(SIGTERM, SIG_IGN);
-		(void)signal(SIGINT, sigint_holdon);
-		(void)signal(SIGCHLD, SIG_IGN);
-		daemon_stop(&di_tincd, 5);
+		log_info("Terminating tincd.");
+		handler_stop();
 	}
 
-	daemon_free(&di_tincd);
 	string_free(&oldconfig);
 	config_free(config);
 	config = NULL;
@@ -213,7 +218,6 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	string_free(oldconfig);
 	string_move(&http_response, oldconfig);
 
-	root();
 	log_debug("Backing up old configs.");
 	if (!main_create_backup(config)) {
 		log_err("Unable to complete config backup.");
@@ -232,7 +236,6 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	if (!tinc_write_updown(config, false)) return -1;
 	if (!tinc_write_subnetupdown(config, true)) return -1;
 	if (!tinc_write_subnetupdown(config, false)) return -1;
-	nonroot(config);
 
 	main_free_parsed_info(config);
 
@@ -648,35 +651,165 @@ main_unlink_pidfile(struct config *config)
 	(void)unlink(config->pidfile);
 }
 
+
+
+static void
+p_sigint(int sig /*__unused*/)
+{
+	r_sigint = true;
+}
+
+static void
+p_sigterm(int sig /*__unused*/)
+{
+	r_sigterm = true;
+}
+
+/* ------------------------------------------------------------ */
+/* Slave functions.                                             */
+
+static pid_t
+fire_up_tincd_handler(struct config* config)
+{
+	pid_t child;
+	int pipefds[2];
+	int pipe2fds[2];
+	char foo;
+
+	if (pipe(pipefds) || pipe(pipe2fds)) {
+		log_err("Can't create pipe");
+		exit(1);
+	}
+
+	fd_tincd_handler = pipe2fds[1];
+
+	child = fork();
+	if (child == -1) {
+		log_err("Can't fire up tincd_handler");
+		exit(1);
+	}
+	if (child) {
+		/* We are the parent */
+		(void)signal(SIGCHLD, p_sigchild);
+		/* Wait for the child to signal its readiness */
+		(void)read(pipefds[0], &foo, 1);
+		return child;
+	}
+
+	/* We are the child */
+	if (config->oneshot) {
+		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
+	} else {
+		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
+	}
+	if (config->tincd_user) {
+		daemon_addparam(&di_tincd, "--user");
+		daemon_addparam(&di_tincd, config->tincd_user);
+	}
+
+	(void)signal(SIGTERM, sigterm);
+	(void)signal(SIGCHLD, sigchild);
+	(void)signal(SIGPIPE, SIG_IGN);
+	(void)signal(SIGHUP, sighup);
+
+	/* tell the parent we've started up */
+	(void)write(pipefds[1], &foo, 1);
+
+	/* sleep forever */
+	for(;;) {
+		(void)read(pipe2fds[0], &foo, 1);
+		switch(foo) {
+		case HANDLER_START_TINCD:
+			sigusr1(SIGUSR1);
+			break;
+		case HANDLER_RESTART_TINCD:
+			sighup(SIGHUP);
+			break;
+		case HANDLER_STOP:
+			sigusr2(SIGUSR2);
+			exit(0);
+		}
+	}
+}
+
+static void
+handler_start_tincd(void)
+{
+	char buf = HANDLER_START_TINCD;
+	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+}
+
+static void
+handler_restart_tincd(void)
+{
+	char buf = HANDLER_RESTART_TINCD;
+	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+}
+
+static void
+handler_stop(void)
+{
+	char buf = HANDLER_STOP;
+	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+}
+
+static void
+p_sigchild(int sig/*__unused*/)
+{
+	pid_t pid;
+	int status;
+
+	pid = waitpid(pid_tincd_handler, &status, 0);
+	log_err("tincd manager slave has died with status %d.", status);
+	exit(status);
+}
+
+static void
+sigusr1(int sig /*__unused*/)
+{
+	if (tincd_started) {
+		log_info("restart of tincd requested.");
+		daemon_stop(&di_tincd, 5);
+	} else {
+		log_info("start of tincd requested.");
+		if (!daemon_start(&di_tincd)) {
+			log_err("error: unable to run tincd.");
+			exit(1);
+		}
+		tincd_started = 1;
+	}
+}
+
+static void
+sigusr2(int sig /*__unused*/)
+{
+	(void)signal(SIGCHLD, SIG_IGN);
+	daemon_stop(&di_tincd, 5);
+	tincd_started = 0;
+}
+
+static void
+sighup(int sig /*__unused*/)
+{
+	log_info("restart of tincd requested.");
+	daemon_stop(&di_tincd, 5);
+}
+
 static void
 sigchild(int sig /*__unused*/)
 {
 	struct config *config = config_get();
 
 	log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
-	root();
 	if (!daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
 		log_err("unable to restart tincd. Terminating.");
-		exit(EXIT_FAILURE);
+		exit(1);
 	}
-	nonroot(config);
+	tincd_started = 1;
 }
 
 static void
 sigterm(int sig /*__unused*/)
 {
-	r_sigterm = true;
+	sigusr2(sig);
 }
-
-static void
-sigint(int sig /*__unused*/)
-{
-	r_sigint = true;
-}
-
-static void
-sigint_holdon(int sig /*__unused*/)
-{
-	log_info("I'm doing me best, please be patient for a little, will ya?");
-}
-
