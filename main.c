@@ -164,6 +164,7 @@ main (int argc,char *argv[])
 	string_free(&oldconfig);
 	config_free(config);
 	config = NULL;
+	string_free(&HTTP_USER_AGENT);
 
 	return 0;
 }
