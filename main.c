@@ -16,7 +16,6 @@
 static bool r_sigterm = false;
 static bool r_sigint = false;
 static struct daemon_info di_tincd;
-static int tincd_started = 0;
 static char tincd_debugparam[32];
 
 static pid_t pid_tincd_handler;
@@ -51,13 +50,11 @@ static pid_t fire_up_tincd_handler(struct config* config);
 static void handler_start_tincd(void);
 static void handler_restart_tincd(void);
 static void handler_stop(void);
+static void handler_signal_old_tincd(void);
 
 /* functions only used by slave process */
 static void sigchild(int);
 static void sigterm(int);
-static void sigusr1(int);
-static void sigusr2(int);
-static void sighup(int);
 
 
 int
@@ -129,7 +126,9 @@ main (int argc,char *argv[])
 
 	main_updated(config);
 
-	main_terminate_old_tincd(config);
+	log_info("signalling worker <%d> to kill old tincd.", pid_tincd_handler);
+	handler_signal_old_tincd();
+
 	log_info("signalling worker <%d> to start tincd.", pid_tincd_handler);
 	handler_start_tincd();
 
@@ -690,13 +689,17 @@ fire_up_tincd_handler(struct config* config)
 	}
 	if (child) {
 		/* We are the parent */
+		(void)close(pipefds[1]);
+		(void)close(pipe2fds[0]);
 		(void)signal(SIGCHLD, p_sigchild);
 		/* Wait for the child to signal its readiness */
-		(void)read(pipefds[0], &foo, 1);
+		if(read(pipefds[0], &foo, 1) != 1) exit(1);
 		return child;
 	}
 
 	/* We are the child */
+	(void)close(pipefds[0]);
+	(void)close(pipe2fds[1]);
 	if (config->oneshot) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
@@ -708,26 +711,33 @@ fire_up_tincd_handler(struct config* config)
 	}
 
 	(void)signal(SIGTERM, sigterm);
+	(void)signal(SIGPIPE, sigterm);
 	(void)signal(SIGCHLD, sigchild);
-	(void)signal(SIGPIPE, SIG_IGN);
-	(void)signal(SIGHUP, sighup);
 
 	/* tell the parent we've started up */
-	(void)write(pipefds[1], &foo, 1);
+	if(write(pipefds[1], &foo, 1) != 1) exit(1);
 
 	/* sleep forever */
 	for(;;) {
-		(void)read(pipe2fds[0], &foo, 1);
+		if(read(pipe2fds[0], &foo, 1) != 1) sigterm(SIGTERM);
 		switch(foo) {
 		case HANDLER_START_TINCD:
-			sigusr1(SIGUSR1);
+			if (!daemon_start(&di_tincd)) {
+				log_err("error: unable to run tincd.");
+				exit(1);
+			}
+		        if (config->oneshot) exit(0);
 			break;
 		case HANDLER_RESTART_TINCD:
-			sighup(SIGHUP);
+			daemon_stop(&di_tincd, 5);
 			break;
 		case HANDLER_STOP:
-			sigusr2(SIGUSR2);
+        		(void)signal(SIGCHLD, SIG_IGN);
+			daemon_stop(&di_tincd, 5);
 			exit(0);
+		case HANDLER_SIGNAL_OLD_TINCD:
+			main_terminate_old_tincd(config);
+			break;
 		}
 	}
 }
@@ -754,6 +764,13 @@ handler_stop(void)
 }
 
 static void
+handler_signal_old_tincd(void)
+{
+	char buf = HANDLER_SIGNAL_OLD_TINCD;
+	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+}
+
+static void
 p_sigchild(int sig/*__unused*/)
 {
 	pid_t pid;
@@ -762,37 +779,6 @@ p_sigchild(int sig/*__unused*/)
 	pid = waitpid(pid_tincd_handler, &status, 0);
 	log_err("tincd manager slave has died with status %d.", status);
 	exit(status);
-}
-
-static void
-sigusr1(int sig /*__unused*/)
-{
-	if (tincd_started) {
-		log_info("restart of tincd requested.");
-		daemon_stop(&di_tincd, 5);
-	} else {
-		log_info("start of tincd requested.");
-		if (!daemon_start(&di_tincd)) {
-			log_err("error: unable to run tincd.");
-			exit(1);
-		}
-		tincd_started = 1;
-	}
-}
-
-static void
-sigusr2(int sig /*__unused*/)
-{
-	(void)signal(SIGCHLD, SIG_IGN);
-	daemon_stop(&di_tincd, 5);
-	tincd_started = 0;
-}
-
-static void
-sighup(int sig /*__unused*/)
-{
-	log_info("restart of tincd requested.");
-	daemon_stop(&di_tincd, 5);
 }
 
 static void
@@ -805,11 +791,12 @@ sigchild(int sig /*__unused*/)
 		log_err("unable to restart tincd. Terminating.");
 		exit(1);
 	}
-	tincd_started = 1;
 }
 
 static void
 sigterm(int sig /*__unused*/)
 {
-	sigusr2(sig);
+        (void)signal(SIGCHLD, SIG_IGN);
+        daemon_stop(&di_tincd, 5);
+	exit(1);
 }

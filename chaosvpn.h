@@ -55,7 +55,8 @@ typedef enum E_settings_list_entry_type {
 enum {
 	HANDLER_START_TINCD=0,
 	HANDLER_RESTART_TINCD=1,
-	HANDLER_STOP=2
+	HANDLER_STOP=2,
+	HANDLER_SIGNAL_OLD_TINCD=3
 };
 
 
