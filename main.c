@@ -162,7 +162,8 @@ main (int argc,char *argv[])
 
 	daemon_free(&di_tincd);
 	string_free(&oldconfig);
-	free(config); config = NULL;
+	config_free(config);
+	config = NULL;
 
 	return 0;
 }

@@ -20,6 +20,27 @@ extern int yyparse(void);
 struct config *globalconfig = NULL;
 
 
+void
+free_settings_list(struct settings_list *s)
+{
+	struct list_head *pos, *next;
+
+	if (s == NULL)
+		return;
+
+	list_for_each_safe(pos, next, &s->list) {
+		struct settings_list* etr;
+		
+		etr = list_entry(pos, struct settings_list, list);
+		list_del(&etr->list);
+		if (etr->e->etype == LIST_STRING) {
+			free(etr->e->evalue.s);
+		}
+		free(etr);
+	}
+	free(s);
+}
+
 struct config*
 config_alloc(void)
 {
@@ -71,6 +92,50 @@ config_alloc(void)
 	config->tincd_gid		= 0;
 
 	return config;
+}
+
+void
+config_free(struct config *config)
+{
+	if (config == NULL) return;
+
+	free(config->peerid);
+	free(config->vpn_ip);
+	free(config->vpn_ip6);
+	free(config->networkname);
+	free(config->my_ip);
+	free(config->tincd_bin);
+	free(config->tincctl_bin);
+	free(config->routemetric);
+	free(config->routeadd);
+	free(config->routeadd6);
+	free(config->routedel);
+	free(config->routedel6);
+	free(config->ifconfig);
+	free(config->ifconfig6);
+	free(config->master_url);
+	free(config->base_path);
+	free(config->pidfile);
+	free(config->cookiefile);
+	free(config->masterdata_signkey);
+	free(config->tincd_graphdumpfile);
+	free(config->tincd_device);
+	free(config->tincd_interface);
+	free(config->tincd_user);
+	free(config->vpn_netmask);
+	free(config->password);
+
+	string_free(&config->privkey);
+
+	free_settings_list(config->exclude);
+	parser_free_config(&config->peer_config);
+	free(config->configfile);
+
+	if (globalconfig == config) {
+		globalconfig = NULL;
+	}
+
+	free(config);
 }
 
 bool
