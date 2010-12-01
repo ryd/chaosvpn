@@ -411,6 +411,7 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 {
 	int fds[2], pid = 0;
 	int retval = 1;
+	int status;
 
 	if (pipe(fds)) {
 		log_err("fs_backticks_exec: pipe() failed\n");
@@ -428,6 +429,7 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 		close(fds[1]);
 		retval = fs_read_fd(outputbuffer, fds[0]);
 		close(fds[0]);
+		if (pid != waitpid(pid, &status, 0)) {log_err("waitpid failed in fs_backticks_exec.");}
 	} else {
 		/* child */
 		char *argv[255] = {0};
