@@ -1,6 +1,17 @@
+Preface
+=======
+
+Welcome to chaosvpn/agoralink! This document is a step-by-step guide
+to getting into the chaosvpn network. To join chaosvpn, you need to
+install some software (tinc, chaosvpn). You also have to register your
+node before you can connect to the rest of the network.
+
 Preparation
 ===========
-On Debian you need some packages. Best practice would be use haegars repository:
+
+If you are using debian, you can use haegar's repository: (If you're
+not using debian, you can compile the chaosvpn binary yourself (see
+below) and install tinc by some other means)
 
 # echo "deb     http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
 # echo "deb-src http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
@@ -9,15 +20,16 @@ Also you need to install the signing key:
 
 # wget -q http://debian.sdinet.de/signkey.asc -O- | apt-key add -
 
-Then you can update the apt cache and install tinc. Tinc has a dependency on
-liblzo. So please install it together.
+Then you can update the apt cache and install tinc. Tinc has a
+dependency on liblzo. So please install it together.
 
 # apt-get update
 # apt-get install tinc
 
-As tinc was installed, you have to create the needed folders and the key files
-for your machine. In this example, we call the network "chaos" and tinc will
-create public and private keys for your machine with 2048 bit.
+As tinc was installed, you have to create the needed folders and the
+key files for your machine. In this example, we call the network
+"chaos" and tinc will create public and private keys for your machine
+with 2048 bit.
 
 # mkdir -p /etc/tinc/chaos/hosts
 # tincd -n chaos -K 2048
@@ -27,48 +39,42 @@ You can save the generated key files on their default location.
 
 Requirements
 ============
-To compile the chaosvpn software, you also need to install some required packages.
 
-* git-core
-* make
-* bison
+If you want install the chaosvpn software from source, you also need
+to install the following packages:
+
+* gnu make
 * flex
 * byacc
 * gcc
-* g++
 * libssl-dev
 
-# apt-get install git-core make bison flex byacc gcc g++ libssl-dev
 
-Please install required dependencies also.
+Building ChaosVPN
+=================
 
+You should get the latest git snapshot of the chaosvpn repository:
 
-Build ChaosVPN
-==============
-Now you can clone the chaosvpn source code to your local machine.
-
-# cd /usr/src
 # git clone git://github.com/ryd/chaosvpn.git
 
-When finished, you can compile the source code and install it.
-
+To compile chaosvpn, simply do:
 # cd chaosvpn
 # make
 # make install
 
-As the binary was installed on your machine, you have to modify your
-local chaosvpn configuration to your needs. The first few lines are
-important as it controls the behaviour of your machine.
+After successful installation, open
+    /etc/tinc/chaosvpn.conf
 
-# vi /etc/tinc/chaosvpn.conf
+and edit the file to suit your needs. This file contains helpful
+comments guiding you through the process.
 
 
-Publish your details
-====================
+Publishing your details
+=======================
 
-Now we need some details from your machine to publish it to all
-other nodes within the ChaosVPN. You can fill your details into
-this template:
+Now we need some details from your machine to publish it to all other
+nodes within the ChaosVPN. You can fill your details into this
+template:
 
 ----------------------------------------------------------------
 # The address where your machine is reachable. leave empty if no
@@ -95,9 +101,18 @@ network6=2001:0DB8:1234:5678:0000:0000:0000:0000/64
 network6=2001:0DB8:1234:ABCD:0000:0000:0000:0000/64
 ----------------------------------------------------------------
 
-Now, please send the template to (still haegar or chaosvpn@hamburg.ccc.de???) and attach this file to your email:
+Next, send the template to haegar@ccc.de and also attach your node's
+public key to the email:
+    /etc/tinc/chaos/rsa_key.pub
 
-* /etc/tinc/chaos/rsa_key.pub
+Connecting to ChaosVPN
+======================
 
-* TODO: crontab for chaosvpn binary
-* TODO: running in foreground
+Once you're approved, you can run the chaosvpn utility. chaosvpn takes
+care of configuring tinc for you. The chaosvpn utility needs to be run
+as root, but it surrenders its privileges as soon as possible.
+
+
+If you have got any questions, join our irc channel #chaosvpn at
+irc.hackint.eu (If you're already connected to the chaosvpn, you can
+point your irc client to hackint.hack or 172.31.98.1 instead)

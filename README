@@ -1,6 +1,5 @@
-# Introduction
-
-This repository contains the config generator for the ChaosVPN.
+This repository contains the config generator for the ChaosVPN. For
+information on how to join the ChaosVPN, read INSTALL.
 
 It is intended to be small enough for embedded routing devices
 which runs OpenWRT as well as standard x86 hardware.
@@ -15,4 +14,4 @@ You can report bugs on github:
     https://github.com/ryd/chaosvpn/issues
 
 We also have a wiki:
-	<http://wiki.hamburg.ccc.de/index.php/ChaosVPN>
+    <http://wiki.hamburg.ccc.de/index.php/ChaosVPN>
