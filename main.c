@@ -700,6 +700,7 @@ fire_up_tincd_handler(struct config* config)
 	/* We are the child */
 	(void)close(pipefds[0]);
 	(void)close(pipe2fds[1]);
+	(void)signal(SIGINT, SIG_IGN);
 	if (config->oneshot) {
 		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
 	} else {
