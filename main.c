@@ -134,10 +134,9 @@ main (int argc,char *argv[])
 
 	if (!config->oneshot) {
 		do {
-		ml_cont:
 			main_updated(config);
 			while (1) {
-				(void)sleep(2);
+				(void)sleep(60);
 				if (nextupdate < time(NULL)) {
 					break;
 				}
@@ -148,16 +147,16 @@ main (int argc,char *argv[])
 			switch (main_fetch_and_apply_config(config, &oldconfig)) {
 			case -1:
 				log_err("Error while updating config. Not terminating tincd.");
-				goto ml_cont;
+				break;
 
 			case 1:
 				log_info("No update needed.");
-				goto ml_cont;
+				break;
 
 			default:;
+				log_info("Restarting tincd.");
+				handler_restart_tincd();
 			}
-			log_info("Restarting tincd.");
-			handler_restart_tincd();
 		} while (!r_sigterm && !r_sigint);
 
 		bail_out:
