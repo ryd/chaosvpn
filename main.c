@@ -269,7 +269,7 @@ main_parse_opts(struct config *config, int argc, char** argv)
 	while ((c = getopt(argc, argv, "c:aofrd")) != -1) {
 		switch (c) {
 		case 'c':
-			config->configfile = optarg;
+			config->configfile = strdup(optarg);
 			break;
 
 		case 'a': /* legacy */
