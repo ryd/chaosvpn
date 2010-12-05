@@ -298,9 +298,19 @@ tinc_write_updown(struct config *config, bool up)
 		}
 	}
 
+
+
 	CONCAT(&buffer, "\n");
 	CONCAT(&buffer, "[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 	CONCAT(&buffer, "\n");
+	if (up) {
+		if (config->postup &&
+				str_is_nonempty(config->postup)) {
+			CONCAT(&buffer, config->postup);
+			CONCAT(&buffer, "\n");
+		}
+	}
+
 
 	CONCAT(&buffer, "\nexit 0\n\n");
 

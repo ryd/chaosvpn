@@ -22,6 +22,7 @@ static int stringcaller;
 \$routedel   {yylval.pval = &globalconfig->routedel; return KEYWORD_S;}
 \$routedel6   {yylval.pval = &globalconfig->routedel6; return KEYWORD_S;}
 \$routemetric   {yylval.pval = &globalconfig->routemetric; return KEYWORD_S;}
+\$postup  {yylval.pval = &globalconfig->postup; return KEYWORD_S;}
 \$ifconfig   {yylval.pval = &globalconfig->ifconfig; return KEYWORD_S;}
 \$ifconfig6   {yylval.pval = &globalconfig->ifconfig6; return KEYWORD_S;}
 \$master_url   {yylval.pval = &globalconfig->master_url; return KEYWORD_S;}
