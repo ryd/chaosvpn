@@ -61,7 +61,7 @@ fi
 
 # Use this if you want the user to explicitly set 'RUN' in
 # /etc/default/
-if [ "x$RUN" != "xyes" ] ; then
+if [ "x$RUN" != "xyes" -a "x$RUN" != "xYES" ] ; then
     log_failure_msg "$NAME disabled, please adjust the configuration to your needs "
     log_failure_msg "and then set RUN to 'yes' in /etc/default/$NAME to enable it."
     exit 0
