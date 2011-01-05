@@ -1,0 +1,30 @@
+#!/bin/sh
+
+CONF="/etc/tinc/chaos/tinc.conf"
+DUMP_FILE="/var/run/tinc.chaos.dump"
+HTML_PATH="/srv/www/eee.ainex.net/htdocs"
+
+NODE_ATTR='-Nshape=ellipse -Nfontname=Verdana -Nfontsize=10 -Nstyle=filled -Nfillcolor=#eeeeee -Ncolor=#000000'
+EDGE_ATTR='-Earrowhead=none -Efontsize=2 -Ecolor=#000000'
+GRAPH_ATTR=""
+
+if [ ! $(grep GraphDumpFile $CONF) ]; then
+	echo "GraphDumpFile not found in config file: $CONF"
+	echo "Adding GraphDumpFile to config file."
+	echo "GraphDumpFile=/tmp/tinc-chaosvpn.dump" >> $CONF
+
+	echo "Reloading TINC"
+	/usr/sbin/tincd -n chaos --kill=HUP
+else
+	# Graphviz can create several graph styles.
+	# Each needs some time and resources.
+	/usr/bin/circo		-o $HTML_PATH/chaosvpn-circo.png	-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+	/usr/bin/neato		-o $HTML_PATH/chaosvpn-neato.png	-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+	/usr/bin/dot		-o $HTML_PATH/chaosvpn-dot.png		-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+	/usr/bin/twopi		-o $HTML_PATH/chaosvpn-twopi.png	-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+	/usr/bin/fdp		-o $HTML_PATH/chaosvpn-fdp.png		-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+
+	# Creating graph with circo
+	/usr/bin/circo		-o $HTML_PATH/chaosvpn.png		-Tpng $GRAPH_ATTR $EDGE_ATTR $NODE_ATTR		$DUMP_FILE
+fi
+

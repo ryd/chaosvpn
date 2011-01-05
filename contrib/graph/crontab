@@ -1,0 +1,2 @@
+# Start the script every 5 minutes
+*/5 * * * *		root		/usr/local/sbin/chaosvpn.graph

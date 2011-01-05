@@ -1,0 +1,6 @@
+Requires "graphviz" package.
+
+This script will create a graph with limited view. The connections from
+primary servers are visible as well as the connections on the local machine.
+
+You need to enable the $tincd_graphdumpfile variable in chaosvpn.conf.
