@@ -4,8 +4,9 @@ chaosvpn (2.06-0) unstable; urgency=low
     OpenSSL library used.
     Output a warning if not.
     (Suggestion from wopot)
+  * Added dependency to iproute package, needed for routing setup.
 
- -- Sven-Haegar Koch <haegar@sdinet.de>  Wed, 24 Nov 2010 14:33:08 +0100
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 27 Jan 2011 01:10:16 +0100
 
 chaosvpn (2.05-0) unstable; urgency=low
 

@@ -8,7 +8,7 @@ Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash
+Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash, iproute
 Provides: agoralink
 Description: Config generator to setup connection to ChaosVPN
  This VPN is also known as AgoraLink. It replaces the "old" ChaosVPN
