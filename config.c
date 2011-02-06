@@ -162,7 +162,7 @@ config_init(struct config *config)
 	if ((config->update_interval == 0) && (!config->oneshot)) {
 		log_err("Error: you have not configured a remote config update interval.");
 		log_err("($update_interval) Please configure an interval (3600 - 7200 seconds");
-		log_err("are recommended) or activate legacy (cron) mode by using the -a flag.");
+		log_err("are recommended) or activate legacy (cron) mode by using the -o flag.");
 		exit(1);
 	}
 	if ((config->update_interval < 60) && (!config->oneshot)) {
