@@ -111,6 +111,7 @@ config_free(struct config *config)
 	free(config->routeadd6);
 	free(config->routedel);
 	free(config->routedel6);
+	free(config->postup);
 	free(config->ifconfig);
 	free(config->ifconfig6);
 	free(config->master_url);
