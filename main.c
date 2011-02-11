@@ -785,11 +785,21 @@ static void
 sigchild(int sig /*__unused*/)
 {
 	struct config *config = config_get();
+	pid_t pid;
+	int status;
 
-	log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
-	if (!daemon_sigchld(&di_tincd, config->tincd_restart_delay)) {
-		log_err("unable to restart tincd. Terminating.");
-		exit(1);
+	pid = waitpid(-1, &status, 0);
+	if (pid == di_tincd.di_pid) {
+		log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
+		if (config->tincd_restart_delay != 0) {
+			(void)sleep(config->tincd_restart_delay);
+		}
+		if (!daemon_start(&di_tincd)) {
+			log_err("unable to restart tincd. Terminating.");
+			exit(1);
+		}
+	} else {
+		log_err("some child has terminated; reaping.");
 	}
 }
 
