@@ -16,8 +16,6 @@
 static bool r_sigterm = false;
 static bool r_sigint = false;
 static struct daemon_info di_tincd;
-static char tincd_debugparam[32];
-
 static pid_t pid_tincd_handler;
 static int fd_tincd_handler;
 
@@ -105,8 +103,6 @@ main (int argc,char *argv[])
 	}
 
 	/* At this point, we've read and parsed our config file */
-
-	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 
 	/* Fire up the tincd handler which needs root privileges */
 	pid_tincd_handler = fire_up_tincd_handler(config);
@@ -674,6 +670,8 @@ fire_up_tincd_handler(struct config* config)
 	int pipefds[2];
 	int pipe2fds[2];
 	char foo;
+	char tincd_debugparam[32];
+
 
 	if (pipe(pipefds) || pipe(pipe2fds)) {
 		log_err("Can't create pipe");
@@ -701,10 +699,13 @@ fire_up_tincd_handler(struct config* config)
 	(void)close(pipefds[0]);
 	(void)close(pipe2fds[1]);
 	(void)signal(SIGINT, SIG_IGN);
-	if (config->oneshot) {
-		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
-	} else {
-		daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, "-D", NULL);
+
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
+
+	daemon_init(&di_tincd, config->tincd_bin, config->tincd_bin, "-n", config->networkname, tincd_debugparam, NULL);
+
+	if (!config->oneshot) {
+	        daemon_addparam(&di_tincd, "-D");
 	}
 	if (config->tincd_user) {
 		daemon_addparam(&di_tincd, "--user");
