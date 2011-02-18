@@ -106,6 +106,8 @@ main (int argc,char *argv[])
 
 	/* At this point, we've read and parsed our config file */
 
+	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
+
 	/* Fire up the tincd handler which needs root privileges */
 	pid_tincd_handler = fire_up_tincd_handler(config);
 
@@ -122,7 +124,6 @@ main (int argc,char *argv[])
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
 	main_warn_about_old_tincd(config);
-	snprintf(tincd_debugparam, sizeof(tincd_debugparam), "--debug=%u", config->tincd_debuglevel);
 
 	main_updated(config);
 
