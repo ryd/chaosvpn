@@ -160,9 +160,9 @@ daemon_addparam(struct daemon_info* di, const char* param)
 
     numargs = di->di_numarguments + 1;
     tmp = (char**)realloc(di->di_arguments, sizeof(char*) * numargs);
-    if (tmp == NULL) return 1;
+    if (tmp == NULL) return false;
     dparam = strdup(param);
-    if (dparam == NULL) return 1;
+    if (dparam == NULL) return false;
     di->di_arguments = tmp;
     ++di->di_numarguments;
     di->di_arguments[numargs - 2] = dparam;
