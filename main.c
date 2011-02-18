@@ -732,9 +732,11 @@ fire_up_tincd_handler(struct config* config)
 			break;
 		case HANDLER_RESTART_TINCD:
 			daemon_stop(&di_tincd, 5);
+			tinc_invoke_ifdown(config);
 			break;
 		case HANDLER_STOP:
         		(void)signal(SIGCHLD, SIG_IGN);
+			tinc_invoke_ifdown(config);
 			daemon_stop(&di_tincd, 5);
 			exit(0);
 		case HANDLER_SIGNAL_OLD_TINCD:
@@ -793,6 +795,7 @@ sigchild(int sig /*__unused*/)
 	pid = waitpid(-1, &status, 0);
 	if (pid == di_tincd.di_pid) {
 		log_err("tincd terminated. Restarting in %d seconds.", config->tincd_restart_delay);
+		tinc_invoke_ifdown(config);
 		if (config->tincd_restart_delay != 0) {
 			(void)sleep(config->tincd_restart_delay);
 		}

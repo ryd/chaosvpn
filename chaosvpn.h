@@ -246,6 +246,8 @@ extern bool tinc_write_updown(struct config*, bool up);
 extern bool tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
 extern pid_t tinc_get_pid(struct config *config);
+extern bool tinc_invoke_ifdown(struct config* config);
+
 
 
 extern bool tun_check_or_create(); 
