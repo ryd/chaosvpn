@@ -602,6 +602,8 @@ tinc_invoke_ifdown(struct config* config)
 	int i;
 	struct string filepath;
 
+	if (!config->run_ifdown) return true;
+
 	string_init(&filepath, 512, 512);
 	string_concat(&filepath, config->base_path);
 	string_concat(&filepath, "/tinc-down");

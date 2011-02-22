@@ -136,6 +136,7 @@ struct config {
 	unsigned int update_interval;
 	bool use_dynamic_routes;
 	bool connect_only_to_primary_nodes;
+	bool run_ifdown;
 
 	/* vars only used in configfile, dummy for c code: */
 	char *password;
