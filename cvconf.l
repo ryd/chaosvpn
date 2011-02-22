@@ -46,6 +46,10 @@ static int stringcaller;
             "\"%s\" in line %d\n", yytext, yylineno);
     exit(1);
 }
+[Yy][Ee][Ss]		{yylval.bval = true; return YESNOVAL;}
+[Nn][Oo]		{yylval.bval = false; return YESNOVAL;}
+[Tt][Rr][Uu][Ee]	{yylval.bval = true; return YESNOVAL;}
+[Ff][Aa][Ll][Ss][Ee]	{yylval.bval = false; return YESNOVAL;}
 
 [ \t]*=[ \t]*	{ BEGIN PV; return ASSIGNMENT; }
 <PV>[0-9]*\.[0-9]+	{yylval.fval = atof(yytext); return FLOATVAL;}
