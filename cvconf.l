@@ -40,7 +40,7 @@ static int stringcaller;
 \$update_interval {yylval.pval = &globalconfig->update_interval; return KEYWORD_I;}
 \$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_B;}
 \$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_B;}
-\$run_ifdown    {yylval.bval = &globalconfig->run_ifdown; return KEYWORD_YN;}
+\$run_ifdown    {yylval.pval = &globalconfig->run_ifdown; return KEYWORD_YN;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 \[@$][_a-z]+   {
     log_err("parse error: unknown configuration variable "
