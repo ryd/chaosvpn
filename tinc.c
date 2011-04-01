@@ -385,11 +385,11 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	if (up) {
 		routecmd = config->routeadd;
 		routecmd6 = config->routeadd6;
-		logger = "logger -t \"tinc.$NETNAME.subnet-up\" -p daemon.debug \"subnet-up %s $NODE $SUBNET%s\" 2>/dev/null\n";
+		logger = "logger -t \"tinc.$NETNAME.subnet-up\" -p daemon.debug \"subnet-up from $NODE for %s $SUBNET ($REMOTEADDRESS:$REMOTEPORT)%s\" 2>/dev/null\n";
 	} else {
 		routecmd = config->routedel;
 		routecmd6 = config->routedel6;
-		logger = "logger -t \"tinc.$NETNAME.subnet-down\" -p daemon.debug \"subnet-down %s $NODE $SUBNET%s\" 2>/dev/null\n";
+		logger = "logger -t \"tinc.$NETNAME.subnet-down\" -p daemon.debug \"subnet-down from $NODE for %s $SUBNET ($REMOTEADDRESS:$REMOTEPORT)%s\" 2>/dev/null\n";
 	}
 
 	CONCAT_F(&buffer, "[ \"$NODE\" = '%s' ] && exit 0\n\n", config->peerid);
