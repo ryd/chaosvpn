@@ -21,7 +21,7 @@ NAME?=chaosvpn
 GITDEBVERSION=$(shell debian/scripts/calcdebversion )
 
 $(NAME): main.o $(OBJ) $(HEADERS)
-	$(CC) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
+	$(CC) $(LDFLAGS) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -o $(patsubst %.c,%.o,$<) -c $<
