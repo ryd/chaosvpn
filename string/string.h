@@ -1,6 +1,7 @@
 #ifndef __STRING_H
 #define __STRING_H
 
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -105,6 +106,37 @@ static inline bool str_is_true(const char *s, bool def) {
     } else {
         return def;
     }
+}
+
+/* str_split_at - break string at first delimiter, return remainder */
+static inline char *str_split_at(char *string, int delimiter) {
+    char *cp;
+
+    if ((cp = strchr(string, delimiter)) != 0)
+        *cp++ = 0;
+
+    return (cp);
+}
+
+/* str_split_at_right - break string at last delimiter, return remainder */
+static inline char *str_split_at_right(char *string, int delimiter) {
+    char *cp;
+
+    if ((cp = strrchr(string, delimiter)) != 0)
+        *cp++ = 0;
+    return (cp);
+}
+
+/* str_alldig - return true if string is all digits */
+static inline bool str_alldig(const char *string) {
+    const char *cp;
+
+    if (*string == 0)
+        return false;
+    for (cp = string; *cp != 0; cp++)
+        if (!isascii((unsigned char) *cp) || !isdigit((unsigned char) *cp))
+            return false;
+    return true;
 }
 
 #endif
