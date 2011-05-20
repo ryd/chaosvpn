@@ -231,10 +231,9 @@ daemon_stop(struct daemon_info* di, const unsigned int sleepdelay)
 bool
 daemon_sigchld(struct daemon_info* di, unsigned int waitbeforerestart)
 {
-    pid_t pid;
     int status;
 
-    pid = waitpid(di->di_pid, &status, 0);
+    waitpid(di->di_pid, &status, 0);
     if (waitbeforerestart != 0) {
         (void)sleep(waitbeforerestart);
     }
