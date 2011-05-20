@@ -777,10 +777,9 @@ handler_signal_old_tincd(void)
 static void
 p_sigchild(int sig/*__unused*/)
 {
-	pid_t pid;
 	int status;
 
-	pid = waitpid(pid_tincd_handler, &status, 0);
+	waitpid(pid_tincd_handler, &status, 0);
 	log_err("tincd manager slave has died with status %d.", status);
 	exit(status);
 }
