@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <sys/socket.h>
 #include <limits.h>
-#include "list.h"
+
 #include "string/string.h"
+
 
 #define ADDR_V4_BITS	32
 #define ADDR_V6_BITS	128
