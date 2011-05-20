@@ -518,11 +518,10 @@ tinc_get_version(struct config *config)
 	char *retval = NULL;
 	char cmd[1024];
 	char *p;
-	int res;
 	
 	string_init(&tincd_output, 1024, 512);
 	snprintf(cmd, sizeof(cmd), "%s --version", config->tincd_bin);
-	res = fs_backticks_exec(cmd, &tincd_output);
+	fs_backticks_exec(cmd, &tincd_output);
 	if (string_putc(&tincd_output, 0)) goto bail_out;
 
 	if (strncmp(string_get(&tincd_output), "tinc version ", 13) != 0) {
