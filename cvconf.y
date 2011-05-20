@@ -33,7 +33,6 @@ extern int yylineno;
 %token <pval> KEYWORD_F
 %token <pval> KEYWORD_L
 %token <pval> KEYWORD_B
-%token <pval> KEYWORD_YN
 %token <sval> STRING
 %token <ival> INTVAL
 %token <bval> BOOLVAL
@@ -58,8 +57,9 @@ config:
     ;
 
 setting: KEYWORD_I ASSIGNMENT INTVAL	{ *((int*)$1) = $3; }
-    | KEYWORD_B ASSIGNMENT BOOLVAL { *((bool*)$1) = $3; }
-    | KEYWORD_YN ASSIGNMENT YESNOVAL { *((bool*)$1) = $3; }
+    | KEYWORD_B ASSIGNMENT BOOLVAL 	{ *((bool*)$1) = $3; }
+    | KEYWORD_B ASSIGNMENT YESNOVAL	{ *((bool*)$1) = $3; }
+    | KEYWORD_B ASSIGNMENT INTVAL	{ *((bool*)$1) = $3; }
     | KEYWORD_F ASSIGNMENT FLOATVAL	{ *((float*)$1) = $3; }
     | KEYWORD_S ASSIGNMENT STRINGMARKER string STRINGMARKER	{ if (*(char**)$1) {free(*(char**)$1);} *((char**)$1) = $4; }
     | KEYWORD_L ASSIGNMENT LISTOPEN list { *((struct settings_list**)$1) = $4; }
