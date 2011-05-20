@@ -30,7 +30,10 @@ struct addr_info {
 extern void addrmask_free(struct addr_info *addrinfo);
 
 /* parse string containing ip/mask into struct addr_info */
-extern bool addrmask_parse(struct addr_info *ip, char *addressmask);
+extern bool addrmask_parse(struct addr_info *ip, const char *addressmask);
+
+/* create new struct addr_info from string containing ip/mask */
+extern struct addr_info *addrmask_init(const char *addressmask);
 
 /* matches an ip or subnet against a struct addr_info */
 /* returns matching entry from struct addr_info linked list or NULL */

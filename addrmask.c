@@ -44,7 +44,7 @@ void addrmask_free(struct addr_info *addrinfo)
   free(addrinfo);
 }
 
-bool addrmask_parse(struct addr_info *ip, char *addressmask)
+bool addrmask_parse(struct addr_info *ip, const char *addressmask)
 {
   bool res;
   struct string patternstruct;
@@ -131,6 +131,23 @@ out_free_pattern:
   string_free(&patternstruct);
 out:
   return res;
+}
+
+struct addr_info *addrmask_init(const char *addressmask)
+{
+  struct addr_info *result;
+  
+  result = malloc(sizeof(struct addr_info));
+  if (!result)
+    return NULL;
+  memset(result, 0, sizeof(struct addr_info));
+  
+  if (!addrmask_parse(result, addressmask)) {
+    free(result);
+    return NULL;
+  }
+  
+  return result;
 }
 
 struct addr_info *addrmask_match(struct addr_info *matches, const char *addr)
