@@ -195,9 +195,9 @@ config_init(struct config *config)
 		return false;
 	}
 
-    /* Note on the beauty of the POSIX API:
-     * although pwentry is dynamically allocated here (maybe),
-     * it /must not/ be freed after use. */
+	/* Note on the beauty of the POSIX API:
+	 * although pwentry is dynamically allocated here (maybe),
+	 * it /must not/ be freed after use. */
 	pwentry = getpwnam(config->tincd_user);
 	if (!pwentry) {
 		log_err("tincd_user %s does not exist.", config->tincd_user);
