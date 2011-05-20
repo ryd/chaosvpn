@@ -137,6 +137,8 @@ struct config {
 	bool use_dynamic_routes;
 	bool connect_only_to_primary_nodes;
 	bool run_ifdown;
+	struct settings_list *mergeroutes_supernet;
+	struct settings_list *mergeroutes_supernet6;
 
 	/* vars only used in configfile, dummy for c code: */
 	char *password;

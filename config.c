@@ -132,6 +132,8 @@ config_free(struct config *config)
 	parser_free_config(&config->peer_config);
 	free(config->configfile);
 	free(config->tincd_version);
+	free_settings_list(config->mergeroutes_supernet);
+	free_settings_list(config->mergeroutes_supernet6);
 
 	if (globalconfig == config) {
 		globalconfig = NULL;
