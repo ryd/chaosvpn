@@ -11,9 +11,9 @@
 #include "list.h"
 #include "string/string.h"
 #include "httplib/httplib.h"
+#include "addrmask.h"
 #include "strnatcmp.h"
 #include "version.h"
-
 
 #define TINC_DEFAULT_PORT "665"
 /*
@@ -137,8 +137,10 @@ struct config {
 	bool use_dynamic_routes;
 	bool connect_only_to_primary_nodes;
 	bool run_ifdown;
-	struct settings_list *mergeroutes_supernet;
-	struct settings_list *mergeroutes_supernet6;
+	struct settings_list *mergeroutes_supernet_raw;
+	struct addr_info *mergeroutes_supernet;
+	struct settings_list *mergeroutes_supernet6_raw;
+	struct addr_info *mergeroutes_supernet6;
 
 	/* vars only used in configfile, dummy for c code: */
 	char *password;

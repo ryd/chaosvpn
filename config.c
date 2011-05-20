@@ -132,9 +132,11 @@ config_free(struct config *config)
 	parser_free_config(&config->peer_config);
 	free(config->configfile);
 	free(config->tincd_version);
-	free_settings_list(config->mergeroutes_supernet);
-	free_settings_list(config->mergeroutes_supernet6);
-
+	free_settings_list(config->mergeroutes_supernet_raw);
+	addrmask_free(config->mergeroutes_supernet);
+	free_settings_list(config->mergeroutes_supernet6_raw);
+	addrmask_free(config->mergeroutes_supernet6);
+	
 	if (globalconfig == config) {
 		globalconfig = NULL;
 	}
@@ -151,6 +153,8 @@ config_init(struct config *config)
 	char *p;
 	struct stat stat_buf;
 	struct passwd* pwentry;
+	struct list_head* ptr;
+	struct settings_list* etr;
 
 	globalconfig = config;
 
@@ -220,6 +224,66 @@ config_init(struct config *config)
 		
 		if (config->use_dynamic_routes)
 			reqparam(routedel6, "$routedel6");
+	}
+
+	if (config->mergeroutes_supernet_raw) {
+		struct addr_info *addr;
+		struct addr_info *prev = NULL;
+		
+		list_for_each(ptr, &config->mergeroutes_supernet_raw->list) {
+			etr = list_entry(ptr, struct settings_list, list);
+			if (etr->e->etype != LIST_STRING) {
+				/* only strings allowed */
+				continue;
+			}
+
+			addr = addrmask_init(etr->e->evalue.s);
+			if (!addr) {
+				log_err("@mergeroutes_supernet: invalid ip/mask '%s' - ignored.", etr->e->evalue.s);
+				continue;
+			}
+
+			if (!config->mergeroutes_supernet) {
+				config->mergeroutes_supernet = addr;
+			} else if (prev) {
+				prev->next = addr;
+			}
+			
+			prev = addr;
+		}
+
+		free_settings_list(config->mergeroutes_supernet_raw);
+		config->mergeroutes_supernet_raw = NULL;
+	}
+
+	if (config->mergeroutes_supernet6_raw) {
+		struct addr_info *addr;
+		struct addr_info *prev = NULL;
+		
+		list_for_each(ptr, &config->mergeroutes_supernet6_raw->list) {
+			etr = list_entry(ptr, struct settings_list, list);
+			if (etr->e->etype != LIST_STRING) {
+				/* only strings allowed */
+				continue;
+			}
+
+			addr = addrmask_init(etr->e->evalue.s);
+			if (!addr) {
+				log_err("@mergeroutes_supernet6: invalid ip/mask '%s' - ignored.", etr->e->evalue.s);
+				continue;
+			}
+
+			if (!config->mergeroutes_supernet6) {
+				config->mergeroutes_supernet6 = addr;
+			} else if (prev) {
+				prev->next = addr;
+			}
+			
+			prev = addr;
+		}
+
+		free_settings_list(config->mergeroutes_supernet6_raw);
+		config->mergeroutes_supernet6_raw = NULL;
 	}
 
 #ifndef BSD
