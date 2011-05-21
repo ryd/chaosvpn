@@ -45,6 +45,8 @@ $routedel		= "/sbin/route del -net %s -interface \$INTERFACE";
 $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask 255.255.255.255";
 # **FIXME** $ifconfig6	= "";
 
+@mergeroutes_supernet	= ("172.31.0.0/16", "10.100.0.0/14");
+
 $master_url		= "http://www.vpn.hamburg.ccc.de/chaosvpn-data/$my_peerid.dat";
 
 ## public key used to sign the file at $master_url:
@@ -82,3 +84,8 @@ $tincd_restart_delay = 20;
 ## 3600 is a reasonable default.
 $update_interval = 3600;
 
+## Run the ifdown script manually. This may be useful on systems where
+## the routes are not automatically removed when tincd stops.
+## Since tincd does not run as root, it is unable to remove the
+## routes; chaosvpn has the ability to run commands as root.
+$run_ifdown = no;
