@@ -143,6 +143,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 	char *item;
 	struct addr_info *addr;
 
+	line = str_trim(line);
 	len = strlen(line);
 	if ((*line == '[') && (line[len - 1] == ']')) {
 		struct peer_config_list *i;
