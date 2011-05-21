@@ -58,12 +58,13 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   res = false;
   if (!ip)
     goto out;
-  ip->next = NULL;
+  memset(ip, 0, sizeof(struct addr_info));
 
   if (string_initfromstringz(&patternstruct, addressmask))
     goto out;
+  if (string_putc(&patternstruct, 0))
+    goto out;
   pattern = string_get(&patternstruct);
-
 
   /*
    * Strip [] from [addr/len] or [addr]/len, destroying the pattern. CIDR
@@ -152,28 +153,26 @@ struct addr_info *addrmask_init(const char *addressmask)
 
 struct addr_info *addrmask_match(struct addr_info *matches, const char *addr)
 {
-  unsigned char addr_bytes[ADDR_MAX_BYTES];
-  unsigned addr_family;
+  struct addr_info info;
   unsigned char *mp;
   unsigned char *np;
   unsigned char *ap;
   struct addr_info *entry;
 
-  if (!matches)
+  if (!matches || !addr)
     return NULL;
-  
-  addr_family = CIDR_MATCH_ADDR_FAMILY(addr);
-  if (inet_pton(addr_family, addr, addr_bytes) != 1)
+
+  if (!addrmask_parse(&info, addr))
     return NULL;
-  
+
   for (entry = matches; entry; entry = entry->next) {
-    if (entry->addr_family == addr_family) {
+    if (entry->addr_family == info.addr_family) {
       /* Unoptimized case: netmask with some or all bits zero. */
       if (entry->mask_shift < entry->addr_bit_count) {
         for (np = entry->net_bytes, mp = entry->mask_bytes,
-            ap = addr_bytes; /* void */ ; np++, mp++, ap++) {
-          if (ap >= addr_bytes + entry->addr_byte_count)
-            return (entry);
+            ap = info.net_bytes; /* void */ ; np++, mp++, ap++) {
+          if (ap >= info.net_bytes + entry->addr_byte_count)
+            goto found;
           if ((*ap & *mp) != *np)
             break;
         }
@@ -182,9 +181,9 @@ struct addr_info *addrmask_match(struct addr_info *matches, const char *addr)
       /* Optimized case: all 1 netmask (i.e. no netmask specified). */
       else {
         for (np = entry->net_bytes,
-            ap = addr_bytes; /* void */ ; np++, ap++) {
-          if (ap >= addr_bytes + entry->addr_byte_count)
-            return (entry);
+            ap = info.net_bytes; /* void */ ; np++, ap++) {
+          if (ap >= info.net_bytes + entry->addr_byte_count)
+            goto found;
           if (*ap != *np)
             break;
         }
@@ -193,6 +192,14 @@ struct addr_info *addrmask_match(struct addr_info *matches, const char *addr)
   }
   
   return NULL;
+
+found:
+  /* Address matches, now check for subnet size */
+  
+  if (info.mask_shift < entry->mask_shift)
+    return NULL;
+  
+  return entry;
 }
 
 bool addrmask_to_string(struct string *target, struct addr_info *addr)

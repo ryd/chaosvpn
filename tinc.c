@@ -270,6 +270,7 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(vpnip) && str_is_nonempty(routecmd) &&
 				(addrmask_to_string(&outputaddr, net))
 			  ) {
+			  	string_putc(&outputaddr, 0);
 				CONCAT_F(&buffer, routecmd, string_get(&outputaddr));
 				CONCAT(&buffer, "\n");
 			}
