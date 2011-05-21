@@ -245,8 +245,46 @@ tinc_write_updown(struct config *config, bool up)
 		CONCAT(&buffer, "\n");
 	}
 
+	if (config->mergeroutes_supernet) {
+		struct addr_info *net = config->mergeroutes_supernet;
+		struct string outputaddr;
+		char *vpnip;
+
+		CONCAT(&buffer, "# Mergeroute Supernets\n");
+
+		while (net) {
+			if (net->addr_family == AF_INET) {
+				vpnip = config->vpn_ip;
+				if (up)
+					routecmd = config->routeadd;
+				else
+					routecmd = config->routedel;
+			} else {
+				vpnip = config->vpn_ip6;
+				if (up)
+					routecmd = config->routeadd6;
+				else
+					routecmd = config->routedel6;
+			}
+			string_init(&outputaddr, 128, 128);
+			if (str_is_nonempty(vpnip) && str_is_nonempty(routecmd) &&
+				(addrmask_to_string(&outputaddr, net))
+			  ) {
+				CONCAT_F(&buffer, routecmd, string_get(&outputaddr));
+				CONCAT(&buffer, "\n");
+			}
+
+			string_free(&outputaddr);
+			net = net->next;
+		}
+
+		CONCAT(&buffer, "\n");
+	}
+	
 	if (!config->use_dynamic_routes) {
 		/* setup / remove all routes unless using dynamic routes */
+
+		struct addr_info *merge_found;
 
 		list_for_each(p, &config->peer_config) {
 			i = container_of(p, struct peer_config_list, list);
@@ -273,6 +311,12 @@ tinc_write_updown(struct config *config, bool up)
 					weight = strchr(subnet, '#');
 					if (weight)
 						*weight++ = 0;
+
+					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
+					
+					if (merge_found) {
+						CONCAT(&buffer, "# *merged* ");
+					}
 					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
 					free(subnet);
@@ -290,6 +334,13 @@ tinc_write_updown(struct config *config, bool up)
 					weight = strchr(subnet, '#');
 					if (weight)
 						*weight++ = 0;
+
+					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
+					
+					if (merge_found) {
+						CONCAT(&buffer, "# *merged* ");
+					}
+
 					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
 					free(subnet);
