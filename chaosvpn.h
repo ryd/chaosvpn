@@ -139,8 +139,6 @@ struct config {
 	bool run_ifdown;
 	struct settings_list *mergeroutes_supernet_raw;
 	struct addr_info *mergeroutes_supernet;
-	struct settings_list *mergeroutes_supernet6_raw;
-	struct addr_info *mergeroutes_supernet6;
 
 	/* vars only used in configfile, dummy for c code: */
 	char *password;

@@ -134,8 +134,6 @@ config_free(struct config *config)
 	free(config->tincd_version);
 	free_settings_list(config->mergeroutes_supernet_raw);
 	addrmask_free(config->mergeroutes_supernet);
-	free_settings_list(config->mergeroutes_supernet6_raw);
-	addrmask_free(config->mergeroutes_supernet6);
 	
 	if (globalconfig == config) {
 		globalconfig = NULL;
@@ -254,36 +252,6 @@ config_init(struct config *config)
 
 		free_settings_list(config->mergeroutes_supernet_raw);
 		config->mergeroutes_supernet_raw = NULL;
-	}
-
-	if (config->mergeroutes_supernet6_raw) {
-		struct addr_info *addr;
-		struct addr_info *prev = NULL;
-		
-		list_for_each(ptr, &config->mergeroutes_supernet6_raw->list) {
-			etr = list_entry(ptr, struct settings_list, list);
-			if (etr->e->etype != LIST_STRING) {
-				/* only strings allowed */
-				continue;
-			}
-
-			addr = addrmask_init(etr->e->evalue.s);
-			if (!addr) {
-				log_err("@mergeroutes_supernet6: invalid ip/mask '%s' - ignored.", etr->e->evalue.s);
-				continue;
-			}
-
-			if (!config->mergeroutes_supernet6) {
-				config->mergeroutes_supernet6 = addr;
-			} else if (prev) {
-				prev->next = addr;
-			}
-			
-			prev = addr;
-		}
-
-		free_settings_list(config->mergeroutes_supernet6_raw);
-		config->mergeroutes_supernet6_raw = NULL;
 	}
 
 #ifndef BSD
