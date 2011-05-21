@@ -158,6 +158,9 @@ struct addr_info *addrmask_match(struct addr_info *matches, const char *addr)
   unsigned char *np;
   unsigned char *ap;
   struct addr_info *entry;
+
+  if (!matches)
+    return NULL;
   
   addr_family = CIDR_MATCH_ADDR_FAMILY(addr);
   if (inet_pton(addr_family, addr, addr_bytes) != 1)
