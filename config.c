@@ -227,7 +227,12 @@ config_init(struct config *config)
 	if (config->mergeroutes_supernet_raw) {
 		struct addr_info *addr;
 		struct addr_info *prev = NULL;
-		
+
+		if (config->mergeroutes_supernet) {
+			addrmask_free(config->mergeroutes_supernet);
+		}
+		config->mergeroutes_supernet = NULL;
+
 		list_for_each(ptr, &config->mergeroutes_supernet_raw->list) {
 			etr = list_entry(ptr, struct settings_list, list);
 			if (etr->e->etype != LIST_STRING) {
@@ -252,6 +257,12 @@ config_init(struct config *config)
 
 		free_settings_list(config->mergeroutes_supernet_raw);
 		config->mergeroutes_supernet_raw = NULL;
+	}
+
+	if (config->mergeroutes_supernet && config->use_dynamic_routes) {
+		log_err("settings @mergeroute_supernet and $use_dynamic_routes are not compatible!");
+		log_err("disable one of them and retry.");
+		return false;
 	}
 
 #ifndef BSD
