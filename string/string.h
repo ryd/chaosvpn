@@ -139,4 +139,27 @@ static inline bool str_alldig(const char *string) {
     return true;
 }
 
+static inline char *str_skip_spaces(const char *str) {
+    while (isspace(*str))
+        ++str;
+    return (char *)str;
+}
+
+static inline char *str_trim(char *s) {
+    size_t size;
+    char *end;
+    
+    s = str_skip_spaces(s);
+    size = strlen(s);
+    if (!size)
+        return s;
+
+    end = s + size - 1;
+    while (end >= s && isspace(*end))
+        end--;
+    *(end + 1) = '\0';
+
+    return s;
+}
+
 #endif
