@@ -112,7 +112,7 @@ static inline bool str_is_true(const char *s, bool def) {
 static inline char *str_split_at(char *string, int delimiter) {
     char *cp;
 
-    if ((cp = strchr(string, delimiter)) != 0)
+    if ((cp = strchr(string, delimiter)) != NULL)
         *cp++ = 0;
 
     return (cp);
@@ -122,7 +122,7 @@ static inline char *str_split_at(char *string, int delimiter) {
 static inline char *str_split_at_right(char *string, int delimiter) {
     char *cp;
 
-    if ((cp = strrchr(string, delimiter)) != 0)
+    if ((cp = strrchr(string, delimiter)) != NULL)
         *cp++ = 0;
     return (cp);
 }
