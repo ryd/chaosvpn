@@ -287,6 +287,7 @@ tinc_write_updown(struct config *config, bool up)
 
 		struct addr_info *merge_found;
 		struct addr_info *ignore_found;
+		struct addr_info *whitelist_found;
 
 		list_for_each(p, &config->peer_config) {
 			i = container_of(p, struct peer_config_list, list);
@@ -316,12 +317,16 @@ tinc_write_updown(struct config *config, bool up)
 
 					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
 					ignore_found = addrmask_match(config->ignore_subnets, subnet);
+					whitelist_found = addrmask_match(config->whitelist_subnets, subnet);
 					
 					if (merge_found) {
 						CONCAT(&buffer, "# *merged* ");
 					} else if (ignore_found) {
 						CONCAT(&buffer, "# *ignored* ");
+					} else if (config->whitelist_subnets && !whitelist_found) {
+						CONCAT(&buffer, "# *not whitelisted, ignored* ");
 					}
+					
 					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
 					free(subnet);
@@ -342,11 +347,14 @@ tinc_write_updown(struct config *config, bool up)
 
 					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
 					ignore_found = addrmask_match(config->ignore_subnets, subnet);
+					whitelist_found = addrmask_match(config->whitelist_subnets, subnet);
 
 					if (merge_found) {
 						CONCAT(&buffer, "# *merged* ");
 					} else if (ignore_found) {
 						CONCAT(&buffer, "# *ignored* ");
+					} else if (config->whitelist_subnets && !whitelist_found) {
+						CONCAT(&buffer, "# *not whitelisted, ignored* ");
 					}
 
 					CONCAT_F(&buffer, routecmd, subnet);

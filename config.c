@@ -262,7 +262,7 @@ config_init(struct config *config)
 	}
 
 	if (config->mergeroutes_supernet && config->use_dynamic_routes) {
-		log_err("settings @mergeroute_supernet and $use_dynamic_routes are not compatible!");
+		log_err("settings @mergeroutes_supernet and $use_dynamic_routes are not compatible!");
 		log_err("disable one of them and retry.");
 		return false;
 	}
@@ -304,6 +304,47 @@ config_init(struct config *config)
 
 	if (config->ignore_subnets && config->use_dynamic_routes) {
 		log_err("settings @ignore_subnets and $use_dynamic_routes are not compatible!");
+		log_err("disable one of them and retry.");
+		return false;
+	}
+
+	if (config->whitelist_subnets_raw) {
+		struct addr_info *addr;
+		struct addr_info *prev = NULL;
+
+		if (config->whitelist_subnets) {
+			addrmask_free(config->whitelist_subnets);
+		}
+		config->whitelist_subnets = NULL;
+
+		list_for_each(ptr, &config->whitelist_subnets_raw->list) {
+			etr = list_entry(ptr, struct settings_list, list);
+			if (etr->e->etype != LIST_STRING) {
+				/* only strings allowed */
+				continue;
+			}
+
+			addr = addrmask_init(etr->e->evalue.s);
+			if (!addr) {
+				log_err("@whitelist_subnets: invalid ip/mask '%s' - ignored.", etr->e->evalue.s);
+				continue;
+			}
+
+			if (!config->whitelist_subnets) {
+				config->whitelist_subnets = addr;
+			} else if (prev) {
+				prev->next = addr;
+			}
+			
+			prev = addr;
+		}
+
+		free_settings_list(config->whitelist_subnets_raw);
+		config->whitelist_subnets_raw = NULL;
+	}
+
+	if (config->whitelist_subnets && config->use_dynamic_routes) {
+		log_err("settings @whitelist_subnets and $use_dynamic_routes are not compatible!");
 		log_err("disable one of them and retry.");
 		return false;
 	}
