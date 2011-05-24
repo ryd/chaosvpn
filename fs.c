@@ -433,7 +433,7 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 		if (pid != waitpid(pid, &status, 0)) {log_err("waitpid failed in fs_backticks_exec.");}
 	} else {
 		/* child */
-		char *argv[255] = {0};
+		char *argv[255] = {NULL};
 		int argc = 0;
 		char *p;
 		char *mycmd = strdup(cmd);
