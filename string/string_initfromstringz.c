@@ -3,7 +3,7 @@
 #include "string.h"
 
 int
-string_initfromstringz(struct string* s, const char const* is)
+string_initfromstringz(struct string* s, const char *is)
 {
     uintptr_t l;
 
