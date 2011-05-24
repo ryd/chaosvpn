@@ -13,7 +13,7 @@ extern int yylex (void);
 static char* catandfree(char*, char*, int, int);
 static char* concatias(int, char*, int);
 static struct settings_list_entry* list_mkientry(int);
-static struct settings_list_entry* list_mksentry(const char const*);
+static struct settings_list_entry* list_mksentry(const char*);
 static struct settings_list* list_add_elem(struct settings_list*, struct settings_list_entry*);
 static struct settings_list* list_allocate(void);
 
@@ -111,7 +111,7 @@ list_mkientry(int i)
 }
 
 static struct settings_list_entry*
-list_mksentry(const char const* s)
+list_mksentry(const char *s)
 {
     struct settings_list_entry* entry;
     entry = malloc(sizeof(struct settings_list_entry));
