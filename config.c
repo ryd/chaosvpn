@@ -20,7 +20,7 @@ extern int yyparse(void);
 struct config *globalconfig = NULL;
 
 
-void
+static void
 free_settings_list(struct settings_list *s)
 {
 	struct list_head *pos, *next;
