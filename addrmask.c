@@ -74,7 +74,7 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
    */
   if (*pattern == '[') {
     pattern++;
-    if ((mask_search = str_split_at(pattern, ']')) == 0)
+    if ((mask_search = str_split_at(pattern, ']')) == NULL)
       goto out_free_pattern;
     else if (*mask_search != '/') {
       if (*mask_search != 0)
@@ -86,7 +86,7 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   }
 
   /* Parse the pattern into network and mask, destroying the pattern. */
-  if ((mask = str_split_at(mask_search, '/')) != 0) {
+  if ((mask = str_split_at(mask_search, '/')) != NULL) {
     ip->addr_family = CIDR_MATCH_ADDR_FAMILY(pattern);
     ip->addr_bit_count = CIDR_MATCH_ADDR_BIT_COUNT(ip->addr_family);
     ip->addr_byte_count = CIDR_MATCH_ADDR_BYTE_COUNT(ip->addr_family);
@@ -108,8 +108,7 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
         np < ip->net_bytes + ip->addr_byte_count; np++, mp++) {
       if (*np & ~(*mp)) {
         mask_addr(ip->net_bytes, ip->addr_byte_count, ip->mask_shift);
-        if (inet_ntop(ip->addr_family, ip->net_bytes, dummy,
-            sizeof(dummy)) == 0)
+        if (inet_ntop(ip->addr_family, ip->net_bytes, dummy, sizeof(dummy)) == NULL)
           goto out_free_pattern;
       }
     }
