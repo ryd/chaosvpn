@@ -83,7 +83,7 @@ fs_get_cwd(struct string* s)
 	return 0;
 }
 
-int
+static int
 fs_cp_file(const char *src, const char *dst)
 {
 	int fh_source;
