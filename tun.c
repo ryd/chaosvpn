@@ -12,7 +12,7 @@
 #define NOERR   (0)
 
 static bool
-tun_create_dev()
+tun_create_dev(void)
 {
 	mode_t mask = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	if (!EXISTS(TUN_PATH) && (NOERR != mkdir(TUN_PATH, mask))) {
@@ -25,7 +25,7 @@ tun_create_dev()
 }
 
 bool
-tun_check_or_create()
+tun_check_or_create(void)
 {
 	if (!EXISTS(TUN_DEV)) {
 		log_info("tun device %s does't exists - trying to create it.", TUN_DEV);
