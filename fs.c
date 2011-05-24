@@ -84,7 +84,7 @@ fs_get_cwd(struct string* s)
 }
 
 int
-fs_cp_file(const char const* src, const char const* dst)
+fs_cp_file(const char *src, const char *dst)
 {
 	int fh_source;
 	int fh_destination;
@@ -317,8 +317,8 @@ nrcwd_bail_out:
 }
 
 int
-fs_writecontents(const char const* fn,
-                 const char const* cnt,
+fs_writecontents(const char *fn,
+                 const char *cnt,
                  const size_t len,
                  const int mode)
 {
@@ -337,9 +337,9 @@ fs_writecontents(const char const* fn,
 
 
 int
-fs_writecontents_safe(const char const* dir,
-                      const char const* fn,
-                      const char const* cnt,
+fs_writecontents_safe(const char *dir,
+                      const char *fn,
+                      const char *cnt,
                       const int len,
                       const int mode)
 {
