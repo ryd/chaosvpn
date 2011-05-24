@@ -314,7 +314,7 @@ main_warn_about_old_tincd(struct config* config)
 }
 
 static bool
-main_check_root()
+main_check_root(void)
 {
 	return getuid() == 0;
 }
