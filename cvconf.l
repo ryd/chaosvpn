@@ -43,6 +43,7 @@ static int stringcaller;
 \$run_ifdown    {yylval.pval = &globalconfig->run_ifdown; return KEYWORD_B;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 @mergeroutes_supernet {yylval.pval = &globalconfig->mergeroutes_supernet_raw; return KEYWORD_L;}
+@ignore_subnets {yylval.pval = &globalconfig->ignore_subnets_raw; return KEYWORD_L;}
 
 \[@$][_a-z]+   {
     log_err("parse error: unknown configuration variable "

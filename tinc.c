@@ -286,6 +286,7 @@ tinc_write_updown(struct config *config, bool up)
 		/* setup / remove all routes unless using dynamic routes */
 
 		struct addr_info *merge_found;
+		struct addr_info *ignore_found;
 
 		list_for_each(p, &config->peer_config) {
 			i = container_of(p, struct peer_config_list, list);
@@ -314,9 +315,12 @@ tinc_write_updown(struct config *config, bool up)
 						*weight++ = 0;
 
 					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
+					ignore_found = addrmask_match(config->ignore_subnets, subnet);
 					
 					if (merge_found) {
 						CONCAT(&buffer, "# *merged* ");
+					} else if (ignore_found) {
+						CONCAT(&buffer, "# *ignored* ");
 					}
 					CONCAT_F(&buffer, routecmd, subnet);
 					CONCAT(&buffer, "\n");
@@ -337,9 +341,12 @@ tinc_write_updown(struct config *config, bool up)
 						*weight++ = 0;
 
 					merge_found = addrmask_match(config->mergeroutes_supernet, subnet);
-					
+					ignore_found = addrmask_match(config->ignore_subnets, subnet);
+
 					if (merge_found) {
 						CONCAT(&buffer, "# *merged* ");
+					} else if (ignore_found) {
+						CONCAT(&buffer, "# *ignored* ");
 					}
 
 					CONCAT_F(&buffer, routecmd, subnet);
@@ -349,7 +356,6 @@ tinc_write_updown(struct config *config, bool up)
 			}
 		}
 	}
-
 
 
 	CONCAT(&buffer, "\n");

@@ -134,6 +134,8 @@ config_free(struct config *config)
 	free(config->tincd_version);
 	free_settings_list(config->mergeroutes_supernet_raw);
 	addrmask_free(config->mergeroutes_supernet);
+	free_settings_list(config->ignore_subnets_raw);
+	addrmask_free(config->ignore_subnets);
 	
 	if (globalconfig == config) {
 		globalconfig = NULL;
@@ -264,6 +266,48 @@ config_init(struct config *config)
 		log_err("disable one of them and retry.");
 		return false;
 	}
+
+	if (config->ignore_subnets_raw) {
+		struct addr_info *addr;
+		struct addr_info *prev = NULL;
+
+		if (config->ignore_subnets) {
+			addrmask_free(config->ignore_subnets);
+		}
+		config->ignore_subnets = NULL;
+
+		list_for_each(ptr, &config->ignore_subnets_raw->list) {
+			etr = list_entry(ptr, struct settings_list, list);
+			if (etr->e->etype != LIST_STRING) {
+				/* only strings allowed */
+				continue;
+			}
+
+			addr = addrmask_init(etr->e->evalue.s);
+			if (!addr) {
+				log_err("@ignore_subnets: invalid ip/mask '%s' - ignored.", etr->e->evalue.s);
+				continue;
+			}
+
+			if (!config->ignore_subnets) {
+				config->ignore_subnets = addr;
+			} else if (prev) {
+				prev->next = addr;
+			}
+			
+			prev = addr;
+		}
+
+		free_settings_list(config->ignore_subnets_raw);
+		config->ignore_subnets_raw = NULL;
+	}
+
+	if (config->ignore_subnets && config->use_dynamic_routes) {
+		log_err("settings @ignore_subnets and $use_dynamic_routes are not compatible!");
+		log_err("disable one of them and retry.");
+		return false;
+	}
+
 
 #ifndef BSD
 	/* Linux */
