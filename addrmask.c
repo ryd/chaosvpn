@@ -35,13 +35,13 @@ static void mask_addr(unsigned char *addr_bytes, unsigned addr_byte_count, unsig
 
 void addrmask_free(struct addr_info *addrinfo)
 {
-  if (addrinfo == NULL)
-    return;
+  struct addr_info *next;
 
-  if (addrinfo->next != NULL)
-    addrmask_free(addrinfo->next);
-  
-  free(addrinfo);
+  while (addrinfo) {
+    next = addrinfo->next;
+    free(addrinfo);
+    addrinfo = next;
+  }
 }
 
 bool addrmask_parse(struct addr_info *ip, const char *addressmask)

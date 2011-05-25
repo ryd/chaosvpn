@@ -149,7 +149,7 @@ config_free(struct config *config)
 static struct addr_info *
 parse_and_free_raw_subnetlist(struct settings_list *raw, const char *label)
 {
-	struct list_head* ptr;
+	struct list_head *ptr;
 	struct settings_list* etr;
 	struct addr_info *current;
 	struct addr_info *prev;
