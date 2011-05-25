@@ -136,7 +136,9 @@ config_free(struct config *config)
 	addrmask_free(config->mergeroutes_supernet);
 	free_settings_list(config->ignore_subnets_raw);
 	addrmask_free(config->ignore_subnets);
-	
+	free_settings_list(config->whitelist_subnets_raw);
+	addrmask_free(config->whitelist_subnets);
+
 	if (globalconfig == config) {
 		globalconfig = NULL;
 	}
