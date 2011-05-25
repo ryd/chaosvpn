@@ -1,5 +1,6 @@
 #include <sys/param.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -792,7 +793,11 @@ sigchild(int sig /*__unused*/)
 	int status;
 
 	pid = waitpid(-1, &status, 0);
-	if ((pid != -1) && (pid == di_tincd.di_pid)) {
+	if ((pid == 0) || (pid == -1 && errno == ECHILD)) {
+	        /* ignore */
+	} else if (pid == -1) {
+	        log_err("some child has terminated, but waitpid() returned error: %s", strerror(errno));
+	} else if (pid == di_tincd.di_pid) {
 		log_err("tincd terminated. Restarting in %d seconds. (pid %d)", config->tincd_restart_delay, pid);
 		tinc_invoke_ifdown(config);
 		if (config->tincd_restart_delay != 0) {
