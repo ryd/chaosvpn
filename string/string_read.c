@@ -7,7 +7,7 @@
 #include "string.h"
 
 int
-string_read(struct string* s, int fd, uintptr_t len, intptr_t* bytes_read)
+string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_read)
 {
     uintptr_t growby;
     char* buf;
@@ -24,7 +24,10 @@ string_read(struct string* s, int fd, uintptr_t len, intptr_t* bytes_read)
         s->_u._s.size += growby;
         s->s = buf;
     }
+
     *bytes_read = read(fd, s->s + s->_u._s.length, len);
-    s->_u._s.length += *bytes_read;
+
+    if (*bytes_read > 0)
+        s->_u._s.length += *bytes_read;
     return 0;
 }
