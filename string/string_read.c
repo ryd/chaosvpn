@@ -11,10 +11,6 @@ string_read(struct string* s, int fd, uintptr_t len, intptr_t* bytes_read)
 {
     uintptr_t growby;
     char* buf;
-    int bytes_read_ignore;
-    
-    if (bytes_read == NULL)
-        bytes_read = &bytes_read_ignore;
 
     if (len > (s->_u._s.size - s->_u._s.length)) {
         growby = s->_u._s.growby;
