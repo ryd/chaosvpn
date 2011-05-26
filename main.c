@@ -672,7 +672,9 @@ fire_up_tincd_handler(struct config* config)
 	int pipe2fds[2];
 	char foo;
 	char tincd_debugparam[32];
-
+	int nfds;
+	fd_set readfdset;
+	char stderr_buffer[1024] = "";
 
 	if (pipe(pipefds) || pipe(pipe2fds)) {
 		log_err("Can't create pipe");
@@ -720,30 +722,73 @@ fire_up_tincd_handler(struct config* config)
 	/* tell the parent we've started up */
 	if(write(pipefds[1], &foo, 1) != 1) exit(1);
 
+	fcntl(pipefds[1], F_SETFL, O_NONBLOCK);
+	fcntl(pipe2fds[0], F_SETFL, O_NONBLOCK);
+
 	/* sleep forever */
 	for(;;) {
-		if(read(pipe2fds[0], &foo, 1) != 1) sigterm(SIGTERM);
-		switch(foo) {
-		case HANDLER_START_TINCD:
-			if (!daemon_start(&di_tincd)) {
-				log_err("error: unable to run tincd.");
-				exit(1);
-			}
-		        if (config->oneshot) exit(0);
-			break;
-		case HANDLER_RESTART_TINCD:
-			daemon_stop(&di_tincd, 5);
-			tinc_invoke_ifdown(config);
-			break;
-		case HANDLER_STOP:
-        		(void)signal(SIGCHLD, SIG_IGN);
-			tinc_invoke_ifdown(config);
-			daemon_stop(&di_tincd, 5);
-			exit(0);
-		case HANDLER_SIGNAL_OLD_TINCD:
-			main_terminate_old_tincd(config);
-			break;
-		}
+	        FD_ZERO(&readfdset);
+	        FD_SET(pipe2fds[0], &readfdset);
+	        nfds = pipe2fds[0];
+	        if (di_tincd.di_stderr) {
+	                if (fileno(di_tincd.di_stderr) > nfds)
+	                        nfds = fileno(di_tincd.di_stderr);
+	                FD_SET(fileno(di_tincd.di_stderr), &readfdset);
+                }
+
+                if (select(nfds+1, &readfdset, NULL, NULL, NULL) < 1) {
+                        log_err("select failed: %s", strerror(errno));
+                        sleep(1);
+                        continue;
+                }
+
+                if (FD_ISSET(pipe2fds[0], &readfdset)) {
+                        if(read(pipe2fds[0], &foo, 1) != 1) sigterm(SIGTERM);
+                        switch(foo) {
+                        case HANDLER_START_TINCD:
+                                if (!daemon_start(&di_tincd)) {
+                                        log_err("error: unable to run tincd.");
+                                        exit(1);
+                                }
+                                if (config->oneshot) exit(0);
+                                break;
+                        case HANDLER_RESTART_TINCD:
+                                daemon_stop(&di_tincd, 5);
+                                tinc_invoke_ifdown(config);
+                                break;
+                        case HANDLER_STOP:
+                                (void)signal(SIGCHLD, SIG_IGN);
+                                tinc_invoke_ifdown(config);
+                                daemon_stop(&di_tincd, 5);
+                                exit(0);
+                        case HANDLER_SIGNAL_OLD_TINCD:
+                                main_terminate_old_tincd(config);
+                                break;
+                        }
+                }
+                if (di_tincd.di_stderr && FD_ISSET(fileno(di_tincd.di_stderr), &readfdset)) {
+                        char *end;
+                        size_t len;
+                        size_t tocopy;
+                        char *ret;
+                        
+                        len = strlen(stderr_buffer); /* leftovers */
+                        ret = fgets(stderr_buffer + len, sizeof(stderr_buffer) - len - 1, di_tincd.di_stderr);
+                        if (ret == NULL)
+                                continue;
+                        
+                        len = strlen(stderr_buffer); /* after read */
+
+                        while ((end = strchr(stderr_buffer, '\n'))) {
+                                tocopy = len - (end - stderr_buffer);
+                                end[0] = 0;
+                                log_info("tinc[%d] %s", di_tincd.di_pid, stderr_buffer);
+                                if (tocopy > 0)
+                                        memmove(stderr_buffer, end+1, tocopy);
+                                else
+                                        stderr_buffer[0] = 0;
+                        }
+                }
 	}
 }
 

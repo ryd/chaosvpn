@@ -97,6 +97,10 @@ daemon_init(struct daemon_info* di, const char* path, ...)
     int numargs;
     va_list ap;
 
+    di->di_stderr_fd[0] = -1;
+    di->di_stderr_fd[1] = -1;
+    di->di_stderr = NULL;
+    di->di_pid = -1;
     di->di_path = strdup(path);
 
     va_start(ap, path);
@@ -130,7 +134,6 @@ daemon_init(struct daemon_info* di, const char* path, ...)
     }
     di->di_envp[0] = NULL;
 
-    di->di_pid = -1;
     return true;
 
 bail_out:
@@ -186,20 +189,48 @@ daemon_free(struct daemon_info* di)
     di->di_envp = NULL;
     
     di->di_pid = -1;
+    
+    if (di->di_stderr_fd[0] != -1)
+        close(di->di_stderr_fd[0]);
+    if (di->di_stderr_fd[1] != -1)
+        close(di->di_stderr_fd[1]);
+    di->di_stderr_fd[0] = -1;
+    di->di_stderr_fd[1] = -1;
+    if (di->di_stderr)
+        fclose(di->di_stderr);
+    di->di_stderr = NULL;
 }
 
 bool
 daemon_start(struct daemon_info* di)
 {
     pid_t pid;
+
+    if (di->di_stderr_fd[0] != -1)
+        close(di->di_stderr_fd[0]);
+    if (di->di_stderr_fd[1] != -1)
+        close(di->di_stderr_fd[1]);
+    if (pipe(di->di_stderr_fd) == -1) {
+        log_err("daemon_start(): creating stderr pipe failed: %s", strerror(errno));
+        return false;
+    }
+    fcntl(di->di_stderr_fd[0], O_NONBLOCK);
+    fcntl(di->di_stderr_fd[1], O_NONBLOCK);
+    di->di_stderr = fdopen(di->di_stderr_fd[0], "r");
+    
     switch(pid = fork()) {
     case 0:
         (void)setsid();
+        dup2(di->di_stderr_fd[1], STDERR_FILENO);
+        close(di->di_stderr_fd[0]);
+        close(di->di_stderr_fd[1]);
         (void)execve(di->di_path, di->di_arguments, di->di_envp);
         exit(EXIT_FAILURE);
     case -1:
         return false;
     default:
+        close(di->di_stderr_fd[1]);
+        di->di_stderr_fd[1] = -1;
         di->di_pid = pid;
         return true;
     }

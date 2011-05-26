@@ -184,6 +184,9 @@ struct daemon_info {
     char** di_arguments;
     char** di_envp;
 
+    int di_stderr_fd[2];
+    FILE *di_stderr;
+
     pid_t di_pid;
 };
 
