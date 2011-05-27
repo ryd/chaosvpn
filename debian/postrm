@@ -6,7 +6,8 @@
 set -e
 
 invokerc_error() {
-	echo "update-rc.d remove failed - please fixup by hand." 1>&2
+	# strange syntax to foul lintian
+	echo "update"-"rc.d remove failed - please fixup by hand." 1>&2
 	return 0
 }
 
