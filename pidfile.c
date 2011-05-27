@@ -11,20 +11,17 @@
 bool
 pidfile_create_pidfile(const char *filename)
 {
-	struct string lockfile;
+	char lockfile[512];
 	int fh_lockfile;
 	FILE *handle_pidfile;
 	bool retval = false;
 
-	string_init(&lockfile, 512, 512);
-	string_concat(&lockfile, filename);
-	string_concat(&lockfile, ".lck");
-	string_putc(&lockfile, 0);
+	snprintf(lockfile, sizeof(lockfile), "%s.lck", filename);
 
-	fh_lockfile = open(string_get(&lockfile), O_CREAT | O_EXCL, 0600);
+	fh_lockfile = open(lockfile, O_CREAT | O_EXCL, 0600);
 	if (fh_lockfile == -1) {
-		log_info("create_pidfile: lockfile already exists.");
-		goto out_free;
+		log_info("create_pidfile: lockfile '%s' already exists.", lockfile);
+		goto out;
 	}
 	close(fh_lockfile);
 
@@ -49,11 +46,10 @@ pidfile_create_pidfile(const char *filename)
 out_close:
 	fclose(handle_pidfile);
 out_unlock:
-	if (unlink(string_get(&lockfile))) {
-		log_warn("create_pidfile: warning: couldn't remove lockfile %s", string_get(&lockfile));
+	if (unlink(lockfile)) {
+		log_warn("create_pidfile: warning: couldn't remove lockfile '%s': %s", lockfile, strerror(errno));
 	}
-out_free:
-	string_free(&lockfile);
+out:
 	return retval;
 }
 
