@@ -1,6 +1,12 @@
 chaosvpn (2.07-0) unstable; urgency=low
 
-  * Lots of main program changes.
+  * Lots of bugfixes.
+  * Configuration option tincd_user to run tincd as non-root
+  * Rework structure: make main chaosvpn process *completely* unprivileged
+  * Option for the local admin to merge lots of chaosvpn routes into a
+    small number of bigger supernet routes.
+  * Option for the local admin to blacklist/whitelist routes received from
+    the vpn.
   * Debian packaging switched from crontab/oneshot mode to daemon mode.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 27 May 2011 17:03:43 +0200
