@@ -632,13 +632,13 @@ tinc_get_pid(struct config *config)
 	} else {
 		/* tinc 1.0.x - use pid file */
 
-		if (str_is_empty(config->pidfile)) {
+		if (str_is_empty(config->tincd_pidfile)) {
 			log_warn("Notice: tinc pidfile not specified!");
 			goto bail_out;
 		}
 
-		if (fs_read_file(&pid_text, config->pidfile)) {
-			log_info("Notice: unable to open pidfile '%s'; assuming an old tincd is not running", config->pidfile);
+		if (fs_read_file(&pid_text, config->tincd_pidfile)) {
+			log_info("Notice: unable to open pidfile '%s'; assuming an old tincd is not running", config->tincd_pidfile);
 			goto bail_out;
 		}
 	}

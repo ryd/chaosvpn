@@ -120,7 +120,7 @@ struct config {
 	char *ifconfig6;
 	char *master_url;
 	char *base_path;
-	char *pidfile;
+	char *tincd_pidfile;
 	char *cookiefile;
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;

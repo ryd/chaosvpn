@@ -649,10 +649,10 @@ bail_out:
 static void
 main_unlink_pidfile(struct config *config)
 {
-	if (str_is_empty(config->pidfile))
+	if (str_is_empty(config->tincd_pidfile))
 		return;
 
-	(void)unlink(config->pidfile);
+	(void)unlink(config->tincd_pidfile);
 }
 
 

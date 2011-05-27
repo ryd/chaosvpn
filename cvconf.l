@@ -28,7 +28,7 @@ static int stringcaller;
 \$master_url   {yylval.pval = &globalconfig->master_url; return KEYWORD_S;}
 \$masterdata_signkey   {yylval.pval = &globalconfig->masterdata_signkey; return KEYWORD_S;}
 \$base   {yylval.pval = &globalconfig->base_path; return KEYWORD_S;}
-\$pidfile   {yylval.pval = &globalconfig->pidfile; return KEYWORD_S;}
+\$pidfile   {yylval.pval = &globalconfig->tincd_pidfile; return KEYWORD_S;}
 \$tincd_debuglevel   {yylval.pval = &globalconfig->tincd_debuglevel; return KEYWORD_I;}
 \$my_vpn_netmask	{yylval.pval = &globalconfig->vpn_netmask; return KEYWORD_S;}
 \$tmpconffile	{yylval.pval = &globalconfig->tmpconffile; return KEYWORD_S;}
