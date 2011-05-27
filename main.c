@@ -16,6 +16,7 @@
 
 static bool r_sigterm = false;
 static bool r_sigint = false;
+static bool r_sighup = false;
 static struct daemon_info di_tincd;
 static pid_t pid_tincd_handler;
 static int fd_tincd_handler;
@@ -43,6 +44,7 @@ static void main_warn_about_old_tincd(struct config* config);
 static void p_sigchild(int);
 static void p_sigint(int);
 static void p_sigterm(int);
+static void p_sighup(int);
 
 /* slave process handler functions */
 static pid_t fire_up_tincd_handler(struct config* config);
@@ -117,6 +119,7 @@ main (int argc,char *argv[])
 
 	(void)signal(SIGINT, p_sigint);
 	(void)signal(SIGTERM, p_sigterm);
+	(void)signal(SIGHUP, p_sighup);
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
@@ -135,6 +138,11 @@ main (int argc,char *argv[])
 			main_updated(config);
 			while (1) {
 				(void)sleep(60);
+				if (r_sighup) {
+				        /* re-init sighup flag and update config */
+				        r_sighup = false;
+				        break;
+                                }
 				if (nextupdate < time(NULL)) {
 					break;
 				}
@@ -659,6 +667,12 @@ static void
 p_sigterm(int sig /*__unused*/)
 {
 	r_sigterm = true;
+}
+
+static void
+p_sighup(int sig /*__unused*/)
+{
+	r_sighup = true;
 }
 
 /* ------------------------------------------------------------ */
