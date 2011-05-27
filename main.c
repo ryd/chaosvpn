@@ -816,7 +816,7 @@ fire_up_tincd_handler(struct config* config)
                         while ((end = strchr(stderr_buffer, '\n'))) {
                                 tocopy = len - (end - stderr_buffer);
                                 end[0] = 0;
-                                log_info("tinc.%s[%d] %s", di_tincd.di_pid, config->networkname, stderr_buffer);
+                                log_info("tinc.%s[%d] %s", config->networkname, di_tincd.di_pid, stderr_buffer);
                                 if (tocopy > 0)
                                         memmove(stderr_buffer, end+1, tocopy);
                                 else
