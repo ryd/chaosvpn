@@ -30,9 +30,8 @@ test -x $DAEMON || exit 0
 
 # Default options, these can be overriden by the information
 # at /etc/default/$NAME
-DAEMON_OPTS="-o"        # Additional options given to the server
-# -o == oneshot mode, do not run as daemon, onetime fetch+update of config
-#       and tincd restart
+DAEMON_OPTS="--dummy"   # Additional options given to the server
+# overridden later!
 
 DIETIME=10              # Time to wait for the server to die, in seconds
                         # If this value is set too low you might not
@@ -97,13 +96,13 @@ start_server() {
 	local errcode
 # Start the process using the wrapper
         if [ -z "$DAEMONUSER" ] ; then
-            start_daemon -p $PIDFILE $DAEMON $DAEMON_OPTS >/dev/null
+            start_daemon -p "$PIDFILE" "$DAEMON" $DAEMON_OPTS >/dev/null
             errcode=$?
         else
 # if we are using a daemonuser then change the user id
-            start-stop-daemon --start --quiet --pidfile $PIDFILE \
-                        --chuid $DAEMONUSER \
-                        --exec $DAEMON -- $DAEMON_OPTS
+            start-stop-daemon --start --quiet --pidfile "$PIDFILE" \
+                        --chuid "$DAEMONUSER" \
+                        --exec "$DAEMON" -- $DAEMON_OPTS
             errcode=$?
         fi
         return $errcode
@@ -121,21 +120,16 @@ extract_configinfos() {
 	networkname=$( perl -ne 's/^.*?\$networkname\s*=\s*\"(.*?)\".*$/$1/ && print $_' <"/etc/tinc/$config" )
 	[ -z "$networkname" ] && return 1
 
-	PIDFILE="/var/run/tinc.$networkname.pid"
-	DAEMON_OPTS="-a -c /etc/tinc/$config"
+	PIDFILE="/var/run/chaosvpn.$networkname.pid"
+	DAEMON_OPTS="-d -c /etc/tinc/$config -p $PIDFILE"
 	return 0;
 }
 
 start_configs() {
-	local mode="$1"
 	local errcode
 	local config
 	for config in $CONFIGS ; do
-		if [ "$mode" = "reload" ] ; then
-			log_daemon_msg "Reloading $DESC " "$config"
-		else
-			log_daemon_msg "Starting $DESC " "$config"
-		fi
+		log_daemon_msg "Starting $DESC " "$config"
 		errcode=1
 		
 		if extract_configinfos "$config" ; then
@@ -144,12 +138,23 @@ start_configs() {
 
 			if [ "$errcode" -eq 0 ] ; then
 				[ -n "$STARTTIME" ] && sleep $STARTTIME # Wait some time
-		
-				if [ -f "$PIDFILE" ] ; then
-					# check if tincd is running
-					pidofproc -p "$PIDFILE" /usr/sbin/tincd >/dev/null || errcode=1
-				fi
 			fi
+		fi
+
+		log_end_msg $errcode
+	done
+}
+
+reload_configs() {
+	local errcode
+	local config
+	for config in $CONFIGS ; do
+		log_daemon_msg "Reloading $DESC " "$config"
+		errcode=1
+		
+		if extract_configinfos "$config" ; then
+			start-stop-daemon --stop --pidfile "$PIDFILE" --signal HUP --exec "$DAEMON"
+			errcode=$?
 		fi
 
 		log_end_msg $errcode
@@ -161,19 +166,26 @@ stop_configs() {
 	for config in $CONFIGS ; do
 		log_daemon_msg "Stopping $DESC " "$config"
 		extract_configinfos "$config"
-		if [ -x "$TINCCTL" ] ; then
-			# tincctl exists since tinc 1.1-git
-			"$TINCCTL" -n "$networkname" stop 2>/dev/null
+		if [ -f "$PIDFILE" ] ; then
+			killproc -p "$PIDFILE" "$DAEMON"
 			log_end_msg $?
 		else
-			if [ -f "$PIDFILE" ] ; then
-				killproc -p $PIDFILE /usr/sbin/tincd
-				log_end_msg $?
-			else
-				log_progress_msg "apparently not running"
-				log_end_msg 0
-			fi
+			log_progress_msg "apparently not running"
+			log_end_msg 0
 		fi
+		#if [ -x "$TINCCTL" ] ; then
+		#	# tincctl exists since tinc 1.1-git
+		#	"$TINCCTL" -n "$networkname" stop 2>/dev/null
+		#	log_end_msg $?
+		#else
+		#	if [ -f "$PIDFILE" ] ; then
+		#		killproc -p "$PIDFILE" /usr/sbin/tincd
+		#		log_end_msg $?
+		#	else
+		#		log_progress_msg "apparently not running"
+		#		log_end_msg 0
+		#	fi
+		#fi
 	done
 	return 0
 }
@@ -207,7 +219,7 @@ case "$1" in
         #log_warning_msg "Reloading $NAME daemon: not implemented, as the daemon"
         #log_warning_msg "cannot re-read the config file (use restart)."
         # Reloading is the same as starting for us
-        start_configs "reload"
+        reload_configs
         ;;
   *)
         N=/etc/init.d/$NAME

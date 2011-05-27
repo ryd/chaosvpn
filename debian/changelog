@@ -1,3 +1,10 @@
+chaosvpn (2.07-0) unstable; urgency=low
+
+  * Lots of main program changes.
+  * Debian packaging switched from crontab/oneshot mode to daemon mode.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 27 May 2011 17:03:43 +0200
+
 chaosvpn (2.06-0) unstable; urgency=low
 
   * Check that the OpenSSL headers used match the version of the

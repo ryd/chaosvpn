@@ -2,13 +2,13 @@ Source: chaosvpn
 Section: net
 Priority: extra
 Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
-Build-Depends: debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
+Build-Depends: dpkg (>= 1.15.7.2~), debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
 Standards-Version: 3.9.1
 Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash, iproute
+Depends: dpkg (>= 1.15.7.2~), tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash, iproute
 Provides: agoralink
 Description: Config generator to setup connection to ChaosVPN
  This VPN is also known as AgoraLink. It replaces the "old" ChaosVPN
