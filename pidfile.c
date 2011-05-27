@@ -3,6 +3,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <errno.h>
 
 #include "chaosvpn.h"
 
@@ -11,9 +13,7 @@ pidfile_create_pidfile(const char *filename)
 {
 	struct string lockfile;
 	int fh_lockfile;
-	int fh_pidfile;
-	char pidbuf[64];
-	int len;
+	FILE *handle_pidfile;
 	bool retval = false;
 
 	string_init(&lockfile, 512, 512);
@@ -24,23 +24,36 @@ pidfile_create_pidfile(const char *filename)
 	fh_lockfile = open(string_get(&lockfile), O_CREAT | O_EXCL, 0600);
 	if (fh_lockfile == -1) {
 		log_info("create_pidfile: lockfile already exists.");
-		return false;
+		goto out_free;
 	}
 	close(fh_lockfile);
 
-	// There's a better way to convert an int into a string.
-	len = snprintf(pidbuf, 64, "%d", getpid());
-	fh_pidfile = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0600);
-	if (write(fh_pidfile, pidbuf, len) != len)
-		goto bail_out;
+	handle_pidfile = fopen(filename, "w");
+	if (!handle_pidfile) {
+		log_err("create_pidfile: error creating pidfile: %s", strerror(errno));
+		goto out_unlock;
+	}
+	if (fprintf(handle_pidfile, "%d\n", getpid()) < 0) {
+		log_err("create_pidfile: error writing to pidfile: %s", strerror(errno));
+		goto out_close;
+	}
+
+	if (fclose(handle_pidfile) != 0) {
+		log_err("create_pidfile: error writing to pidfile: %s", strerror(errno));
+		goto out_unlock;
+	}
 
 	retval = true;
+	goto out_unlock;
 
-bail_out:
-	close(fh_pidfile);
+out_close:
+	fclose(handle_pidfile);
+out_unlock:
 	if (unlink(string_get(&lockfile))) {
 		log_warn("create_pidfile: warning: couldn't remove lockfile %s", string_get(&lockfile));
 	}
+out_free:
+	string_free(&lockfile);
 	return retval;
 }
 
