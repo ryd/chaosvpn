@@ -116,7 +116,7 @@ main (int argc,char *argv[])
 	}
 
 	(void)signal(SIGINT, p_sigint);
-	(void)signal(SIGINT, p_sigterm);
+	(void)signal(SIGTERM, p_sigterm);
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
