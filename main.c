@@ -730,8 +730,10 @@ fire_up_tincd_handler(struct config* config)
 	}
 
 	(void)signal(SIGTERM, sigterm);
+	(void)signal(SIGINT, sigterm);
 	(void)signal(SIGPIPE, sigterm);
 	(void)signal(SIGCHLD, sigchild);
+	(void)signal(SIGHUP, SIG_IGN);
 
 	/* tell the parent we've started up */
 	if(write(pipefds[1], &foo, 1) != 1) exit(1);
