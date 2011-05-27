@@ -100,6 +100,7 @@ struct peer_config_list {
 };
 
 struct config {
+	char *pidfile;
 	char *peerid;
 	char *vpn_ip;
 	char *vpn_ip6;

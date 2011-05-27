@@ -107,6 +107,15 @@ main (int argc,char *argv[])
 
 	/* At this point, we've read and parsed our config file */
 
+	/* Create pid file if requested */
+	/* Note that (for now) we do not care about removing this file again */
+	if (str_is_nonempty(config->pidfile)) {
+	        if (!pidfile_create_pidfile(config->pidfile)) {
+	                log_err("creation of pid file '%s' failed: %s", config->pidfile, strerror(errno));
+	                exit(1);
+                }
+	}
+
 	/* Fire up the tincd handler which needs root privileges */
 	pid_tincd_handler = fire_up_tincd_handler(config);
 
@@ -271,11 +280,17 @@ main_parse_opts(struct config *config, int argc, char** argv)
 	int c;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "c:aofrd")) != -1) {
+	while ((c = getopt(argc, argv, "c:p:aofrd")) != -1) {
 		switch (c) {
 		case 'c':
+		        free(config->configfile);
 			config->configfile = strdup(optarg);
 			break;
+
+                case 'p':
+                        free(config->pidfile);
+                        config->pidfile = strdup(optarg);
+                        break;
 
 		case 'a': /* legacy */
 		case 'o':
@@ -306,6 +321,9 @@ usage(void)
 	fprintf(stderr, "chaosvpn - connect to the chaos vpn.\n"
 	       "Usage: chaosvpn [OPTION...]\n\n"
 	       "  -c FILE  use this user configuration file\n"
+	       "           example: -c /etc/tinc/chaosvpn.conf\n"
+	       "  -p FILE  create .pid file with specified name\n"
+	       "           example: -p /var/run/chaosvpn.pid\n"
 	       "  -o       oneshot config update and tincd restart, then exit\n"
 	       "  -r       keep running, controlling tincd (default)\n"
 	       "  -d       daemon mode, fork into background and keep running\n"

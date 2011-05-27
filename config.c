@@ -50,6 +50,7 @@ config_alloc(void)
 	if (config == NULL) return NULL;
 	memset(config, 0, sizeof(struct config));
 
+	config->pidfile			= NULL;
 	config->peerid			= NULL;
 	config->vpn_ip			= NULL;
 	config->vpn_ip6			= NULL;
@@ -99,6 +100,7 @@ config_free(struct config *config)
 {
 	if (config == NULL) return;
 
+	free(config->pidfile);
 	free(config->peerid);
 	free(config->vpn_ip);
 	free(config->vpn_ip6);
