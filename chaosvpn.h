@@ -245,9 +245,11 @@ extern void log_init(int *argc, char ***argv, int logopt, int logfac);
 extern void log_raw(int priority, const char *format, ...);
 
 
-extern bool parser_parse_config (char *data, struct list_head *config_list); 
+extern bool parser_parse_config (char *data, struct list_head *config_list);
 extern void parser_free_config(struct list_head* configlist);
 
+
+extern bool pidfile_create_pidfile(const char *filename);
 
 
 extern bool tinc_write_config(struct config*);
@@ -257,7 +259,6 @@ extern bool tinc_write_subnetupdown(struct config*, bool up);
 extern char *tinc_get_version(struct config *config);
 extern pid_t tinc_get_pid(struct config *config);
 extern bool tinc_invoke_ifdown(struct config* config);
-
 
 
 extern bool tun_check_or_create(); 
