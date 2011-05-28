@@ -59,12 +59,13 @@ crypto_load_key(const char *key, const bool is_private)
         oldumask = umask(077);
         keyfd = mkstemp(tmpname);
         umask(oldumask);
-        free(tmpname);
         if (keyfd == -1) {
+            free(tmpname);
             log_err("crypto_load_key: error creating tempfile\n");
             return NULL;
         }
         unlink(tmpname);
+        free(tmpname);
         if (write(keyfd, key, strlen(key)) != strlen(key)) {
             close(keyfd);
             log_err("crypto_load_key: tempfile write error\n");
