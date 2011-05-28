@@ -245,16 +245,19 @@ config_init(struct config *config)
 		return false;
 	}
 
-	if (config->my_ip != NULL) {
-		if (str_is_empty(config->my_ip) ||
-			strcmp(config->my_ip, "0.0.0.0") == 0 ||
-			strcmp(config->my_ip, "127.0.0.1") == 0 ||
-			strcmp(config->my_ip, "::") == 0) {
+	if (str_is_empty(config->my_ip) ||
+		strcmp(config->my_ip, "0.0.0.0") == 0 ||
+		strcmp(config->my_ip, "127.0.0.1") == 0 ||
+		strcmp(config->my_ip, "::") == 0) {
 
-			free(config->my_ip);
-			config->my_ip = NULL;
-		}
+		free(config->my_ip);
+		config->my_ip = NULL;
 	}
+	if (str_is_nonempty(config->my_ip) && !addrmask_verify_ip(config->my_ip)) {
+		log_err("no valid ip address found in $my_ip");
+		return false;
+	}
+
 	if (str_is_nonempty(config->my_addressfamily) &&
 		strcmp(config->my_addressfamily, "any") != 0 &&
 		strcmp(config->my_addressfamily, "ipv4") != 0 &&
@@ -279,8 +282,17 @@ config_init(struct config *config)
 	config->tincd_uid = pwentry->pw_uid;
 	config->tincd_gid = pwentry->pw_gid;
 
+	if (str_is_nonempty(config->vpn_ip) && !addrmask_verify_ip(config->vpn_ip)) {
+		log_err("no valid ip address found in $my_vpn_ip");
+		return false;
+	}
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
 		log_err("error: you have to change $my_vpn_ip in %s\n", config->configfile);
+		return false;
+	}
+
+	if (str_is_nonempty(config->vpn_ip6) && !addrmask_verify_ip(config->vpn_ip6)) {
+		log_err("no valid ipv6 address found in $my_vpn_ip6");
 		return false;
 	}
 

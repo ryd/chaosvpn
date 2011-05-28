@@ -42,4 +42,8 @@ extern struct addr_info *addrmask_match(struct addr_info *matches, const char *a
 /* convert struct addr_info back to a string */
 extern bool addrmask_to_string(struct string *target, struct addr_info *addr);
 
+/* check if char* contains ip or subnet */
+extern bool addrmask_verify_ip(const char *addressmask);
+extern bool addrmask_verify_subnet(const char *addressmask);
+
 #endif

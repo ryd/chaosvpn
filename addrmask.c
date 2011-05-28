@@ -223,3 +223,40 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
 
   return true;
 }
+
+bool addrmask_verify_subnet(const char *addressmask)
+{
+  struct addr_info *addr;
+
+  if (str_is_empty(addressmask))
+    return false;
+
+  addr = addrmask_init(addressmask);
+  if (addr == NULL)
+    return false;
+  
+  addrmask_free(addr);
+  return true;
+}
+
+bool addrmask_verify_ip(const char *addressmask)
+{
+  struct addr_info *addr;
+  bool res = false;
+
+  if (str_is_empty(addressmask))
+    return false;
+
+  addr = addrmask_init(addressmask);
+  if (addr == NULL)
+    return false;
+
+  if ((addr->addr_family == AF_INET) && (addr->mask_shift == 32)) {
+    res = true;
+  } else if ((addr->addr_family == AF_INET6) && (addr->mask_shift == 128)) {
+    res = true;
+  }
+
+  addrmask_free(addr);
+  return res;
+}
