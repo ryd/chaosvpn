@@ -15,6 +15,7 @@ static int stringcaller;
 \$my_vpn_ip6   {yylval.pval = &globalconfig->vpn_ip6; return KEYWORD_S;}
 \$my_password   {yylval.pval = &globalconfig->password; return KEYWORD_S;}
 \$my_ip   {yylval.pval = &globalconfig->my_ip; return KEYWORD_S;}
+\$my_addressfamily  {yylval.pval = &globalconfig->my_addressfamily; return KEYWORD_S;}
 \$networkname   {yylval.pval = &globalconfig->networkname; return KEYWORD_S;}
 \$tincd_bin   {yylval.pval = &globalconfig->tincd_bin; return KEYWORD_S;}
 \$routeadd   {yylval.pval = &globalconfig->routeadd; return KEYWORD_S;}

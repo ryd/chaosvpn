@@ -56,6 +56,7 @@ config_alloc(void)
 	config->vpn_ip6			= NULL;
 	config->networkname		= NULL;
 	config->my_ip			= NULL;
+	config->my_addressfamily	= NULL;
 	config->tincd_bin		= strdup("/usr/sbin/tincd");
 	config->tincctl_bin		= NULL;
 	config->tincd_debuglevel	= 3;
@@ -106,6 +107,7 @@ config_free(struct config *config)
 	free(config->vpn_ip6);
 	free(config->networkname);
 	free(config->my_ip);
+	free(config->my_addressfamily);
 	free(config->tincd_bin);
 	free(config->tincctl_bin);
 	free(config->routemetric);
@@ -241,6 +243,29 @@ config_init(struct config *config)
 		(!(stat_buf.st_mode & S_IXUSR))) {
 		log_err("tinc binary %s not executable.", config->tincd_bin);
 		return false;
+	}
+
+	if (config->my_ip != NULL) {
+		if (str_is_empty(config->my_ip) ||
+			strcmp(config->my_ip, "0.0.0.0") == 0 ||
+			strcmp(config->my_ip, "127.0.0.1") == 0 ||
+			strcmp(config->my_ip, "::") == 0) {
+
+			free(config->my_ip);
+			config->my_ip = NULL;
+		}
+	}
+	if (str_is_nonempty(config->my_addressfamily) &&
+		strcmp(config->my_addressfamily, "any") != 0 &&
+		strcmp(config->my_addressfamily, "ipv4") != 0 &&
+		strcmp(config->my_addressfamily, "ipv6") != 0) {
+
+		log_err("invalid setting for $my_addressfamily, only 'ipv4', 'ipv6' or 'any' allowed.");
+		return false;
+	}
+	if (str_is_empty(config->my_addressfamily)) {
+		free(config->my_addressfamily);
+		config->my_addressfamily = strdup("any");
 	}
 
 	/* Note on the beauty of the POSIX API:

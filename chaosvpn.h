@@ -106,6 +106,7 @@ struct config {
 	char *vpn_ip6;
 	char *networkname;
 	char *my_ip;
+	char *my_addressfamily;
 	char *tincd_bin;
 	char *tincd_version;
 	char *tincctl_bin;

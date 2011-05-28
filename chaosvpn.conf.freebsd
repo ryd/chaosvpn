@@ -13,7 +13,10 @@ $my_vpn_ip6		= "";
 
 ## Interface for tincd to listen on.
 ## tincd will bind to all interfaces by default.
-$my_ip			= "0.0.0.0";
+$my_ip			= "";
+
+## Address family to use, can be ipv4, ipv6, or any
+$my_addressfamily	= "any";
 
 ## List of nodes this node should not connect to. You may want to
 ## exclude nodes you are already connected to by some other means.

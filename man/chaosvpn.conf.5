@@ -39,6 +39,14 @@ The public IP address on which the tincd daemon will listen. Leave this empty to
 interfaces (0.0.0.0). Make sure that you open the necessary ports on an existing firewall.
 .PP
 .RE
+.B $my_addressfamily
+(optional)
+.RS 4
+.PP
+The address family to use for listening and outgoing connections. May be one
+of 'ipv4', 'ipv6' or 'any'. 'any' is the default to use what is available.
+.PP
+.RE
 .B @exclude
 .RS 4
 .PP
