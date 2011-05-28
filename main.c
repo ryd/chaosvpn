@@ -609,7 +609,7 @@ main_load_previous_config(struct config *config, struct string* cnf)
 	fd = open(config->tmpconffile, O_RDONLY);
 	if (fd == -1) return false;
 
-	if (fstat(fd, &sb)) return false;
+	if (fstat(fd, &sb)) goto bail_out;
 	if (string_read(cnf, fd, sb.st_size, &readbytes)) {
 		log_err("Error: not enough memory to read stored config file.");
 		string_clear(cnf);
