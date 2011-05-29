@@ -141,7 +141,6 @@ parser_parse_line(char *line, struct list_head *configlist)
 {
 	int len;
 	char *item;
-	struct addr_info *addr;
 
 	line = str_trim(line);
 	len = strlen(line);
@@ -184,48 +183,28 @@ parser_parse_line(char *line, struct list_head *configlist)
 	} else if ((item = parser_check_configitem(line, "use-tcp-only="))) {
 		parser_replace_item(&my_config->use_tcp_only, item);
 	} else if ((item = parser_check_configitem(line, "network="))) {
-		addr = addrmask_init(item);
-		if (addr) {
-			if (addr->addr_family == AF_INET)
-				list_add_tail(parser_stringlist(item), &my_config->network);
-			else
-				log_err("node [%s]: not ipv4 for network='%s'", my_config->name, item);
-			addrmask_free(addr);
+		if (addrmask_verify_subnet(item, AF_INET)) {
+			list_add_tail(parser_stringlist(item), &my_config->network);
 		} else {
-			log_err("node [%s]: received invalid network='%s'", my_config->name, item);
+			log_err("node [%s]: received invalid ipv4 network='%s'", my_config->name, item);
 		}
 	} else if ((item = parser_check_configitem(line, "network6="))) {
-		addr = addrmask_init(item);
-		if (addr) {
-			if (addr->addr_family == AF_INET6)
-				list_add_tail(parser_stringlist(item), &my_config->network6);
-			else
-				log_err("node [%s]: not ipv6 for network6='%s'", my_config->name, item);
-			addrmask_free(addr);
+		if (addrmask_verify_subnet(item, AF_INET6)) {
+			list_add_tail(parser_stringlist(item), &my_config->network6);
 		} else {
-			log_err("node [%s]: received invalid network6='%s'", my_config->name, item);
+			log_err("node [%s]: received invalid ipv6 network6='%s'", my_config->name, item);
 		}
 	} else if ((item = parser_check_configitem(line, "route_network="))) {
-		addr = addrmask_init(item);
-		if (addr) {
-			if (addr->addr_family == AF_INET)
-				list_add_tail(parser_stringlist(item), &my_config->route_network);
-			else
-				log_err("node [%s]: not ipv4 for network6='%s'", my_config->name, item);
-			addrmask_free(addr);
+		if (addrmask_verify_subnet(item, AF_INET)) {
+			list_add_tail(parser_stringlist(item), &my_config->route_network);
 		} else {
-			log_err("node [%s]: received invalid route_network='%s'", my_config->name, item);
+			log_err("node [%s]: received invalid ipv4 route_network='%s'", my_config->name, item);
 		}
 	} else if ((item = parser_check_configitem(line, "route_network6="))) {
-		addr = addrmask_init(item);
-		if (addr) {
-			if (addr->addr_family == AF_INET6)
-				list_add_tail(parser_stringlist(item), &my_config->route_network6);
-			else
-				log_err("node [%s]: not ipv6 for route_network6='%s'", my_config->name, item);
-			addrmask_free(addr);
+		if (addrmask_verify_subnet(item, AF_INET6)) {
+			list_add_tail(parser_stringlist(item), &my_config->route_network6);
 		} else {
-			log_err("node [%s]: received invalid route_network6='%s'", my_config->name, item);
+			log_err("node [%s]: received invalid ipv6 route_network6='%s'", my_config->name, item);
 		}
 	} else if ((item = parser_check_configitem(line, "hidden="))) {
 		parser_replace_item(&my_config->hidden, item);

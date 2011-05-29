@@ -253,7 +253,7 @@ config_init(struct config *config)
 		free(config->my_ip);
 		config->my_ip = NULL;
 	}
-	if (str_is_nonempty(config->my_ip) && !addrmask_verify_ip(config->my_ip)) {
+	if (str_is_nonempty(config->my_ip) && !addrmask_verify_ip(config->my_ip, AF_UNSPEC)) {
 		log_err("no valid ip address found in $my_ip");
 		return false;
 	}
@@ -282,8 +282,8 @@ config_init(struct config *config)
 	config->tincd_uid = pwentry->pw_uid;
 	config->tincd_gid = pwentry->pw_gid;
 
-	if (str_is_nonempty(config->vpn_ip) && !addrmask_verify_ip(config->vpn_ip)) {
-		log_err("no valid ip address found in $my_vpn_ip");
+	if (str_is_nonempty(config->vpn_ip) && !addrmask_verify_ip(config->vpn_ip, AF_INET)) {
+		log_err("no valid ipv4 address found in $my_vpn_ip");
 		return false;
 	}
 	if (strcmp(config->vpn_ip, "172.31.0.255") == 0) {
@@ -291,7 +291,7 @@ config_init(struct config *config)
 		return false;
 	}
 
-	if (str_is_nonempty(config->vpn_ip6) && !addrmask_verify_ip(config->vpn_ip6)) {
+	if (str_is_nonempty(config->vpn_ip6) && !addrmask_verify_ip(config->vpn_ip6, AF_INET6)) {
 		log_err("no valid ipv6 address found in $my_vpn_ip6");
 		return false;
 	}

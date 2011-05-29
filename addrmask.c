@@ -224,9 +224,10 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   return true;
 }
 
-bool addrmask_verify_subnet(const char *addressmask)
+bool addrmask_verify_subnet(const char *addressmask, const unsigned char family)
 {
   struct addr_info *addr;
+  bool res;
 
   if (str_is_empty(addressmask))
     return false;
@@ -234,12 +235,22 @@ bool addrmask_verify_subnet(const char *addressmask)
   addr = addrmask_init(addressmask);
   if (addr == NULL)
     return false;
-  
+
+  if (family == AF_INET && addr->addr_family == AF_INET) {
+    res = true;
+  } else if (family == AF_INET6 && addr->addr_family == AF_INET6) {
+    res = true;
+  } else if (family == AF_UNSPEC) {
+    res = true;
+  } else {
+    res = false;
+  }
+
   addrmask_free(addr);
-  return true;
+  return res;
 }
 
-bool addrmask_verify_ip(const char *addressmask)
+bool addrmask_verify_ip(const char *addressmask, const unsigned char family)
 {
   struct addr_info *addr;
   bool res = false;
@@ -255,6 +266,18 @@ bool addrmask_verify_ip(const char *addressmask)
     res = true;
   } else if ((addr->addr_family == AF_INET6) && (addr->mask_shift == 128)) {
     res = true;
+  }
+
+  if (res) {
+    if (family == AF_INET && addr->addr_family == AF_INET) {
+      res = true;
+    } else if (family == AF_INET6 && addr->addr_family == AF_INET6) {
+      res = true;
+    } else if (family == AF_UNSPEC) {
+      res = true;
+    } else {
+      res = false;
+    }
   }
 
   addrmask_free(addr);
