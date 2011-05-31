@@ -39,6 +39,8 @@ esac
 
 if dpkg-maintscript-helper supports rm_conffile 2>/dev/null; then
 	dpkg-maintscript-helper rm_conffile /etc/cron.d/chaosvpn 2.06-0 -- "$@"
+elif [ -e /etc/cron.d/chaosvpn ] ; then
+	mv /etc/cron.d/chaosvpn /etc/cron.d/chaosvpn.dpkg-old || true
 fi
 
 # dh_installdeb will replace this with shell code automatically
