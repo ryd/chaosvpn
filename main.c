@@ -33,7 +33,7 @@ static void main_free_parsed_info(struct config*);
 static bool main_load_previous_config(struct config*, struct string*);
 static bool main_parse_config(struct config*, struct string*);
 static void main_parse_opts(struct config*, int, char**);
-static bool main_request_config(struct config*, struct string*);
+static int main_request_config(struct config*, struct string*);
 static void main_tempsave_fetched_config(struct config*, struct string*);
 static void main_terminate_old_tincd(struct config*);
 static void main_unlink_pidfile(struct config*);
@@ -203,13 +203,18 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	string_init(&http_response, 4096, 512);
 
-	err = !main_request_config(config, &http_response);
-	if (err) {
+	err = main_request_config(config, &http_response);
+	if (err < 1) {
+	        /* errors and "not modified" response */
 		string_free(&http_response);
+		if (err < 0) {
+		        /* only warn for errors */
+        		log_warn("Warning: Unable to fetch config; using last stored config.");
+                }
 		if (!main_load_previous_config(config, &http_response)) {
-			return err;
+		        string_free(&http_response);
+			return -1;
 		}
-		log_warn("Warning: Unable to fetch config; using last stored config.");
 	}
 
 	if (string_equals(&http_response, oldconfig) == 0) {
@@ -226,8 +231,6 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 	// tempsave new config
 	main_tempsave_fetched_config(config, &http_response);
 
-	/* replaced by string_move */
-	// string_free(&http_response);
 	string_free(oldconfig);
 	string_move(&http_response, oldconfig);
 
@@ -346,10 +349,15 @@ main_check_root(void)
 	return getuid() == 0;
 }
 
-static bool
+static int
 main_request_config(struct config *config, struct string *http_response)
+/*
+ return -1: error
+ return  0: not modified, 304
+ return  1: success
+ */
 {
-	bool retval = false;
+	int retval = -1;
 	int httpretval;
 	int httpres;
 	struct string httpurl;
@@ -388,7 +396,7 @@ main_request_config(struct config *config, struct string *http_response)
 		if (httpretval == HTTP_ESRVERR) {
 			if (httpres == 304) {
 				log_info("Not fetching %s - got HTTP %d - not modified\n", string_get(&httpurl), httpres);
-				retval = false;
+				retval = 0;
 			} else {
 				log_info("Unable to fetch %s - got HTTP %d\n", string_get(&httpurl), httpres);
 			}
@@ -414,7 +422,7 @@ main_request_config(struct config *config, struct string *http_response)
 			string_free(http_response);
 			string_move(&archive, http_response);
 
-			retval = true; /* no error */
+			retval = 1; /* no error */
 		} else {
 			log_err("Invalid data format received from %s\n", config->master_url);
 		}
@@ -446,7 +454,7 @@ main_request_config(struct config *config, struct string *http_response)
 		}
 
 		/* return success */
-		retval = true;
+		retval = 1;
 		goto bail_out;
 	}
 
@@ -517,8 +525,11 @@ main_request_config(struct config *config, struct string *http_response)
 	string_free(&encrypted);
 
 	/* verify signature */
-	retval = crypto_rsa_verify_signature(http_response, &signature, config->masterdata_signkey);
-
+	if (crypto_rsa_verify_signature(http_response, &signature, config->masterdata_signkey)) {
+	        retval = 1;
+        } else {
+                retval = -1;
+        }
 
 bail_out:
 	/* free all strings, even if we may already freed them above */
