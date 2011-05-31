@@ -1,7 +1,7 @@
 Source: chaosvpn
 Section: net
 Priority: extra
-Maintainer: Sven-Haegar Koch <haegar@sdinet.de>
+Maintainer: ChaosVPN Mailinglist <chaosvpn@hamburg.ccc.de>
 Build-Depends: dpkg (>= 1.15.7.2~), debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
 Standards-Version: 3.9.2
 Homepage: http://github.com/ryd/chaosvpn
