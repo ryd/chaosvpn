@@ -236,13 +236,13 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	log_debug("Backing up old configs.");
 	if (!main_create_backup(config)) {
-		log_err("Unable to complete config backup.");
+		log_err("Unable to complete config backup copy from %s to %s.old.", config->base_path, config->base_path);
 		return -1;
 	}
 
 	log_debug("Cleanup previous host entries.");
 	if (!main_cleanup_hosts_subdir(config)) {
-		log_err("Unable to remove previous host subconfigs.");
+		log_err("Unable to remove previous host subconfigs from %s/hosts/", config->base_path);
 		return -1;
 	}
 
