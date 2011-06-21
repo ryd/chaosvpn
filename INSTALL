@@ -13,8 +13,8 @@ If you are using debian, you can use haegar's repository: (If you're
 not using debian, you can compile the chaosvpn binary yourself (see
 below) and install tinc by some other means)
 
-# echo "deb     http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
-# echo "deb-src http://debian.sdinet.de/ lenny sdinet" >> /etc/apt/sources.list
+# echo "deb     http://debian.sdinet.de/ squeeze chaosvpn" >> /etc/apt/sources.list
+# echo "deb-src http://debian.sdinet.de/ squeeze chaosvpn" >> /etc/apt/sources.list
 
 Also you need to install the signing key:
 
@@ -68,6 +68,13 @@ After successful installation, open
 and edit the file to suit your needs. This file contains helpful
 comments guiding you through the process.
 
+If you want to generate a debian package of the current git snapshot then
+instead of "make + make install" execute "make deb" - this will create a
+.deb package in the parent directory which you can install with "dpkg -i"
+
+For more infos please look at
+https://wiki.hamburg.ccc.de/index.php/ChaosVPN::DebianHowto
+
 
 Publishing your details
 =======================
@@ -77,33 +84,77 @@ nodes within the ChaosVPN. You can fill your details into this
 template:
 
 ----------------------------------------------------------------
-# The address where your machine is reachable. leave empty if no
-# incoming connections could be made.
-gatewayhost=[PUBLIC_STATIC_IP_OR_DYNDNS_HOSTNAME]
+[<nodename>]
+# This nodename or sometimes called peer-id is the name of the network
+# endpoint/gateway where the vpn software will be running, not necessarily
+# the name of the user, there may even be more than one gateway per user.
+#
+# Please use only characters a-z, 0-9 and _ in it. 
 
-# The port number on which your tinc is listening to.
-port=4200
+gatewayhost=<clienthost>
+# This should be the external hostname or ip address of the client host, not
+# a VPN address.
+# If the client is not reachable over the internet leave it out and set
+# hidden=1 below.
+# If possible supply a hostname (even dyndns) and not an ip address for
+# easier changing
+# from your side without touching the central config.
 
-# Your name and email address which we can contact in case of
-# trouble or issues.
-owner="John Doe <jdoe@example.net>"
+network=<ipv4 subnet in the vpn>
+network6=<ipv6 subnet in the vpn>
+# (mandatory, must include)
+# this may be more than one, IPv4 or IPv6, network6 with  IPv6 is optional
+#
+# These subnets must be unique in our vpn,
+# simply renumber your home network (or use something like NETMAP) with a
+# network block that is still free.
+#
+# Please select an unused IPv4 range out of
+# https://wiki.hamburg.ccc.de/index.php/ChaosVPN::IPRanges, and
+# write yourself down in that wiki page to mark your future range as in-use.
+# Please select from the correct ranges, 172.31.*.* for Europe, and 10.100.*.*
+# for North America and elsewhere.
+# 
+# Repeat: Please do not forget to add yourself to the list at
+# https://wiki.hamburg.ccc.de/index.php/ChaosVPN::IPRanges to mark your
+# range as used. 
 
-# The IPv4 network address/es or ranges which your machine is
-# responsible for. You can add as many entries as you need.
-network=192.0.2.1/32
-network=198.51.100.192/28
-network=203.0.113.0/24
+owner=
+# (mandatory, must include)
+# Admin of the VPN gateway, with email address - a way to contact the
+# responsible person in case of problems with your network link.
+# (Does not need to contain real name, just a way to contact the person - if
+# your node creates problems and we can not contact you it will just be
+# disabled in the central config)
 
-# The IPv6 network address/es or ranges which your machine is
-# responsible for. You can add as many entries as you need.
-# Leave empty if your do not have or need IPv6 addresses.
-network6=2001:0DB8:1234:5678:0000:0000:0000:0000/64
-network6=2001:0DB8:1234:ABCD:0000:0000:0000:0000/64
+port=4711
+# (optional)
+# if not specified tinc works on tcp+udp port 655
+# it is better if everyone chooses a random port for this.
+# either this specified port or port 655 needs to accept TCP and UDP traffic
+# from outside.
+
+hidden=0
+# (optional)
+# "I cannot accept inbound tunnel connections, I can only connect out."
+# (e.g. behind a NAT)
+silent=0
+# (optional)
+# "I cannot connect out, but you can connect to me."
+# Only ONE of hidden=1 or silent=1 is possible.
+
+-----BEGIN RSA PUBLIC KEY-----
+....
+-----END RSA PUBLIC KEY-----
+# (mandatory, must include)
+# rsa-public-key - contents of your /etc/tinc/chaos/rsa_key.pub
 ----------------------------------------------------------------
 
-Next, send the template to haegar@ccc.de and also attach your node's
-public key to the email:
-    /etc/tinc/chaos/rsa_key.pub
+Next, send the template to haegar@ccc.de
+
+At the same time please also add your network and node infos to
+https://wiki.hamburg.ccc.de/index.php/ChaosVPN::IPRanges
+
 
 Connecting to ChaosVPN
 ======================
@@ -111,6 +162,10 @@ Connecting to ChaosVPN
 Once you're approved, you can run the chaosvpn utility. chaosvpn takes
 care of configuring tinc for you. The chaosvpn utility needs to be run
 as root, but it surrenders its privileges as soon as possible.
+
+If you used the Debian package you can enable starting the chaosvpn client
+at boot time in /etc/default/chaosvpn, and manually start/stop/restart if
+through /etc/init.d/chaosvpn.
 
 
 If you have got any questions, join our irc channel #chaosvpn at
