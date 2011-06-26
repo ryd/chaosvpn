@@ -1,8 +1,10 @@
-chaosvpn (2.07-0) unstable; urgency=low
+chaosvpn (2.10-0) unstable; urgency=low
 
   * Lots of bugfixes.
   * Configuration option tincd_user to run tincd as non-root
+    (Currently not active in the debian package, to be fixed)
   * Rework structure: make main chaosvpn process *completely* unprivileged
+    (Currently not active in the debian package, to be fixed)
   * Option for the local admin to merge lots of chaosvpn routes into a
     small number of bigger supernet routes.
   * Option for the local admin to blacklist/whitelist routes received from
