@@ -25,8 +25,12 @@ $my_addressfamily	= "any";
 
 ## username tincd should su to once it has started up.
 ## This is a mandatory setting. You must ensure your node's private
-## and public key are readable by this user
-$tincd_user    = "chaosvpn";
+## and public key are readable by this user, and that the chaosvpn
+## process can write to /etc/tinc
+##
+## It is better to use a non-root user account, but that needs some
+## non-default setup first.
+$tincd_user    = "root";
 
 ## ===================================================================
 ## You normally do not need to change anything below this line if you
