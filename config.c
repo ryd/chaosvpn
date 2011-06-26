@@ -71,7 +71,6 @@ config_alloc(void)
 	config->master_url		= strdup("https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt");
 	config->base_path		= strdup("/etc/tinc");
 	config->tincd_pidfile		= NULL;
-	config->tincd_cookiefile	= NULL;
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
 	config->tincd_graphdumpfile	= NULL;
@@ -121,7 +120,6 @@ config_free(struct config *config)
 	free(config->master_url);
 	free(config->base_path);
 	free(config->tincd_pidfile);
-	free(config->tincd_cookiefile);
 	free(config->masterdata_signkey);
 	free(config->tincd_graphdumpfile);
 	free(config->tincd_device);
@@ -416,30 +414,6 @@ config_init(struct config *config)
 	if (config->tincd_pidfile == NULL) {
 		snprintf(tmp, sizeof(tmp), "/var/run/tinc.%s.pid", config->networkname);
 		config->tincd_pidfile = strdup(tmp);
-	}
-
-
-	if (config->tincd_version &&
-		(strnatcmp(config->tincd_version, "1.1") > 0)) {
-		/* tinc 1.1-git does not use a pid file anymore */
-
-		snprintf(tmp, sizeof(tmp), "%s", config->tincd_pidfile);
-		p = strrchr(tmp, '.');
-		if ((p != NULL) && (strcasecmp(p, ".pid") == 0)) {
-			/* replace trailing .pid with .cookie */
-			int len = p - tmp;
-			
-			snprintf(tmp+len, sizeof(tmp)-len, "%s", ".cookie");
-		}
-		
-		config->tincd_cookiefile = strdup(tmp);
-
-		free(config->tincd_pidfile);
-		config->tincd_pidfile = NULL;
-	} else {
-		/* tinc 1.0.x does not use a cookie file */
-		free(config->tincd_cookiefile);
-		config->tincd_cookiefile = NULL;
 	}
 
 	return true;

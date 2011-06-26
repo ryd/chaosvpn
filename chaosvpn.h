@@ -123,7 +123,6 @@ struct config {
 	char *master_url;
 	char *base_path;
 	char *tincd_pidfile;
-	char *tincd_cookiefile;
 	char *masterdata_signkey;
 	char *tincd_graphdumpfile;
 	char *tmpconffile;
