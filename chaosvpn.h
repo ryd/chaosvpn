@@ -15,7 +15,7 @@
 #include "strnatcmp.h"
 #include "version.h"
 
-#define TINC_DEFAULT_PORT "665"
+#define TINC_DEFAULT_PORT 665
 /*
    ^^ Note: This 665 is a typo, it should have been 655 instead.
             But fixing this may mean creating imcompatibiliies between
@@ -78,20 +78,20 @@ struct peer_config {
 	char *name;
 	char *gatewayhost;
 	char *owner;
-	char *use_tcp_only;
 	struct list_head network;
 	struct list_head network6;
 	struct list_head route_network;
 	struct list_head route_network6;
-	char *hidden;
-	char *silent;
-	char *port;
-	char *indirectdata;
+	bool hidden;
+	bool silent;
+	unsigned short port;
 	char *key;
 	char *cipher;
 	char *compression;
 	char *digest;
-	char *primary;
+	bool primary;
+	bool use_tcp_only;
+	bool indirectdata;
 };
 
 struct peer_config_list {

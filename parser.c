@@ -61,16 +61,16 @@ parser_create_config(char *name)
 	my_config->name = strdup(name);
 	my_config->gatewayhost = strdup("");
 	my_config->owner = strdup("");
-	my_config->use_tcp_only = strdup("");
-	my_config->hidden = strdup("");
-	my_config->silent = strdup("");
-	my_config->port = strdup("");
-	my_config->indirectdata = strdup("");
+	my_config->use_tcp_only = false;
+	my_config->hidden = false;
+	my_config->silent = false;
+	my_config->port = TINC_DEFAULT_PORT;
+	my_config->indirectdata = false;
 	my_config->key = strdup("");
 	my_config->cipher = strdup("");
 	my_config->compression = strdup("");
 	my_config->digest = strdup("");
-	my_config->primary = strdup("");
+	my_config->primary = false;
 
 	return true;
 }
@@ -96,16 +96,10 @@ parser_free_peer_config(struct peer_config *config)
 	free(config->name);
 	free(config->gatewayhost);
 	free(config->owner);
-	free(config->use_tcp_only);
-	free(config->hidden);
-	free(config->silent);
-	free(config->port);
-	free(config->indirectdata);
 	free(config->key);
 	free(config->cipher);
 	free(config->compression);
 	free(config->digest);
-	free(config->primary);
 	parser_delete_string_list(&config->network);
 	parser_delete_string_list(&config->network6);
 	parser_delete_string_list(&config->route_network);
@@ -181,7 +175,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 	} else if ((item = parser_check_configitem(line, "owner="))) {
 		parser_replace_item(&my_config->owner, item);
 	} else if ((item = parser_check_configitem(line, "use-tcp-only="))) {
-		parser_replace_item(&my_config->use_tcp_only, item);
+		my_config->use_tcp_only = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "network="))) {
 		if (addrmask_verify_subnet(item, AF_INET)) {
 			list_add_tail(parser_stringlist(item), &my_config->network);
@@ -207,13 +201,18 @@ parser_parse_line(char *line, struct list_head *configlist)
 			log_err("node [%s]: received invalid ipv6 route_network6='%s'", my_config->name, item);
 		}
 	} else if ((item = parser_check_configitem(line, "hidden="))) {
-		parser_replace_item(&my_config->hidden, item);
+		my_config->hidden = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "silent="))) {
-		parser_replace_item(&my_config->silent, item);
+		my_config->silent = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "port="))) {
-		parser_replace_item(&my_config->port, item);
+		unsigned long int longport = strtoul(item, NULL, 0);
+		if (longport != ULONG_MAX) {
+			my_config->port = (unsigned short) longport;
+		} else {
+			log_err("node [%s]: received invalid port number '%s'", my_config->name, item);
+		}
 	} else if ((item = parser_check_configitem(line, "indirectdata="))) {
-		parser_replace_item(&my_config->indirectdata, item);
+		my_config->indirectdata = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "cipher="))) {
 		parser_replace_item(&my_config->cipher, item);
 	} else if ((item = parser_check_configitem(line, "compression="))) {
@@ -221,7 +220,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 	} else if ((item = parser_check_configitem(line, "digest="))) {
 		parser_replace_item(&my_config->digest, item);
 	} else if ((item = parser_check_configitem(line, "primary="))) {
-		parser_replace_item(&my_config->primary, item);
+		my_config->primary = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
 		free(my_config->key);
 		my_config->key = calloc(sizeof(char), strlen(line) + 2);

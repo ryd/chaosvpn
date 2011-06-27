@@ -196,7 +196,6 @@ config_init(struct config *config)
 	struct stat st; 
 	struct string privkey_name;
 	char tmp[1024];
-	char *p;
 	struct stat stat_buf;
 	struct passwd* pwentry;
 
