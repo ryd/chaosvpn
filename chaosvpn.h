@@ -129,6 +129,7 @@ struct config {
 	char *tincd_device;
 	char *tincd_interface;
 	char *tincd_user;
+	char *tincd_raw_config;
 	struct string privkey;
 	struct settings_list *exclude;
 	struct peer_config *my_peer;

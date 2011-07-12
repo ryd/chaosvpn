@@ -77,6 +77,7 @@ config_alloc(void)
 	config->tincd_device		= NULL;
 	config->tincd_interface		= NULL;
 	config->tincd_user		= NULL;
+	config->tincd_raw_config	= NULL;
 	config->use_dynamic_routes	= false;
 	config->connect_only_to_primary_nodes = true;
 	config->update_interval		= 0;
@@ -125,6 +126,7 @@ config_free(struct config *config)
 	free(config->tincd_device);
 	free(config->tincd_interface);
 	free(config->tincd_user);
+	free(config->tincd_raw_config);
 	free(config->vpn_netmask);
 	free(config->password);
 

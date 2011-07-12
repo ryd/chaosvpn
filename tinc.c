@@ -158,6 +158,10 @@ tinc_write_config(struct config *config)
 		CONCAT_F(&buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
 	}
 
+	if (str_is_nonempty(config->tincd_raw_config)) {
+		CONCAT_F(&buffer, "%s\n", config->tincd_raw_config);
+	}
+	
 	if (config->my_peer->silent) {
 			return true; //no ConnectTo lines
 	}
