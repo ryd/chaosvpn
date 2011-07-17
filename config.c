@@ -267,7 +267,7 @@ config_init(struct config *config)
 	}
 	if (str_is_empty(config->my_addressfamily)) {
 		free(config->my_addressfamily);
-		config->my_addressfamily = strdup("any");
+		config->my_addressfamily = strdup("ipv4");
 	}
 
 	/* Note on the beauty of the POSIX API:
