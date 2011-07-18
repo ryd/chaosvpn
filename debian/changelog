@@ -1,3 +1,14 @@
+chaosvpn (2.11-0) unstable; urgency=low
+
+  * Do not write Address= lines in tinc hosts files for hidden=1 nodes.
+  * New config option $tincd_raw_config
+  * Change default of AddressFamily back to 'ipv4'.
+    The previous default of 'any' creates reachability problems for nodes
+    reachable over ipv4 and ipv6 talking to ipv4-only nodes.
+  * Some smaller internal changes.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Mon, 18 Jul 2011 12:59:36 +0200
+
 chaosvpn (2.10-0) unstable; urgency=low
 
   * Lots of bugfixes.
