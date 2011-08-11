@@ -11,7 +11,7 @@
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
 #define NOERR   (0)
 
-unsigned long long int
+static unsigned long long int
 gnu_dev_makedev (unsigned int major, unsigned int minor)
 {
   return ((minor & 0xff) | ((major & 0xfff) << 8)
