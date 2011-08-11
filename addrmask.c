@@ -1,9 +1,12 @@
 
 #include <string.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include "chaosvpn.h"
 #include "addrmask.h"
+
+/* needs to be included late for BSD support */
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #define CIDR_MATCH_ADDR_FAMILY(a) (strchr((a), ':') ? AF_INET6 : AF_INET)
 #define CIDR_MATCH_ADDR_BIT_COUNT(f) \
