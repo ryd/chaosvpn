@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/select.h>
 
 #include "chaosvpn.h"
 
@@ -758,10 +760,11 @@ fire_up_tincd_handler(struct config* config)
 		daemon_addparam(&di_tincd, config->tincd_user);
 	}
 
+
 	(void)signal(SIGTERM, sigterm);
 	(void)signal(SIGINT, sigterm);
-	(void)signal(SIGPIPE, SIG_IGN);
-	(void)signal(SIGCHLD, sigchild);
+	(void)signal(SIGPIPE, SIG_IGN); /* we ignore SIGPIPE which might be triggered by send() */
+	(void)signal(SIGCHLD, sigchild); 
 	(void)signal(SIGHUP, SIG_IGN);
 
 	/* tell the parent we've started up */
