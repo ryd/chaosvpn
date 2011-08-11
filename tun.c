@@ -9,19 +9,7 @@
 #include "chaosvpn.h"
 
 #define EXISTS(pathname)         (access(pathname, F_OK) == 0)
-#define NOERR   (0)         
-
-unsigned int
-gnu_dev_major (unsigned long long int dev)
-{
-  return ((dev >> 8) & 0xfff) | ((unsigned int) (dev >> 32) & ~0xfff);
-}
-
-unsigned int
-gnu_dev_minor (unsigned long long int dev)
-{
-  return (dev & 0xff) | ((unsigned int) (dev >> 12) & ~0xff);
-}
+#define NOERR   (0)
 
 unsigned long long int
 gnu_dev_makedev (unsigned int major, unsigned int minor)
