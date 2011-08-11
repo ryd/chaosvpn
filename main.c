@@ -760,7 +760,6 @@ fire_up_tincd_handler(struct config* config)
 		daemon_addparam(&di_tincd, config->tincd_user);
 	}
 
-
 	(void)signal(SIGTERM, sigterm);
 	(void)signal(SIGINT, sigterm);
 	(void)signal(SIGPIPE, SIG_IGN); /* we ignore SIGPIPE which might be triggered by send() */
