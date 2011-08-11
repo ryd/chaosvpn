@@ -17,6 +17,11 @@ static int handle_header(struct string*, int*);
 /* TODO: make configurable somehow (nicely!) */
 #define GENERIC_SOCKET_TIMEOUT 10
 
+/* dirty BSD workaround */
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 /**
  * Fetch a URL
  * @param url URL to fetch

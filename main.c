@@ -760,7 +760,7 @@ fire_up_tincd_handler(struct config* config)
 
 	(void)signal(SIGTERM, sigterm);
 	(void)signal(SIGINT, sigterm);
-	(void)signal(SIGPIPE, sigterm);
+	(void)signal(SIGPIPE, SIG_IGN);
 	(void)signal(SIGCHLD, sigchild);
 	(void)signal(SIGHUP, SIG_IGN);
 
