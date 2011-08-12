@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <sys/types.h>   
 #include <unistd.h>
 
 #include "../string/string.h"
@@ -17,10 +18,6 @@ static int handle_header(struct string*, int*);
 /* TODO: make configurable somehow (nicely!) */
 #define GENERIC_SOCKET_TIMEOUT 10
 
-/* dirty BSD workaround */
-#ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#endif
 
 /**
  * Fetch a URL
@@ -112,7 +109,7 @@ http_get(struct string* url, struct string* buffer,
     if (string_concat(&request, "Connection: close\r\n")) { retval=HTTP_ENOMEM; goto bail_out; };
     if (string_concat(&request, "\r\n")) { retval=HTTP_ENOMEM; goto bail_out; }
 
-    if (sendall(sfd, request.s, request._u._s.length, MSG_NOSIGNAL)) {
+    if (sendall(sfd, request.s, request._u._s.length, 0)) {
         retval = HTTP_ENETERR;
         goto bail_out;
     }
