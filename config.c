@@ -69,7 +69,7 @@ config_alloc(void)
 	config->ifconfig		= NULL;
 	config->ifconfig6		= NULL; // not required
 	config->master_url		= strdup("https://www.vpn.hamburg.ccc.de/tinc-chaosvpn.txt");
-	config->base_path		= strdup("/etc/tinc");
+	config->base_path		= NULL;
 	config->tincd_pidfile		= NULL;
 	config->my_peer			= NULL;
 	config->masterdata_signkey	= NULL;
