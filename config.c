@@ -418,6 +418,12 @@ config_init(struct config *config)
 		config->tincd_pidfile = strdup(tmp);
 	}
 
+	/* setup tmpconffile if not defined in configfile */
+	if (config->tmpconffile == NULL) {
+		snprintf(tmp, sizeof(tmp), "%s/data.sav", config->base_path);
+		config->tmpconffile = strdup(tmp);
+	}
+
 	return true;
 }
 
