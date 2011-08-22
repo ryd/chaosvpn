@@ -238,8 +238,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	log_debug("Backing up old configs.");
 	if (!main_create_backup(config)) {
-		log_err("Unable to complete config backup copy from %s to %s.old.", config->base_path, config->base_path);
-		return -1;
+		log_warn("Unable to complete config backup copy from %s to %s.old - ignored.", config->base_path, config->base_path);
 	}
 
 	log_debug("Cleanup previous host entries.");
