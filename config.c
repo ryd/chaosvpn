@@ -123,6 +123,7 @@ config_free(struct config *config)
 	free(config->tincd_pidfile);
 	free(config->masterdata_signkey);
 	free(config->tincd_graphdumpfile);
+	free(config->tmpconffile);
 	free(config->tincd_device);
 	free(config->tincd_interface);
 	free(config->tincd_user);
