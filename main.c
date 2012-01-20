@@ -78,7 +78,7 @@ main (int argc,char *argv[])
 
 	log_init(&argc, &argv, LOG_PID, LOG_DAEMON);
 
-	log_info("ChaosVPN/AgoraLink client v%s starting.", VERSION);
+	log_info("ChaosVPN client v%s starting.", VERSION);
 
 	crypto_warn_openssl_version_changed();
 

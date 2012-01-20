@@ -1,7 +1,7 @@
 Preface
 =======
 
-Welcome to chaosvpn/agoralink! This document is a step-by-step guide
+Welcome to ChaosVPN! This document is a step-by-step guide
 to getting into the chaosvpn network. To join chaosvpn, you need to
 install some software (tinc, chaosvpn). You also have to register your
 node before you can connect to the rest of the network.
@@ -83,6 +83,8 @@ Now we need some details from your machine to publish it to all other
 nodes within the ChaosVPN. You can fill your details into this
 template:
 
+(Remove the comment lines starting with # before sending)
+
 ----------------------------------------------------------------
 [<nodename>]
 # This nodename or sometimes called peer-id is the name of the network
@@ -150,7 +152,7 @@ silent=0
 # rsa-public-key - contents of your /etc/tinc/chaos/rsa_key.pub
 ----------------------------------------------------------------
 
-Next, send the template to haegar@ccc.de
+Next, send the template to chaosvpn-join@hamburg.ccc.de
 
 At the same time please also add your network and node infos to
 https://wiki.hamburg.ccc.de/index.php/ChaosVPN::IPRanges

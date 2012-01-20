@@ -19,7 +19,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/sbin/chaosvpn # Introduce the server's location here
 TINCCTL=/usr/sbin/tincctl
 NAME=chaosvpn             # Introduce the short server's name here
-DESC="Agora Link"         # Introduce a short description here
+DESC="ChaosVPN client"    # Introduce a short description here
 
 PIDFILE="overridden later"
 

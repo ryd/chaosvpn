@@ -10,11 +10,12 @@ Homepage: http://github.com/ryd/chaosvpn
 Package: chaosvpn
 Architecture: any
 Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash (>= 2), iproute
-Provides: agoralink
 Description: Config generator to setup connection to ChaosVPN
- This VPN is also known as AgoraLink. It replaces the "old" ChaosVPN
- from 2006.
+ ChaosVPN is a tinc based VPN intended to connect Chaos and Hackerspaces,
+ and their active members.
  .
- The ChaosVPN is a VPN intended to connect Chaos and Hackerspaces. First
- services that will use it will be the warzone project and ChaosPhone.
-Homepage: http://wiki.hamburg.ccc.de/index.php/ChaosVPN
+ This software downloads the central node configuration, verifies it,
+ creates tinc configs based on it and takes care of (re)starting tincd.
+ .
+ It replaces the "old" ChaosVPN from 2006.
+Homepage: http://wiki.hamburg.ccc.de/ChaosVPN
