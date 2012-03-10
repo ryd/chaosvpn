@@ -43,6 +43,7 @@ static int stringcaller;
 \$use_dynamic_routes {yylval.pval = &globalconfig->use_dynamic_routes; return KEYWORD_B;}
 \$connect_only_to_primary_nodes {yylval.pval = &globalconfig->connect_only_to_primary_nodes; return KEYWORD_B;}
 \$run_ifdown    {yylval.pval = &globalconfig->run_ifdown; return KEYWORD_B;}
+\$localdiscovery {yylval.pval = &globalconfig->localdiscovery; return KEYWORD_B;}
 @exclude {yylval.pval = &globalconfig->exclude; return KEYWORD_L;}
 @mergeroutes_supernet {yylval.pval = &globalconfig->mergeroutes_supernet_raw; return KEYWORD_L;}
 @ignore_subnets {yylval.pval = &globalconfig->ignore_subnets_raw; return KEYWORD_L;}

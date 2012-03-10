@@ -1,4 +1,4 @@
-.TH CHAOSVPN 5 "April 2010" "Discordian coreutils" ""
+.TH CHAOSVPN 5 "March 2012" "Discordian coreutils" ""
 .SH NAME
 chaosvpn.conf - configuration file for chaosvpn
 .SH DESCRIPTION
@@ -152,6 +152,13 @@ Normally all network routes to vpn subnets are setup at tinc start. Using this s
 .RS 4
 .PP
 Only create tinc metadata connections to primary nodes (UDP data still flows directly if possible). As this greatly reduces load and connection-churn on small devices this is the default when using together with tinc 1.0.13+. Disable (set to 0) this on primary nodes or if connections to old (pre 1.0.13) tinc is important.
+.PP
+.RE
+.B $localdiscovery
+(optional, default=1)
+.RS 4
+.PP
+Supported with tinc 1.0.17 and newer, Add LocalDiscovery option allowing tinc to detect peers that are behind the same NAT.
 .PP
 .RE
 .B $tincd_interface and $tincd_device

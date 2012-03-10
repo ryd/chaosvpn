@@ -139,6 +139,7 @@ struct config {
 	bool use_dynamic_routes;
 	bool connect_only_to_primary_nodes;
 	bool run_ifdown;
+	bool localdiscovery;
 	struct settings_list *mergeroutes_supernet_raw;
 	struct addr_info *mergeroutes_supernet;
 	struct settings_list *ignore_subnets_raw;

@@ -154,6 +154,12 @@ tinc_write_config(struct config *config)
 		CONCAT(&buffer, "TunnelServer=yes\n");
 	}
 
+	if (config->tincd_version &&
+		(strnatcmp(config->tincd_version, "1.0.16") > 0)) {
+		/* this option is only available since 1.0.16+git / 1.0.17 */
+		CONCAT_F(&buffer, "LocalDiscovery=%s\n", (config->localdiscovery ? "yes" : "no"));
+	}
+
 	if (str_is_nonempty(config->tincd_graphdumpfile)) {
 		CONCAT_F(&buffer, "GraphDumpFile=%s\n", config->tincd_graphdumpfile);
 	}

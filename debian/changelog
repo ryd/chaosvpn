@@ -1,3 +1,9 @@
+chaosvpn (2.12-0) unstable; urgency=low
+
+  * Support (and use by default) tinc 1.0.17+ option LocalDiscovery=yes
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 10 Mar 2012 16:03:34 +0100
+
 chaosvpn (2.11-0) unstable; urgency=low
 
   * Do not write Address= lines in tinc hosts files for hidden=1 nodes.
