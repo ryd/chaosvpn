@@ -1,3 +1,4 @@
 postrm-contains-additional-updaterc.d-calls /etc/init.d/remove
 changelog-should-mention-nmu
 latest-debian-changelog-entry-without-new-version
+debian-revision-should-not-be-zero

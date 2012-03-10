@@ -3,3 +3,4 @@ maintainer-upload-has-incorrect-version-number
 diff-contains-git-control-dir .git
 native-package-with-dash-version
 latest-debian-changelog-entry-without-new-version
+debian-revision-should-not-be-zero
