@@ -12,7 +12,7 @@
 #define NOERR   (0)
 
 static unsigned long long int
-gnu_dev_makedev (unsigned int major, unsigned int minor)
+tun_gnu_dev_makedev (unsigned int major, unsigned int minor)
 {
   return ((minor & 0xff) | ((major & 0xfff) << 8)
           | (((unsigned long long int) (minor & ~0xff)) << 12)
@@ -26,7 +26,7 @@ tun_create_dev(void)
 	if (!EXISTS(TUN_PATH) && (NOERR != mkdir(TUN_PATH, mask))) {
 		return false;
 	}
-	if (NOERR != mknod (TUN_DEV, S_IFCHR | S_IRUSR | S_IWUSR, gnu_dev_makedev(10, 200))) {
+	if (NOERR != mknod (TUN_DEV, S_IFCHR | S_IRUSR | S_IWUSR, tun_gnu_dev_makedev(10, 200))) {
 		return false;
 	}
 	return true;
