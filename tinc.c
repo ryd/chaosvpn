@@ -433,6 +433,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		string_concat(&filepath, "/subnet-down");
 
 
+#ifndef WIN32
 	/* if not in use_dynamic_routes mode DELETE destination file instead! */
 	if (!config->use_dynamic_routes) {
 		struct string localpath;
@@ -451,6 +452,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		string_free(&filepath);
 		return true;
 	}
+#endif
 
 
 	/* generate contents */
