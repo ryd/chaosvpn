@@ -4,7 +4,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/param.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include "chaosvpn.h"
@@ -134,12 +133,14 @@ tinc_write_config(struct config *config)
 		CONCAT_F(&buffer, "BindToAddress=%s\n", config->my_ip);
 	}
 
+#ifndef WIN32
 	if (str_is_nonempty(config->tincd_interface)) {
 		CONCAT_F(&buffer, "Interface=%s\n", config->tincd_interface);
 	}
 	if (str_is_nonempty(config->tincd_device)) {
 		CONCAT_F(&buffer, "Device=%s\n", config->tincd_device);
 	}
+#endif
 
 	CONCAT(&buffer, "Mode=router\n");
 	CONCAT_F(&buffer, "Name=%s\n", config->peerid);
