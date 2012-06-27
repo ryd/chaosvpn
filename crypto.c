@@ -4,14 +4,15 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include "chaosvpn.h"
+
 #include <openssl/rsa.h>
 #include <openssl/evp.h>
 #include <openssl/objects.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
-
-#include "chaosvpn.h"
 
 /*
 
@@ -48,45 +49,22 @@ openssl dgst \
 EVP_PKEY *
 crypto_load_key(const char *key, const bool is_private)
 {
+	BIO *bio;
 	EVP_PKEY *pkey;
-	char *tmpname;
-	int keyfd;
-	FILE *keyfp;
-	mode_t oldumask;
 
-        /* create tempfile and store key into it */
-        tmpname = strdup("/tmp/chaosvpn.tmp.XXXXXX");
-        oldumask = umask(077);
-        keyfd = mkstemp(tmpname);
-        umask(oldumask);
-        if (keyfd == -1) {
-            free(tmpname);
-            log_err("crypto_load_key: error creating tempfile\n");
-            return NULL;
-        }
-        unlink(tmpname);
-        free(tmpname);
-        if (write(keyfd, key, strlen(key)) != strlen(key)) {
-            close(keyfd);
-            log_err("crypto_load_key: tempfile write error\n");
-            return NULL;
-        }
-        keyfp = fdopen(keyfd, "rw");
-        if (keyfp == NULL) {
-            close(keyfd);
-            log_err("crypto_load_key: tempfile fdopen() failed\n");
-            return NULL;
-        }
-        fseek(keyfp, 0, SEEK_SET);
+	bio = BIO_new_mem_buf((void *)key, strlen(key));
+	if (bio == NULL) {
+            log_err("crypto_load_key: BIO_new_mem_buf() failed\n");
+	    return NULL;
+	}
 
         /* read and parse key */
         if (is_private) {
-            pkey = PEM_read_PrivateKey(keyfp, NULL, NULL, NULL);
+            pkey = PEM_read_bio_PrivateKey(bio, NULL, NULL, NULL);
         } else {
-            pkey = PEM_read_PUBKEY(keyfp, NULL, NULL, NULL);
+            pkey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
         }
-        fclose(keyfp);
-        close(keyfd);
+        BIO_free(bio);
         if (pkey == NULL) {
             log_err("crypto_load_key: loading and parsing key failed\n");
             ERR_print_errors_fp(stderr);
