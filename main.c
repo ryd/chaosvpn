@@ -730,6 +730,7 @@ p_sighup(int sig /*__unused*/)
 static pid_t
 fire_up_tincd_handler(struct config* config)
 {
+#ifndef WIN32
 	pid_t child;
 	int pipefds[2];
 	int pipe2fds[2];
@@ -855,34 +856,96 @@ fire_up_tincd_handler(struct config* config)
                         }
                 }
 	}
+#endif
 }
+
+#ifdef WIN32
+static const char *identname = "tinc.chaos";
+static const char *description = "Virtual Private Network daemon";
+#endif
 
 static void
 handler_start_tincd(void)
 {
+#ifndef WIN32
 	char buf = HANDLER_START_TINCD;
 	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+#else
+	SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	if(!manager) {
+		log_err("Could not open service manager (%d)", GetLastError());
+		return;
+	}
+
+	SC_HANDLE service = OpenService(manager, identname, SERVICE_ALL_ACCESS);
+	if(!service) {
+		char command[4096];
+		struct config *config = config_get();
+
+		snprintf(command, sizeof command, "%s -n %s -c C:/chaosvpn --debug=%d --logfile=tinc.log", config->tincd_bin, config->networkname, config->tincd_debuglevel);
+
+		service = CreateService(manager, identname, identname, SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, command, NULL, NULL, NULL, NULL, NULL);
+
+		if(!service) {
+			log_err("Could not create service %s (%d)", identname, GetLastError());
+			return;
+		}
+
+		ChangeServiceConfig2(service, SERVICE_CONFIG_DESCRIPTION, &description);
+		log_info("%s service installed", identname);
+	}
+
+	if(!StartService(service, 0, NULL))
+		log_err("Could not start %s service (%d)", identname, GetLastError());
+	else
+		log_info("%s service started", identname);
+#endif
 }
 
 static void
 handler_restart_tincd(void)
 {
+#ifndef WIN32
 	char buf = HANDLER_RESTART_TINCD;
 	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+#else
+	handler_stop();
+	handler_start_tincd();
+#endif
 }
 
 static void
 handler_stop(void)
 {
+#ifndef WIN32
 	char buf = HANDLER_STOP;
 	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+#else
+	SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+	SC_HANDLE service = OpenService(manager, identname, SERVICE_ALL_ACCESS);
+	SERVICE_STATUS status = {0};
+
+	if(!service) {
+		log_err("could not find %s service (%d)", identname, GetLastError());
+		return;
+	}
+
+	if(!ControlService(service, SERVICE_CONTROL_STOP, &status))
+		log_err("could not stop %s service (%d)", identname, GetLastError());
+	else
+		log_info("%s service stopped", identname);
+#endif
 }
 
 static void
 handler_signal_old_tincd(void)
 {
+#ifndef WIN32
 	char buf = HANDLER_SIGNAL_OLD_TINCD;
 	if(write(fd_tincd_handler, &buf, 1) != 1) exit(1);
+#else
+	handler_stop();
+#endif
 }
 
 static void
