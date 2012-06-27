@@ -7,9 +7,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
-#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef WIN32
+#include <pwd.h>
+#endif
 
 #include "chaosvpn.h"
 
@@ -91,8 +93,10 @@ config_alloc(void)
 	config->daemonmode		= false;
 	config->oneshot			= false;
 
+#ifndef WIN32
 	config->tincd_uid		= 0;
 	config->tincd_gid		= 0;
+#endif
 
 	return config;
 }
@@ -272,6 +276,7 @@ config_init(struct config *config)
 		config->my_addressfamily = strdup("ipv4");
 	}
 
+#ifndef WIN32
 	/* Note on the beauty of the POSIX API:
 	 * although pwentry is dynamically allocated here (maybe),
 	 * it /must not/ be freed after use. */
@@ -282,6 +287,7 @@ config_init(struct config *config)
 	}
 	config->tincd_uid = pwentry->pw_uid;
 	config->tincd_gid = pwentry->pw_gid;
+#endif
 
 	if (str_is_nonempty(config->vpn_ip) && !addrmask_verify_ip(config->vpn_ip, AF_INET)) {
 		log_err("no valid ipv4 address found in $my_vpn_ip");

@@ -1,11 +1,22 @@
-#include <netdb.h>
 #include <stdio.h>
 #include <string.h>
-#include <arpa/inet.h>
 #include <time.h>
-#include <sys/socket.h>
 #include <sys/types.h>   
 #include <unistd.h>
+
+#ifdef WIN32
+#ifndef WINVER
+#define WINVER WindowsXP
+#endif
+
+#include <w32api.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netdb.h>
+#endif
 
 #include "../string/string.h"
 #include "httplib.h"

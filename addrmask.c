@@ -1,12 +1,14 @@
-
 #include <string.h>
+#ifndef WIN32
 #include <arpa/inet.h>
+#endif
+
 #include "chaosvpn.h"
 #include "addrmask.h"
 
+
 /* needs to be included late for BSD support */
 #include <sys/types.h>
-#include <sys/socket.h>
 
 #define CIDR_MATCH_ADDR_FAMILY(a) (strchr((a), ':') ? AF_INET6 : AF_INET)
 #define CIDR_MATCH_ADDR_BIT_COUNT(f) \
@@ -54,9 +56,10 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   char *pattern;
   char *mask_search;
   char *mask;
-  char dummy[255];
   unsigned char *np;
   unsigned char *mp;
+  struct addrinfo hints = {.ai_flags = AI_NUMERICHOST};
+  struct addrinfo *ai = NULL;
 
   res = false;
   if (!ip)
@@ -93,11 +96,14 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
     ip->addr_family = CIDR_MATCH_ADDR_FAMILY(pattern);
     ip->addr_bit_count = CIDR_MATCH_ADDR_BIT_COUNT(ip->addr_family);
     ip->addr_byte_count = CIDR_MATCH_ADDR_BYTE_COUNT(ip->addr_family);
+    hints.ai_family = ip->addr_family;
     if (!str_alldig(mask)
         || (ip->mask_shift = atoi(mask)) > ip->addr_bit_count
-        || inet_pton(ip->addr_family, pattern, ip->net_bytes) != 1) {
+	|| getaddrinfo(pattern, "0", &hints, &ai) != 0 || !ai) {
       goto out_free_pattern;
     }
+    memcpy(ip->net_bytes, ai->ai_addr, sizeof ip->net_bytes);
+    freeaddrinfo(ai);
     if (ip->mask_shift > 0) {
       /* Allow for bytes > 8. */
       memset(ip->mask_bytes, (unsigned char) -1, ip->addr_byte_count);
@@ -111,8 +117,11 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
         np < ip->net_bytes + ip->addr_byte_count; np++, mp++) {
       if (*np & ~(*mp)) {
         mask_addr(ip->net_bytes, ip->addr_byte_count, ip->mask_shift);
+#ifndef WIN32
+	char dummy[255];
         if (inet_ntop(ip->addr_family, ip->net_bytes, dummy, sizeof(dummy)) == NULL)
           goto out_free_pattern;
+#endif
       }
     }
   } else {
@@ -120,9 +129,13 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
     ip->addr_family = CIDR_MATCH_ADDR_FAMILY(pattern);
     ip->addr_bit_count = CIDR_MATCH_ADDR_BIT_COUNT(ip->addr_family);
     ip->addr_byte_count = CIDR_MATCH_ADDR_BYTE_COUNT(ip->addr_family);
-    if (inet_pton(ip->addr_family, pattern, ip->net_bytes) != 1) {
+    hints.ai_family = ip->addr_family;
+    ai = NULL;
+    if (getaddrinfo(pattern, "0", &hints, &ai) != 0 || !ai) {
       goto out_free_pattern;
     }
+    memcpy(ip->net_bytes, ai->ai_addr, sizeof ip->net_bytes);
+    freeaddrinfo(ai);
     ip->mask_shift = ip->addr_bit_count;
     /* Allow for bytes > 8. */
     memset(ip->mask_bytes, (unsigned char) -1, ip->addr_byte_count);
@@ -207,13 +220,13 @@ found:
 bool addrmask_to_string(struct string *target, struct addr_info *addr)
 {
   char buffer[255];
-  const char *res;
+  int res;
 
   if (!target || !addr)
     return false;
 
-  res = inet_ntop(addr->addr_family, addr->net_bytes, buffer, sizeof(buffer));
-  if (!res)
+  res = getnameinfo((struct sockaddr *)addr->net_bytes, addr->addr_byte_count, buffer, sizeof buffer, NULL, 0, NI_NUMERICHOST);
+  if (res != 0)
     return false;
 
   if (string_concat(target, buffer))

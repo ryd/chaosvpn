@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifndef WIN32
+#include <sys/wait.h>
+#endif
 
 #include "chaosvpn.h"
 
@@ -43,6 +45,7 @@ fix_fds (void)
 bool
 daemonize(void)
 {
+#ifndef WIN32
     pid_t pid, sid;
 
     /* Fork off the parent process */
@@ -86,6 +89,7 @@ daemonize(void)
     
     /* Replace standard file descriptors with /dev/null */
     fix_fds();
+#endif
     
     return true;
 }
@@ -204,6 +208,7 @@ daemon_free(struct daemon_info* di)
 bool
 daemon_start(struct daemon_info* di)
 {
+#ifndef WIN32
     pid_t pid;
 
     if (di->di_stderr_fd[0] != -1)
@@ -214,8 +219,10 @@ daemon_start(struct daemon_info* di)
         log_err("daemon_start(): creating stderr pipe failed: %s", strerror(errno));
         return false;
     }
+
     fcntl(di->di_stderr_fd[0], O_NONBLOCK);
     fcntl(di->di_stderr_fd[1], O_NONBLOCK);
+
     di->di_stderr = fdopen(di->di_stderr_fd[0], "r");
     
     switch(pid = fork()) {
@@ -234,11 +241,14 @@ daemon_start(struct daemon_info* di)
         di->di_pid = pid;
         return true;
     }
+#endif
+    return true;
 }
 
 void
 daemon_stop(struct daemon_info* di, const unsigned int sleepdelay)
 {
+#ifndef WIN32
     pid_t pgid;
 
     pgid = di->di_pid; //__getpgid(di->di_pid);
@@ -256,18 +266,21 @@ daemon_stop(struct daemon_info* di, const unsigned int sleepdelay)
     }
     (void)sleep(sleepdelay);
     (void)kill(pgid, SIGKILL);
+#endif
     return;
 }
 
 bool
 daemon_sigchld(struct daemon_info* di, unsigned int waitbeforerestart)
 {
+#ifndef WIN32
     int status;
 
     waitpid(di->di_pid, &status, 0);
     if (waitbeforerestart != 0) {
         (void)sleep(waitbeforerestart);
     }
+#endif
     return daemon_start(di);
 }
 
