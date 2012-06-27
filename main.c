@@ -11,8 +11,9 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/wait.h>
-#include <sys/select.h>
+#endif
 
 #include "chaosvpn.h"
 
@@ -66,6 +67,15 @@ main (int argc,char *argv[])
 	struct config *config;
 	int err;
 	struct string oldconfig;
+
+#ifdef WIN32
+	struct WSAData wsa_state;
+
+	if(WSAStartup(MAKEWORD(2, 2), &wsa_state)) {
+		log_err("WSAStartup failed (%d)", GetLastError());
+		return 1;
+	}
+#endif
 
 	/* first things first */
 	if (!main_check_root()) {
