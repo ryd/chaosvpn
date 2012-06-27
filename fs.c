@@ -168,9 +168,11 @@ handledir(struct string* src, struct string* dst)
 			if (string_concat(dst, dirent->d_name)) goto bail_out;
 			if (fs_ensure_suffix(dst)) goto bail_out;
 			if (handledir(src, dst)) goto bail_out;
+#ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
 				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
 			}
+#endif
 			src->_u._s.length = srcdirlen;
 			dst->_u._s.length = dstdirlen;
 			(void)fs_ensure_z(src);
@@ -181,9 +183,11 @@ handledir(struct string* src, struct string* dst)
 			if (string_concat(dst, dirent->d_name)) goto bail_out;
 			if (fs_ensure_z(dst)) goto bail_out;
 			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
+#ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
 				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
 			}
+#endif
 			dst->_u._s.length = dstdirlen;
 		}
 	}
