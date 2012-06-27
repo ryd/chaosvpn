@@ -131,6 +131,7 @@ main (int argc,char *argv[])
 	/* Fire up the tincd handler which needs root privileges */
 	pid_tincd_handler = fire_up_tincd_handler(config);
 
+#ifndef WIN32
 	/* Permanently surrender root privileges */
 	if (setgid(config->tincd_gid) ||
 		setuid(config->tincd_uid)) {
@@ -141,6 +142,7 @@ main (int argc,char *argv[])
 	(void)signal(SIGINT, p_sigint);
 	(void)signal(SIGTERM, p_sigterm);
 	(void)signal(SIGHUP, p_sighup);
+#endif
 
 	string_init(&oldconfig, 4096, 4096);
 	main_fetch_and_apply_config(config, &oldconfig);
@@ -272,6 +274,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 static void
 main_terminate_old_tincd(struct config *config)
 {
+#ifndef WIN32
 	pid_t pid;
 	
 	pid = tinc_get_pid(config);
@@ -279,6 +282,7 @@ main_terminate_old_tincd(struct config *config)
 		return;
 
 	log_info("Notice: sending SIGTERM to old tincd instance (%d).", pid);
+
 	(void)kill(pid, SIGTERM);
 	(void)sleep(2);
 	if (kill(pid, SIGKILL) == 0) {
@@ -286,6 +290,7 @@ main_terminate_old_tincd(struct config *config)
 		// SIGKILL succeeded; hence, we must manually unlink the old pidfile.
 		main_unlink_pidfile(config);
 	}
+#endif
 }
 
 static void
@@ -357,7 +362,11 @@ main_warn_about_old_tincd(struct config* config)
 static bool
 main_check_root(void)
 {
+#ifndef WIN32
 	return getuid() == 0;
+#else
+	return true;
+#endif
 }
 
 static int
@@ -916,7 +925,9 @@ sigchild(int sig /*__unused*/)
 static void
 sigterm(int sig /*__unused*/)
 {
+#ifndef WIN32
         (void)signal(SIGCHLD, SIG_IGN);
         daemon_stop(&di_tincd, 5);
 	exit(1);
+#endif
 }
