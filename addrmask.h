@@ -3,7 +3,6 @@
 #define __ADDRMASK_H
 
 #include <stdbool.h>
-#include <sys/socket.h>
 #include <limits.h>
 
 #include "string/string.h"

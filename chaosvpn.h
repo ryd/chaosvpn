@@ -6,7 +6,23 @@
 #include <openssl/evp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef WIN32
 #include <syslog.h>
+#include <netdb.h>
+#endif
+
+#ifdef WIN32
+#ifndef WINVER
+#define WINVER WindowsXP
+#endif
+
+#include <w32api.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+
+#define mkdir(a,b) mkdir(a)
+#endif
 
 #include "list.h"
 #include "string/string.h"
@@ -157,8 +173,10 @@ struct config {
 	bool oneshot;
 
 	/* used to set various file permissions */
+#ifndef WIN32
 	uid_t tincd_uid;
 	gid_t tincd_gid;
+#endif
 };
 
 extern struct config* config_alloc(void);
@@ -210,12 +228,22 @@ extern int fs_cp_r(char*, char*);
 extern int fs_empty_dir(char*);
 extern int fs_get_cwd(struct string*);
 extern int fs_read_file(struct string *buffer, char *fname);
-extern int fs_read_fd(struct string *buffer, int fd);
+extern int fs_read_fd(struct string *buffer, FILE *fd);
 
 extern int fs_backticks_exec(const char *cmd, struct string *outputbuffer);
 
-
-
+#ifdef WIN32
+#define LOG_ERR 1
+#define LOG_PID 2
+#define LOG_DAEMON 3
+#define LOG_INFO 4
+#define LOG_DEBUG 5
+#define LOG_WARNING 6
+#define LOG_EMERG 7
+#define LOG_ALERT 8
+#define LOG_NOTICE 9
+#define sleep(x) usleep(1000000*x)
+#endif
 
 #define log_emerg(fmt , args...)      log_raw(LOG_EMERG,  (fmt) , ## args)
 #define log_alert(fmt , args...)      log_raw(LOG_ALERT,  (fmt) , ## args)

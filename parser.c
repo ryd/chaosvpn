@@ -245,19 +245,18 @@ parser_parse_config (char *data, struct list_head *config_list)
 {
 	char *token;
 	char *search = "\n";
-	char *tmp;
 
 	my_config = NULL;
 
 	data = strdup(data);
-	token = strtok_r(data, search, &tmp);
+	token = strtok(data, search);
 	while (token) {
 		if (strncmp(token, "#", 1) &&
 				!parser_parse_line(token, config_list))  {
 			free(data);
 			return false;
 		}
-		token = strtok_r(NULL, search, &tmp);
+		token = strtok(NULL, search);
 	}
 	free(data);
 

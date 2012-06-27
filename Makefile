@@ -3,6 +3,10 @@ INCLUDES?=-I/usr/local/include
 LIBDIRS?=-L/usr/local/lib
 CFLAGS?=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
 LIB?=-lz -lcrypto
+ifneq (,$(findstring mingw,$(CC)))
+	CFLAGS+=-DWIN32
+	LIB+=-lws2_32 -lgdi32
+endif
 LEX?=flex
 YACC?=yacc
 
