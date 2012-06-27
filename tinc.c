@@ -675,9 +675,7 @@ bail_out:
 bool
 tinc_invoke_ifdown(struct config* config)
 {
-	pid_t fd;
 	int status;
-	int i;
 	struct string filepath;
 
 	if (!config->run_ifdown) return true;
@@ -686,22 +684,15 @@ tinc_invoke_ifdown(struct config* config)
 	string_concat(&filepath, config->base_path);
 	string_concat(&filepath, "/tinc-down");
 	string_ensurez(&filepath);
-	
-	switch((fd=fork())) {
-	case 0:
-		for(i=3;i<65536;i++) close(i);
-		log_debug("Exec'ing to %s", string_get(&filepath));
-		execl(string_get(&filepath), string_get(&filepath), NULL);
-		_exit(1);
-	case -1:
+
+	status = system(string_get(&filepath));
+	if (status == -1) {
 		log_err("Unable to invoke tinc-down script");
 		return false;
-	default:
-		waitpid(fd, &status, 0);
-		if (status != 0) {
-			log_err("tinc-down failed");
-			return false;
-		}
-		return true;
+        } else if (status != 0) {
+		log_err("tinc-down failed");
+		return false;
 	}
+
+	return true;
 }
