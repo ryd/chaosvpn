@@ -228,7 +228,7 @@ extern int fs_cp_r(char*, char*);
 extern int fs_empty_dir(char*);
 extern int fs_get_cwd(struct string*);
 extern int fs_read_file(struct string *buffer, char *fname);
-extern int fs_read_fd(struct string *buffer, int fd);
+extern int fs_read_fd(struct string *buffer, FILE *fd);
 
 extern int fs_backticks_exec(const char *cmd, struct string *outputbuffer);
 

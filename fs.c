@@ -1,7 +1,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -390,13 +389,13 @@ bail_out:
 /* read everything from fd into struct string */
 /* note: not NULL terminated! binary clean */
 int
-fs_read_fd(struct string *buffer, int fd)
+fs_read_fd(struct string *buffer, FILE *fd)
 {
 	int retval = 1;
 	char chunk[4096];
 	ssize_t read_size;
 	
-	while ((read_size = read(fd, &chunk, sizeof(chunk))) > 0) {
+	while ((read_size = fread(&chunk, 1, sizeof(chunk), fd)) > 0) {
 		if (string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 	
@@ -410,48 +409,19 @@ bail_out:
 int
 fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 {
-	int fds[2], pid = 0;
 	int retval = 1;
-	int status;
+	FILE *pfd;
 
-	if (pipe(fds)) {
+	pfd = popen(cmd, "r");
+
+	if (!pfd) {
 		log_err("fs_backticks_exec: pipe() failed\n");
 		goto bail_out;
 	}
 	
-	pid = fork();
-	if (pid < 0) {
-		log_err("fs_backticks_exec: fork() failed\n");
-		close(fds[0]);
-		close(fds[1]);
-		goto bail_out;
-	} else if (pid) {
-		/* parent */
-		close(fds[1]);
-		retval = fs_read_fd(outputbuffer, fds[0]);
-		close(fds[0]);
-		if (pid != waitpid(pid, &status, 0)) {log_err("waitpid failed in fs_backticks_exec.");}
-	} else {
-		/* child */
-		char *argv[255] = {NULL};
-		int argc = 0;
-		char *p;
-		char *mycmd = strdup(cmd);
-		close(fds[0]);
-		dup2(fds[1], STDOUT_FILENO);
-		argv[argc++] = mycmd;
-		do {
-			if ((p = strchr(mycmd, ' '))) {
-				*p = '\0';
-				mycmd = ++p;
-				argv[argc++] = mycmd;
-			}
-		} while (p != NULL);
-		close(fds[1]);
-		execv(argv[0], argv);
-		log_err("fs_backticks_exec: exec of %s failed\n", argv[0]);
-		exit(0);
-	}
+
+	retval = fs_read_fd(outputbuffer, pfd);
+	fclose(pfd);
 	
 bail_out:
 	return retval;
