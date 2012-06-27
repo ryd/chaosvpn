@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <ar.h>
+#include "ar.h"
 
 #include "chaosvpn.h"
 
