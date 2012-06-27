@@ -8,10 +8,12 @@
 void
 log_init(int *argc, char ***argv, int logopt, int logfac)
 {
+#ifndef WIN32
   char *progname;
   
   progname = (progname = strrchr((*argv)[0], '/')) ? progname+1 : (*argv)[0];
   openlog(progname, logopt, logfac);
+#endif
 }
 
 void
@@ -52,9 +54,11 @@ log_raw(int priority, const char *format, ...)
       out=stdout;
   }
 
+#ifndef WIN32
   va_start(args, format);
   vsyslog(priority, format, args);
   va_end(args);
+#endif
 
   if (out) {
     va_start(args, format);
