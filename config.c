@@ -93,8 +93,10 @@ config_alloc(void)
 	config->daemonmode		= false;
 	config->oneshot			= false;
 
+#ifndef WIN32
 	config->tincd_uid		= 0;
 	config->tincd_gid		= 0;
+#endif
 
 	return config;
 }

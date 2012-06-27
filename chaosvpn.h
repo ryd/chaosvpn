@@ -12,9 +12,7 @@
 #endif
 
 #ifdef WIN32
-#ifdef WITH_WINDOWS2000
-#define WINVER Windows2000
-#else
+#ifndef WINVER
 #define WINVER WindowsXP
 #endif
 
@@ -175,8 +173,10 @@ struct config {
 	bool oneshot;
 
 	/* used to set various file permissions */
+#ifndef WIN32
 	uid_t tincd_uid;
 	gid_t tincd_gid;
+#endif
 };
 
 extern struct config* config_alloc(void);

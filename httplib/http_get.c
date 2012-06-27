@@ -5,9 +5,7 @@
 #include <unistd.h>
 
 #ifdef WIN32
-#ifdef WITH_WINDOWS2000
-#define WINVER Windows2000
-#else
+#ifndef WINVER
 #define WINVER WindowsXP
 #endif
 
