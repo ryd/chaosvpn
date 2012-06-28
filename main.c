@@ -882,7 +882,7 @@ handler_start_tincd(void)
 		char command[4096];
 		struct config *config = config_get();
 
-		snprintf(command, sizeof command, "%s -n %s -c C:/chaosvpn --debug=%d --logfile=tinc.log", config->tincd_bin, config->networkname, config->tincd_debuglevel);
+		snprintf(command, sizeof command, "%s -n %s -c \"%s\" --debug=%d --logfile=\"%s/tinc.log\%", config->tincd_bin, config->networkname, config->base_path, config->tincd_debuglevel, config->base_path);
 
 		service = CreateService(manager, identname, identname, SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, command, NULL, NULL, NULL, NULL, NULL);
 
