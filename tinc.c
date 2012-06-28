@@ -384,7 +384,7 @@ tinc_write_updown(struct config *config, bool up)
 #ifndef MINGW32
 	CONCAT(&buffer, "[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 #else
-	CONCAT_F(&buffer, "\"%s\\tinc-%s.local\"", config->base_path, up ? "up" : "down");
+	CONCAT_F(&buffer, "\"%s\\tinc-%s.local" SCRIPT "\"", config->base_path, up ? "up" : "down");
 #endif
 	CONCAT(&buffer, "\n");
 	if (up) {
@@ -451,7 +451,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 #ifndef MINGW32
 		CONCAT(&buffer, "[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 #else
-		CONCAT_F(&buffer, "\"%s\\subnet-%s.local\"", config->base_path, up ? "up" : "down");
+		CONCAT_F(&buffer, "\"%s\\subnet-%s.local" SCRIPT "\"", config->base_path, up ? "up" : "down");
 #endif
 	} else {
 		if (up) {
