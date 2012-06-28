@@ -22,6 +22,11 @@
 #include <ws2tcpip.h>
 
 #define mkdir(a,b) mkdir(a)
+#define COMMENT "rem "
+#define SCRIPT ".bat"
+#else
+#define COMMENT "# "
+#define SCRIPT
 #endif
 
 #include "list.h"
@@ -242,7 +247,6 @@ extern int fs_backticks_exec(const char *cmd, struct string *outputbuffer);
 #define LOG_EMERG 7
 #define LOG_ALERT 8
 #define LOG_NOTICE 9
-#define sleep(x) usleep(1000000*x)
 #endif
 
 #define log_emerg(fmt , args...)      log_raw(LOG_EMERG,  (fmt) , ## args)
