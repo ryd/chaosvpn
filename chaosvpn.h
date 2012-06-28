@@ -22,6 +22,11 @@
 #include <ws2tcpip.h>
 
 #define mkdir(a,b) mkdir(a)
+#define COMMENT "rem "
+#define SCRIPT ".bat"
+#else
+#define COMMENT "# "
+#define SCRIPT
 #endif
 
 #include "list.h"
