@@ -65,9 +65,10 @@ InstallDirRegKey HKLM "Software\chaosvpn" ""
 Section "The chaosvpn daemon" SecDaemon
 
 SetOutPath "$INSTDIR"
+SetOverwrite off
+File "chaosvpn.conf"
 SetOverwrite on
 File "chaosvpn.exe"
-File "chaosvpn.conf"
 File "LICENSE.txt"
 File "README.txt"
 WriteRegStr HKLM "Software\chaosvpn" "" $INSTDIR
