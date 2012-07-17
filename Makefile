@@ -6,7 +6,7 @@ LIB?=-lz -lcrypto
 OS=$(shell uname)
 ifneq (,$(findstring FreeBSD,$(OS)))
 	# FreeBSD
-	CFLAGS?=-std=c99 -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
+	CFLAGS?=-DBSD -std=c99 -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
 	PREFIX?=/usr/local
 	TINCDIR?=/usr/local/etc/tinc
 else
