@@ -92,6 +92,10 @@ $tincd_restart_delay = 20;
 ## 3600 is a reasonable default.
 $update_interval = 3600;
 
+## Add LocalDiscovery option allowing tinc to detect peers that are behind the
+## same NAT.
+$localdiscovery = yes;
+
 ## Run the ifdown script manually. This may be useful on systems where
 ## the routes are not automatically removed when tincd stops.
 ## Since tincd does not run as root, it is unable to remove the
