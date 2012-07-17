@@ -340,7 +340,7 @@ usage(void)
 	fprintf(stderr, "chaosvpn - connect to the chaos vpn.\n"
 	       "Usage: chaosvpn [OPTION...]\n\n"
 	       "  -c FILE  use this user configuration file\n"
-	       "           example: -c /etc/tinc/chaosvpn.conf\n"
+	       "           example: -c " TINCDIR "/chaosvpn.conf\n"
 	       "  -p FILE  create .pid file with specified name\n"
 	       "           example: -p /var/run/chaosvpn.pid\n"
 	       "  -o       oneshot config update and tincd restart, then exit\n"

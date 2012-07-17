@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #ifndef WIN32
 #include <pwd.h>
 #endif
@@ -89,7 +90,7 @@ config_alloc(void)
 	string_lazyinit(&config->privkey, 2048);
 	INIT_LIST_HEAD(&config->peer_config);
 
-	config->configfile		= strdup("/etc/tinc/chaosvpn.conf");
+	config->configfile		= strdup(TINCDIR "/chaosvpn.conf");
 	config->daemonmode		= false;
 	config->oneshot			= false;
 

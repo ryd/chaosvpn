@@ -1,5 +1,11 @@
 
 all:
-	@echo "You need to use gmake - not bsd make!" 1>&2
-	@exit 1
+	gmake all
 
+clean:
+	gmake clean
+
+bsdinstall:
+	gmake DESTDIR=$(DESTDIR) bsdinstall
+
+install: bsdinstall

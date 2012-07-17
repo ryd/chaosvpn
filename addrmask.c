@@ -1,4 +1,5 @@
 #include <string.h>
+#include <sys/socket.h>
 #ifndef WIN32
 #include <arpa/inet.h>
 #endif

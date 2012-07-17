@@ -9,6 +9,7 @@ static int stringcaller;
 %}
 %Start PV SS LL
 %option noyywrap
+%option yylineno
 %%
 \$my_peerid   {yylval.pval = &globalconfig->peerid; return KEYWORD_S;}
 \$my_vpn_ip   {yylval.pval = &globalconfig->vpn_ip; return KEYWORD_S;}

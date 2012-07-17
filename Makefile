@@ -1,17 +1,29 @@
 CC?=gcc
 INCLUDES?=-I/usr/local/include
 LIBDIRS?=-L/usr/local/lib
-CFLAGS?=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
 LIB?=-lz -lcrypto
+
+OS=$(shell uname)
+ifneq (,$(findstring FreeBSD,$(OS)))
+	# FreeBSD
+	CFLAGS?=-std=c99 -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
+	PREFIX?=/usr/local
+	TINCDIR?=/usr/local/etc/tinc
+else
+	# Linux by default
+	CFLAGS?=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
+	PREFIX?=/usr
+	TINCDIR?=/etc/tinc
+endif
 ifneq (,$(findstring mingw,$(CC)))
 	CFLAGS+=-DWIN32
 	LIB+=-lws2_32 -lgdi32
 endif
-LEX?=flex
+
+LEX=flex
 YACC?=yacc
 
-PREFIX?=/usr
-TINCDIR?=/etc/tinc
+CFLAGS += -DPREFIX="\"$(PREFIX)\"" -DTINCDIR="\"$(TINCDIR)\""
 
 STRINGSRC=string/string_clear.c string/string_concatb.c string/string_concat_sprintf.c string/string_putc.c string/string_putint.c string/string_concat.c string/string_free.c string/string_get.c string/string_init.c string/string_equals.c string/string_move.c string/string_initfromstringz.c string/string_lazyinit.c string/string_read.c
 HTTPLIBSRC=httplib/http_get.c httplib/http_parseurl.c
@@ -23,6 +35,8 @@ OBJ=$(patsubst %.c,%.o,$(SRC))
 
 NAME?=chaosvpn
 GITDEBVERSION=$(shell debian/scripts/calcdebversion )
+
+all: $(NAME)
 
 $(NAME): main.o $(OBJ) $(HEADERS)
 	$(CC) $(LDFLAGS) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
@@ -36,7 +50,7 @@ y.tab.c y.tab.h: cvconf.y
 	$(YACC) -d cvconf.y
 
 lex.yy.c: cvconf.l
-	$(LEX) --yylineno cvconf.l
+	$(LEX) cvconf.l
 
 clean:
 	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME)
@@ -44,7 +58,7 @@ clean:
 CHANGES:
 	[ -e .git/HEAD ] && git log >CHANGES
 
-install:
+baseinstall:
 	strip $(NAME)
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 0644 man/chaosvpn.1 $(DESTDIR)$(PREFIX)/share/man/man1/
@@ -53,6 +67,8 @@ install:
 
 	install -m 0755 -d $(DESTDIR)$(PREFIX)/sbin
 	install -m 0755 $(NAME) $(DESTDIR)$(PREFIX)/sbin/
+
+linuxinstall: baseinstall
 	@if [ ! -e $(DESTDIR)$(TINCDIR)/chaosvpn.conf ] ; then \
 		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
 		install -m 0600 chaosvpn.conf $(DESTDIR)$(TINCDIR)/chaosvpn.conf ; \
@@ -62,6 +78,15 @@ install:
 		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
 		install -m 0600 warzone.conf $(DESTDIR)$(TINCDIR)/warzone.conf ; \
 		echo "Created config File $(TINCDIR)/warzone.conf"; \
+	fi
+
+install: linuxinstall
+
+bsdinstall: baseinstall
+	@if [ ! -e $(DESTDIR)$(TINCDIR)/chaosvpn.conf ] ; then \
+		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
+		install -m 0600 chaosvpn.conf.freebsd $(DESTDIR)$(TINCDIR)/chaosvpn.conf ; \
+		echo "Created config File $(TINCDIR)/chaosvpn.conf from BSD template"; \
 	fi
 
 splint:
