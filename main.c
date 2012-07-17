@@ -77,12 +77,6 @@ main (int argc,char *argv[])
 	}
 #endif
 
-	/* first things first */
-	if (!main_check_root()) {
-		log_err("Error - wrong user - please start as root user\n");
-		return 1;
-	}
-
 	string_init(&HTTP_USER_AGENT, 64, 16);
 	string_concat_sprintf(&HTTP_USER_AGENT, "ChaosVPN/%s", VERSION);
 
@@ -99,6 +93,11 @@ main (int argc,char *argv[])
 	}
 
 	main_parse_opts(config, argc, argv);
+
+	if (!main_check_root()) {
+		log_err("Error - wrong user - please start as root user\n");
+		return 1;
+	}
 
 #ifndef BSD
 	if (!tun_check_or_create()) {
