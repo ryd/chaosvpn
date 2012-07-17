@@ -83,6 +83,8 @@ linuxinstall: baseinstall
 install: linuxinstall
 
 bsdinstall: baseinstall
+	install -m 0755 freebsd.rc.d $(DESTDIR)$(PREFIX)/etc/rc.d/chaosvpn
+
 	@if [ ! -e $(DESTDIR)$(TINCDIR)/chaosvpn.conf ] ; then \
 		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
 		install -m 0600 chaosvpn.conf.freebsd $(DESTDIR)$(TINCDIR)/chaosvpn.conf ; \
