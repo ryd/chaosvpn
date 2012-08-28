@@ -1,3 +1,10 @@
+chaosvpn (2.14-0) UNRELEASED; urgency=low
+
+  * Disable forwarding of broadcast packets - right now we have OSPF
+    traffic on the VPN creating useless traffic.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Tue, 28 Aug 2012 12:38:47 +0200
+
 chaosvpn (2.12-0) unstable; urgency=low
 
   * Support (and use by default) tinc 1.0.17+ option LocalDiscovery=yes
