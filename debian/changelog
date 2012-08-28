@@ -2,6 +2,11 @@ chaosvpn (2.14-0) UNRELEASED; urgency=low
 
   * Disable forwarding of broadcast packets - right now we have OSPF
     traffic on the VPN creating useless traffic.
+  * Letting tinc use ipv6 as the transport protocol only creates problems
+    for now, so reduced transport protocol to ipv4 only.
+  * FreeBSD compilation fixes.
+  * Windows compilation works for the first time, thanks to Guus!
+    (But support not finished yet)
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Tue, 28 Aug 2012 12:38:47 +0200
 
