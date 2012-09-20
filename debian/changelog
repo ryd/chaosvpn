@@ -3,6 +3,7 @@ chaosvpn (2.15-0) UNRELEASED; urgency=low
   * Restore previous subnet-up/down behaviour for non-windows compiles.
   * addrmask.c: fix parsing and printing of ip addresses, got broken
     when implementing compiling under windows.
+  * tinc.c: ensure all the strings used as char* are zero terminated.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 20 Sep 2012 21:16:21 +0200
 

@@ -74,6 +74,7 @@ tinc_write_hosts(struct config *config)
 	string_init(&hostfilepath, 512, 512);
 	string_concat(&hostfilepath, config->base_path);
 	string_concat(&hostfilepath, "/hosts/");
+	string_ensurez(&hostfilepath);
 
 	fs_mkdir_p(string_get(&hostfilepath), 0700);
 
@@ -215,6 +216,7 @@ tinc_write_config(struct config *config)
 	string_init(&configfilename, 512, 512);
 	string_concat(&configfilename, config->base_path);
 	string_concat(&configfilename, "/tinc.conf");
+	string_ensurez(&configfilename);
 
 	if (fs_writecontents(string_get(&configfilename), string_get(&buffer),
 			string_length(&buffer), 0600)) {
@@ -245,6 +247,7 @@ tinc_write_updown(struct config *config, bool up)
 	const char *routecmd;
 	char *subnet;
 	char *weight;
+	bool res = true;
 
 	/* generate contents */
 
@@ -291,7 +294,7 @@ tinc_write_updown(struct config *config, bool up)
 			if (str_is_nonempty(vpnip) && str_is_nonempty(routecmd) &&
 				(addrmask_to_string(&outputaddr, net))
 			  ) {
-			  	string_putc(&outputaddr, 0);
+			  	string_ensurez(&outputaddr);
 				CONCAT_F(&buffer, routecmd, string_get(&outputaddr));
 				CONCAT(&buffer, "\n");
 			}
@@ -414,17 +417,17 @@ tinc_write_updown(struct config *config, bool up)
 		string_concat(&filepath, "/tinc-up" SCRIPT);
 	else
 		string_concat(&filepath, "/tinc-down" SCRIPT);
+        string_ensurez(&filepath);
+
 	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
 		log_err("unable to write to %s!", string_get(&filepath));
-		string_free(&buffer);
-		string_free(&filepath);
-		return false;
+		res = false;
 	}
 	
 	string_free(&buffer);
 	string_free(&filepath);
 
-	return true;
+	return res;
 }
 
 bool
@@ -438,6 +441,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	const char *routecmd;
 	const char *routecmd6;
 	const char *logger;
+	bool res = true;
 
 	string_init(&filepath, 512, 512);
 	string_concat(&filepath, config->base_path);
@@ -445,7 +449,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		string_concat(&filepath, "/subnet-up" SCRIPT);
 	else
 		string_concat(&filepath, "/subnet-down" SCRIPT);
-
+        string_ensurez(&filepath);
 
 #ifndef WIN32
         /* if not in use_dynamic_routes mode delete target and maybe set a symlink
@@ -463,6 +467,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
                 /* if subnet-(up|down).local exist symlink it to subnet-(up|down) */
                 string_init(&localpath, 512, 512);
                 string_concat_sprintf(&localpath, "%s.local", string_get(&filepath));
+                string_ensurez(&localpath);
 
                 if (access(string_get(&localpath), X_OK) == 0) {
                         symlink(string_get(&localpath), string_get(&filepath));
@@ -595,15 +600,13 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
 		log_err("unable to write to %s!\n", string_get(&filepath));
-		string_free(&buffer);
-		string_free(&filepath);
-		return false;
+		res = false;
 	}
 
 	string_free(&buffer);
 	string_free(&filepath);
 	
-	return true;
+	return res;
 }
 
 static bool
@@ -630,7 +633,7 @@ tinc_get_version(struct config *config)
 	string_init(&tincd_output, 1024, 512);
 	snprintf(cmd, sizeof(cmd), "%s --version", config->tincd_bin);
 	fs_backticks_exec(cmd, &tincd_output);
-	if (string_putc(&tincd_output, 0)) goto bail_out;
+	string_ensurez(&tincd_output);
 
 	if (strncmp(string_get(&tincd_output), "tinc version ", 13) != 0) {
 		retval = NULL;
@@ -686,7 +689,7 @@ tinc_get_pid(struct config *config)
 	}
 
 	/* NULL terminate string */
-	if (string_putc(&pid_text, 0)) goto bail_out;
+	string_ensurez(&pid_text);
 
 	if (str_is_empty(string_get(&pid_text))) {
 		log_info("Notice: unable to find tinc pid; assuming an old tincd is not running");
