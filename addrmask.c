@@ -61,6 +61,8 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   unsigned char *mp;
   struct addrinfo hints = {.ai_flags = AI_NUMERICHOST};
   struct addrinfo *ai = NULL;
+  void *addrbytes;
+
 
   res = false;
   if (!ip)
@@ -98,13 +100,24 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
     ip->addr_bit_count = CIDR_MATCH_ADDR_BIT_COUNT(ip->addr_family);
     ip->addr_byte_count = CIDR_MATCH_ADDR_BYTE_COUNT(ip->addr_family);
     hints.ai_family = ip->addr_family;
+
     if (!str_alldig(mask)
         || (ip->mask_shift = atoi(mask)) > ip->addr_bit_count
 	|| getaddrinfo(pattern, "0", &hints, &ai) != 0 || !ai) {
       goto out_free_pattern;
     }
-    memcpy(ip->net_bytes, ai->ai_addr, sizeof ip->net_bytes);
-    freeaddrinfo(ai);
+
+    if (ip->addr_family == AF_INET) {
+      struct sockaddr_in *sock4 = (struct sockaddr_in *) ai->ai_addr;
+      addrbytes = &sock4->sin_addr.s_addr;
+    } else if (ip->addr_family == AF_INET6) {
+      struct sockaddr_in6 *sock6 = (struct sockaddr_in6 *) ai->ai_addr;
+      addrbytes = &sock6->sin6_addr.s6_addr;
+    } else {
+      goto out_free_pattern;
+    }
+    memcpy(ip->net_bytes, addrbytes, ip->addr_byte_count);
+
     if (ip->mask_shift > 0) {
       /* Allow for bytes > 8. */
       memset(ip->mask_bytes, (unsigned char) -1, ip->addr_byte_count);
@@ -131,12 +144,22 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
     ip->addr_bit_count = CIDR_MATCH_ADDR_BIT_COUNT(ip->addr_family);
     ip->addr_byte_count = CIDR_MATCH_ADDR_BYTE_COUNT(ip->addr_family);
     hints.ai_family = ip->addr_family;
-    ai = NULL;
+
     if (getaddrinfo(pattern, "0", &hints, &ai) != 0 || !ai) {
       goto out_free_pattern;
     }
-    memcpy(ip->net_bytes, ai->ai_addr, sizeof ip->net_bytes);
-    freeaddrinfo(ai);
+
+    if (ip->addr_family == AF_INET) {
+      struct sockaddr_in *sock4 = (struct sockaddr_in *) ai->ai_addr;
+      addrbytes = &sock4->sin_addr.s_addr;
+    } else if (ip->addr_family == AF_INET6) {
+      struct sockaddr_in6 *sock6 = (struct sockaddr_in6 *) ai->ai_addr;
+      addrbytes = &sock6->sin6_addr.s6_addr;
+    } else {
+      goto out_free_pattern;
+    }
+    memcpy(ip->net_bytes, addrbytes, ip->addr_byte_count);
+
     ip->mask_shift = ip->addr_bit_count;
     /* Allow for bytes > 8. */
     memset(ip->mask_bytes, (unsigned char) -1, ip->addr_byte_count);
@@ -145,6 +168,9 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   res = true;
 
 out_free_pattern:
+  if (ai) {
+    freeaddrinfo(ai);
+  }
   string_free(&patternstruct);
 out:
   return res;
@@ -222,11 +248,27 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
 {
   char buffer[255];
   int res;
+  struct sockaddr_storage sock;
 
   if (!target || !addr)
     return false;
 
-  res = getnameinfo((struct sockaddr *)addr->net_bytes, addr->addr_byte_count, buffer, sizeof buffer, NULL, 0, NI_NUMERICHOST);
+  memset(&sock, 0, sizeof(sock));
+  if (addr->addr_family == AF_INET) {
+    struct sockaddr_in *sock4 = (struct sockaddr_in *) &sock;
+
+    sock4->sin_family = addr->addr_family;
+    memcpy(&sock4->sin_addr.s_addr, addr->net_bytes, addr->addr_byte_count);
+  } else if (addr->addr_family == AF_INET6) {
+    struct sockaddr_in6 *sock6 = (struct sockaddr_in6 *) &sock;
+
+    sock6->sin6_family = addr->addr_family;
+    memcpy(sock6->sin6_addr.s6_addr, addr->net_bytes, addr->addr_byte_count);
+  } else {
+    return false;
+  }
+
+  res = getnameinfo((struct sockaddr *) &sock, sizeof(sock), buffer, sizeof(buffer), NULL, 0, NI_NUMERICHOST);
   if (res != 0)
     return false;
 
@@ -241,7 +283,7 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   return true;
 }
 
-bool addrmask_verify_subnet(const char *addressmask, const unsigned char family)
+bool addrmask_verify_subnet(const char *addressmask, const unsigned short int family)
 {
   struct addr_info *addr;
   bool res;
@@ -267,7 +309,7 @@ bool addrmask_verify_subnet(const char *addressmask, const unsigned char family)
   return res;
 }
 
-bool addrmask_verify_ip(const char *addressmask, const unsigned char family)
+bool addrmask_verify_ip(const char *addressmask, const unsigned short int family)
 {
   struct addr_info *addr;
   bool res = false;

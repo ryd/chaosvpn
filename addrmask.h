@@ -18,7 +18,7 @@
 struct addr_info {
   unsigned char net_bytes[ADDR_MAX_BYTES];	/* network portion */
   unsigned char mask_bytes[ADDR_MAX_BYTES];	/* network mask */
-  unsigned char addr_family;			/* AF_XXX */
+  unsigned short int addr_family;		/* AF_XXX */
   unsigned char addr_byte_count;		/* typically, 4 or 16 */
   unsigned char addr_bit_count;			/* optimization */
   unsigned char mask_shift;			/* optimization */
@@ -42,7 +42,7 @@ extern struct addr_info *addrmask_match(struct addr_info *matches, const char *a
 extern bool addrmask_to_string(struct string *target, struct addr_info *addr);
 
 /* check if char* contains ip or subnet */
-extern bool addrmask_verify_ip(const char *addressmask, const unsigned char family);
-extern bool addrmask_verify_subnet(const char *addressmask, const unsigned char family);
+extern bool addrmask_verify_ip(const char *addressmask, const unsigned short int family);
+extern bool addrmask_verify_subnet(const char *addressmask, const unsigned short int family);
 
 #endif
