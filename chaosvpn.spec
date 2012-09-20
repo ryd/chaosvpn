@@ -1,8 +1,8 @@
 Name:		chaosvpn
-Version:	2.0
+Version:	2.14
 Release:	1fbo%{?dist}
-Summary:	ChaosVPN is a system to connect Hackers. 
-
+Summary:	ChaosVPN is a system to connect Hackers.
+Packager:       Frank.Botte@web.de
 Group:		Applications/Communications
 License:	Apache License Version 2.0
 URL:		http://wiki.hamburg.ccc.de/ChaosVPN
@@ -10,7 +10,7 @@ Source0:	chaosvpn.tgz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	byacc, openssl-devel
-Requires:	tinc
+Requires:	tinc >= 1.0.13
 
 %description
 ChaosVPN is a system to connect Hackers.
@@ -48,31 +48,40 @@ node-uptimes: http://vpnhub1-intern.hamburg.ccc.de/chaosvpn.nodes.html.
 %prep
 %setup -q -n chaosvpn
 
-
 %build
 make %{?_smp_mflags}
 
-
 %install
 rm -rf %{buildroot}
+mkdir -p %{buildroot}/%{_initrddir} 
+cp -p debian/init.d %{buildroot}%{_initrddir}/chaosvpn
+mkdir -p %{buildroot}/%{_sysconfdir}/tinc/chaos
 make install DESTDIR=%{buildroot}
-
 
 %clean
 rm -rf %{buildroot}
 
+%post 
+chkconfig --add chaosvpn
+
+%preun 
+chkconfig --del choasvpn
 
 %files
 %defattr(-,root,root,-)
 %doc README NEWS  LICENCE INSTALL INSTALL.Windows Documentation/* contrib
-/etc/tinc/chaosvpn.conf
-/etc/tinc/warzone.conf
-/usr/sbin/chaosvpn
-/usr/share/man/man1/chaosvpn.1.gz
-/usr/share/man/man5/chaosvpn.conf.5.gz
+%dir %{_sysconfdir}/tinc/chaos
+%attr(0755, root, root) %{_initrddir}/chaosvpn
+%config(noreplace) %{_sysconfdir}/tinc/chaosvpn.conf
+%config(noreplace) %{_sysconfdir}/tinc/warzone.conf
+%{_sbindir}/chaosvpn
+%doc %{_mandir}/man1/chaosvpn.1.gz
+%doc %{_mandir}/man5/chaosvpn.conf.5.gz
 
 %changelog
-* Sat Sep 15 2012 Frank Botte <Frank.Botte@web.de>a 2.0-1
+* Sun Sep 16 2012 Frank Botte <Frank.Botte@web.de> 2.14-1
+- corrected version number
+- git pulled on 09092012 
+* Sat Sep 15 2012 Frank Botte <Frank.Botte@web.de> 2.0-1
 - first public RPM...
  
-
