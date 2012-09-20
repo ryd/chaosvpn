@@ -4,6 +4,7 @@ chaosvpn (2.15-0) unstable; urgency=low
   * addrmask.c: fix parsing and printing of ip addresses, got broken
     when implementing compiling under windows.
   * tinc.c: ensure all the strings used as char* are zero terminated.
+  * make deb: fix to work with git tags starting with a "v" like "v2.14"
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 20 Sep 2012 21:16:21 +0200
 
