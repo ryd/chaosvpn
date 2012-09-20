@@ -47,6 +47,7 @@ daemonize(void)
 {
 #ifndef WIN32
     pid_t pid, sid;
+    int rc;
 
     /* Fork off the parent process */
     pid = fork();
@@ -75,12 +76,16 @@ daemonize(void)
     /* Create a new SID for the child process */
     sid = setsid();
     if (sid < 0) {
-        /* we should log something here... */
+        log_err("daemonize(): setsid() failed: %s", strerror(errno));
         return false;
     }
 
     /* Change the current working directory */
-    (void)chdir("/"); /* ignore errors */
+    rc = chdir("/");
+    if (rc != 0) {
+        log_warn("daemonize(): chdir(\"/\") failed: %s", strerror(errno));
+        /* warn, but ignore errors */
+    }
 
     /* Close out the standard file descriptors */
     close(STDIN_FILENO);
