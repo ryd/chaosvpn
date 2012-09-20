@@ -4,6 +4,11 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+CPPFLAGS	:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get CPPFLAGS)
+CFLAGS		:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get CFLAGS)
+CXXFLAGS	:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get CXXFLAGS)
+LDFLAGS		:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get LDFLAGS)
+
 build: build-arch build-indep
 
 build-arch: build-stamp
@@ -14,7 +19,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	$(MAKE)
+	CFLAGS='$(CFLAGS) $(CPPFLAGS)' LDFLAGS='$(LDFLAGS)' $(MAKE)
 
 	touch build-stamp
 

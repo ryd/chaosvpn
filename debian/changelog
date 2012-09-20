@@ -7,6 +7,7 @@ chaosvpn (2.14-0) unstable; urgency=low
   * FreeBSD compilation fixes.
   * Windows compilation works for the first time, thanks to Guus!
     (But support not finished yet)
+  * Compiled Debian Wheezy and Unstable packages with hardening enabled.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Tue, 28 Aug 2012 12:38:47 +0200
 
