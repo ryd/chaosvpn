@@ -31,8 +31,9 @@ clean:
 	# Add here commands to clean up after the build process.
 	$(MAKE) clean
 
-	# running $(MAKE) changelog in clean target to have changelog as part
+	# running $(MAKE) CHANGES in clean target to have changelog as part
 	# of the generated debian source package
+	[ -e .git/HEAD -a -n "$(shell which git)" ] && rm -f CHANGES || true
 	-$(MAKE) CHANGES
 
 	dh_clean

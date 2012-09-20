@@ -56,7 +56,7 @@ clean:
 	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME)
 
 CHANGES:
-	[ -e .git/HEAD ] && git log >CHANGES
+	[ -e .git/HEAD -a -n "$(shell which git)" ] && git log >CHANGES || true
 
 baseinstall:
 	strip $(NAME)
