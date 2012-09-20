@@ -1,4 +1,4 @@
-chaosvpn (2.14-0) UNRELEASED; urgency=low
+chaosvpn (2.14-0) unstable; urgency=low
 
   * Disable forwarding of broadcast packets - right now we have OSPF
     traffic on the VPN creating useless traffic.
