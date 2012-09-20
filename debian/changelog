@@ -1,4 +1,4 @@
-chaosvpn (2.15-0) UNRELEASED; urgency=low
+chaosvpn (2.15-0) unstable; urgency=low
 
   * Restore previous subnet-up/down behaviour for non-windows compiles.
   * addrmask.c: fix parsing and printing of ip addresses, got broken
