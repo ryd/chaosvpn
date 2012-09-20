@@ -446,6 +446,34 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	else
 		string_concat(&filepath, "/subnet-down" SCRIPT);
 
+
+#ifndef WIN32
+        /* if not in use_dynamic_routes mode delete target and maybe set a symlink
+           to .local version of the script.
+           
+           this does not work for windows, which will instead create a dummy file
+           below - but on unix we want to keep removing/symlinking to not have to
+           execute something when not needed. (important on low-power routers)
+           */
+        if (!config->use_dynamic_routes) {
+                struct string localpath;
+                
+                unlink(string_get(&filepath)); /* unlink first */
+
+                /* if subnet-(up|down).local exist symlink it to subnet-(up|down) */
+                string_init(&localpath, 512, 512);
+                string_concat_sprintf(&localpath, "%s.local", string_get(&filepath));
+
+                if (access(string_get(&localpath), X_OK) == 0) {
+                        symlink(string_get(&localpath), string_get(&filepath));
+                }
+
+                string_free(&localpath);
+                string_free(&filepath);
+                return true;
+        }
+#endif
+
 	/* generate contents */
 	
 	string_init(&buffer, 8192, 2048);
@@ -460,6 +488,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 #else
 		CONCAT_F(&buffer, "\"%s\\subnet-%s.local" SCRIPT "\"", config->base_path, up ? "up" : "down");
 #endif
+		CONCAT(&buffer, "exit 0\n\n");
 	} else {
 		if (up) {
 			routecmd = config->routeadd;
