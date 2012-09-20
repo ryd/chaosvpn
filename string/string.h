@@ -38,6 +38,8 @@ int string_equals(struct string*, struct string*);
 void string_lazyinit(struct string*, uintptr_t);
 int string_initfromstringz(struct string*, const char *);
 int string_read(struct string*, const int, const size_t, intptr_t*);
+void string_hexdump(struct string*, const void *, const size_t);
+void debug_hexdump(const void *, const size_t);
 
 
 static inline uintptr_t string_length(struct string *s) {
