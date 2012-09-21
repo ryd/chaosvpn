@@ -59,7 +59,11 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
   char *mask;
   unsigned char *np;
   unsigned char *mp;
-  struct addrinfo hints = {.ai_flags = AI_NUMERICHOST};
+  struct addrinfo hints = {
+    .ai_flags = AI_NUMERICHOST,
+    .ai_socktype = SOCK_STREAM,
+    .ai_protocol = 0,
+    };
   struct addrinfo *ai = NULL;
   void *addrbytes;
 
