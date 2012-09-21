@@ -1,3 +1,11 @@
+chaosvpn (2.16-0) UNRELEASED; urgency=low
+
+  * addrmask_parse(): Fixed IP address parsing under OpenWRT by setting a
+    missing ai_socktype for getaddrinfo() calls.
+    Thanks to Thorben Went for debugging this.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 22 Sep 2012 00:43:26 +0200
+
 chaosvpn (2.15-0) unstable; urgency=low
 
   * Restore previous subnet-up/down behaviour for non-windows compiles.
