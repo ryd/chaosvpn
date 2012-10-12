@@ -3,6 +3,7 @@
 #ifndef WIN32
 #include <arpa/inet.h>
 #endif
+#include <netinet/in.h>
 
 #include "chaosvpn.h"
 #include "addrmask.h"
