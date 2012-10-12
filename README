@@ -8,10 +8,7 @@ First services which will be available over the ChaosVPN are
 the warzone project, the ChaosPhone and the CCC xmpp server.
 
 More information about the ChaosVPN is available at:
-    http://chaosvpn.net
+    https://wiki.hamburg.ccc.de/ChaosVPN
 
 You can report bugs on github:
     https://github.com/ryd/chaosvpn/issues
-
-We also have a wiki:
-    <http://wiki.hamburg.ccc.de/ChaosVPN>
