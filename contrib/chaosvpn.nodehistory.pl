@@ -45,7 +45,7 @@ while (<NODES>) {
   my $node = $1;
   my $where = $2;
 
-  my $is_online = ($where ne "(null)");  
+  my $is_online = (($where ne "(null)") && ($where ne "unknown"));
   process_node($node, $is_online);
 }
 close(NODES);
@@ -103,28 +103,99 @@ sub output_html
 {
   open(HTML, ">$html.$$") || die;
   
-  print HTML '<html><body><table border="1">';
+  print HTML '<html>', "\n";
+  print HTML '<head>', "\n";
+  print HTML '<title>ChaosVPN node list</title>', "\n";
+  print HTML '  <style type="text/css">', "\n";
+  print HTML '    body {';
+  print HTML '      color: #000000;';
+  print HTML '      background-color: #ffffff;';
+  print HTML '    }';
+  print HTML '    .bigtable {';
+  print HTML '      border: 1px solid black;';
+  print HTML '      empty-cells: show;';
+  print HTML '    }';
+  print HTML '    .bigtable th {';
+  print HTML '      background-color: #cccccc;';
+  print HTML '      padding: 2px;';
+  print HTML '      margin: 2px;';
+  print HTML '      font-weight: bold;';
+  print HTML '    }';
+  print HTML '    .bigtable td {';
+  print HTML '      background-color: #eeeeee;';
+  print HTML '      padding: 2px;';
+  print HTML '      margin: 2px;';
+  print HTML '    }';
+  print HTML '    .deleted {';
+  print HTML '      text-decoration: line-through;';
+  print HTML '    }';
+  print HTML '    .perfect {';
+  print HTML '      color: #008800;';
+  print HTML '      font-weight: bold;';
+  print HTML '    }';
+  print HTML '    .good {';
+  print HTML '      color: #008800;';
+  print HTML '    }';
+  print HTML '    .neutral {';
+  print HTML '      color: #000000;';
+  print HTML '    }';
+  print HTML '    .bad {';
+  print HTML '      color: #888800;';
+  print HTML '    }';
+  print HTML '    .critical {';
+  print HTML '      color: #880000;';
+  print HTML '      font-style: italic;';
+  print HTML '    }', "\n";
+  print HTML '  </style>', "\n";
+  print HTML '</head>', "\n";
+  print HTML '<body>', "\n";
+  print HTML '<table class="bigtable">', "\n";
   print HTML '<tr>';
   print HTML '<th>nodename</th><th>known_first</th><th>known_last</th>';
   print HTML '<th>online_first</th><th>online_last</th><th>count_online</th><th>count_offine</th>';
-  print HTML '<th>online_percent</th>';
-  print HTML '</tr>';
+  print HTML '<th colspan="2">online_percent</th>';
+  print HTML '</tr>', "\n";
   
-  my $sth = $dbh->prepare("SELECT * FROM nodes ORDER BY nodename");
+  my $sth = $dbh->prepare("SELECT * FROM nodes ORDER BY lower(nodename)");
   $sth->execute() || die;
   while (my $n = $sth->fetchrow_hashref()) {
     my $count = $n->{count_online} + $n->{count_offline};
-    my $percent = ($count > 0 ? round(($n->{count_online} / $count) * 100) . "%" : "0%");
-    
-    printf HTML "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td align=\"right\">%s</td><td align=\"right\">%s</td><td align=\"right\">%s</td>",
+    my $percent = ($count > 0 ? round(($n->{count_online} / $count) * 100) : 0);
+
+    my $css;
+    if ($n->{known_last} ne $now) {
+      $css = "deleted";
+    } elsif ($count < 500) {
+      $css = "neutral"; # new
+    } elsif ($percent >= 99) {
+      $css = "perfect";
+    } elsif ($percent >= 90) {
+      $css = "good";
+    } elsif ($percent >= 20) {
+      $css = "neutral";
+    } elsif ($percent >= 2) {
+      $css = "bad";
+    } else {
+      $css = "critical";
+    }
+
+    if ($n->{online_first} eq "0000-01-01 00:00:00") {
+      $n->{online_first} = "never";
+      $n->{online_last} = "&nbsp;";
+    }
+
+    my $onlinestate = ($n->{online_last} eq $now ? "&nbsp;Y" : "&nbsp;N");
+
+    printf HTML "<tr><td class=\"$css\">%s</td><td class=\"$css\">%s</td><td class=\"$css\">%s</td><td class=\"$css\">%s</td><td class=\"$css\">%s</td><td class=\"$css\" align=\"right\">%s</td><td class=\"$css\" align=\"right\">%s</td><td class=\"$css\">%s</td><td class=\"$css\" align=\"right\">%s%%</td></tr>\n",
       $n->{nodename}, $n->{known_first}, $n->{known_last},
       $n->{online_first}, $n->{online_last},
       $n->{count_online}, $n->{count_offline},
-      $percent;
+      $onlinestate, $percent;
   }
   $sth->finish();
 
-  print HTML '</table></body></html>';
+  print HTML '</table>', "\n";
+  print HTML '</body></html>';
   close(HTML);
   rename("$html.$$", $html);
 }
