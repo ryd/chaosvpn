@@ -73,7 +73,7 @@ instead of "make + make install" execute "make deb" - this will create a
 .deb package in the parent directory which you can install with "dpkg -i"
 
 For more infos please look at
-https://wiki.hamburg.ccc.de/ChaosVPN::DebianHowto
+https://wiki.hamburg.ccc.de/ChaosVPN:DebianHowto
 
 
 Publishing your details
@@ -112,13 +112,13 @@ network6=<ipv6 subnet in the vpn>
 # network block that is still free.
 #
 # Please select an unused IPv4 range out of
-# https://wiki.hamburg.ccc.de/ChaosVPN::IPRanges, and
+# https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges, and
 # write yourself down in that wiki page to mark your future range as in-use.
 # Please select from the correct ranges, 172.31.*.* for Europe, and 10.100.*.*
 # for North America and elsewhere.
 # 
 # Repeat: Please do not forget to add yourself to the list at
-# https://wiki.hamburg.ccc.de/ChaosVPN::IPRanges to mark your
+# https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges to mark your
 # range as used. 
 
 owner=
@@ -155,7 +155,7 @@ silent=0
 Next, send the template to chaosvpn-join@hamburg.ccc.de
 
 At the same time please also add your network and node infos to
-https://wiki.hamburg.ccc.de/ChaosVPN::IPRanges
+https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges
 
 
 Connecting to ChaosVPN
