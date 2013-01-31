@@ -177,39 +177,38 @@ tinc_write_config(struct config *config)
 		CONCAT_F(&buffer, "%s\n", config->tincd_raw_config);
 	}
 	
-	if (config->my_peer->silent) {
-			return true; //no ConnectTo lines
-	}
+	if (!config->my_peer->silent) {
+	        /* Only Non-Silent nodes have ConnectTo lines */
 
-	list_for_each(p, &config->peer_config) {
-		struct peer_config_list *i = container_of(p, struct peer_config_list, list);
+                list_for_each(p, &config->peer_config) {
+                        struct peer_config_list *i = container_of(p, struct peer_config_list, list);
 
-		if (!strcmp(i->peer_config->name, config->peerid)) {
-			continue;
-		}
+                        if (!strcmp(i->peer_config->name, config->peerid)) {
+                                continue;
+                        }
 
-		if (tinc_check_if_excluded(config, i->peer_config->name)) {
-			continue;
-		}
+                        if (tinc_check_if_excluded(config, i->peer_config->name)) {
+                                continue;
+                        }
 
-		if (config->connect_only_to_primary_nodes &&
-				config->tincd_version &&
-				(strnatcmp(config->tincd_version, "1.0.12") > 0) &&
-				(!i->peer_config->primary)) {
-			/* tinc 1.0.12+git++ - only connect to primary hosts */
-			/* tinc peer2peer will do the rest for us */
-			/* this reduces the number of tcp connections */
-			/* not enabled by default (yet) because old tinc */
-			/* nodes with TunnelServer=yes don't like it */
-			continue;
-		}
-		
-		if (str_is_nonempty(i->peer_config->gatewayhost) &&
-				!i->peer_config->hidden) {
-			CONCAT_F(&buffer, "ConnectTo=%s\n", i->peer_config->name);
-		}
-	}
-
+                        if (config->connect_only_to_primary_nodes &&
+                                        config->tincd_version &&
+                                        (strnatcmp(config->tincd_version, "1.0.12") > 0) &&
+                                        (!i->peer_config->primary)) {
+                                /* tinc 1.0.12+git++ - only connect to primary hosts */
+                                /* tinc peer2peer will do the rest for us */
+                                /* this reduces the number of tcp connections */
+                                /* not enabled by default (yet) because old tinc */
+                                /* nodes with TunnelServer=yes don't like it */
+                                continue;
+                        }
+                        
+                        if (str_is_nonempty(i->peer_config->gatewayhost) &&
+                                        !i->peer_config->hidden) {
+                                CONCAT_F(&buffer, "ConnectTo=%s\n", i->peer_config->name);
+                        }
+                }
+        }
 
 	/* write tinc.conf */
 
