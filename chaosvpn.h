@@ -10,6 +10,7 @@
 /* Workaround for OSX 10.7 and later */
 #define _AVAILABILITYMACROS_
 #define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include <openssl/ssl.h>
