@@ -99,7 +99,7 @@ main (int argc,char *argv[])
 		return 1;
 	}
 
-#ifndef BSD
+#if !defined(BSD) && !defined(__APPLE__)
 	if (!tun_check_or_create()) {
 		log_err("Error - unable to create tun device\n");
 		return 1;

@@ -1,11 +1,21 @@
 #ifndef __CHAOSVPN_H
 #define __CHAOSVPN_H
 
+
 #include <stdbool.h>
 #include <time.h>
-#include <openssl/evp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if defined(__APPLE__) && (_ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED_ >= 1070)
+/* Workaround for OSX 10.7 and later */
+#define _AVAILABILITYMACROS_
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER 
+#endif
+
+#include <openssl/ssl.h>
+#include <openssl/evp.h>
+
 #ifndef WIN32
 #include <syslog.h>
 #include <netdb.h>

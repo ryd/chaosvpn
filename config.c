@@ -349,7 +349,7 @@ config_init(struct config *config)
 	}
 
 
-#ifndef BSD
+#if defined(BSD) || defined(__APPLE__)
 	/* Linux */
 	if (str_is_empty(config->tincd_device)) {
 		free(config->tincd_device);
