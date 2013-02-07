@@ -1,7 +1,6 @@
 #ifndef __CHAOSVPN_H
 #define __CHAOSVPN_H
 
-
 #include <stdbool.h>
 #include <time.h>
 #include <sys/stat.h>
@@ -10,7 +9,7 @@
 #if defined(__APPLE__) && (_ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED_ >= 1070)
 /* Workaround for OSX 10.7 and later */
 #define _AVAILABILITYMACROS_
-#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER 
+#define DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER
 #endif
 
 #include <openssl/ssl.h>
@@ -60,9 +59,10 @@
 #define TINC_DEFAULT_COMPRESSION "0"
 #define TINC_DEFAULT_DIGEST "sha1"
 
+#if !defined(BSD) && !defined(__APPLE__) && !defined(WIN32)
 #define TUN_DEV   "/dev/net/tun"
 #define TUN_PATH  "/dev/net"
-
+#endif
 
 
 #define NOERR   (0)
