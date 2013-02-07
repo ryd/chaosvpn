@@ -22,7 +22,7 @@ tun_gnu_dev_makedev (unsigned int major, unsigned int minor)
 static bool
 tun_create_dev(void)
 {
-#ifndef WIN32
+#if !defined(BSD) && !defined(__APPLE__) && !defined(WIN32)
 	mode_t mask = S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	if (!EXISTS(TUN_PATH) && (NOERR != mkdir(TUN_PATH, mask))) {
 		return false;
@@ -37,7 +37,7 @@ tun_create_dev(void)
 bool
 tun_check_or_create(void)
 {
-#ifndef WIN32
+#if !defined(BSD) && !defined(__APPLE__) && !defined(WIN32)
 	if (!EXISTS(TUN_DEV)) {
 		log_info("tun device %s does't exists - trying to create it.", TUN_DEV);
 		return tun_create_dev();
