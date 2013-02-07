@@ -38,8 +38,8 @@ $tincd_user    = "root";
 
 # **FIXME**
 # Until we know the correct settings for $tincd_device and $tincd_interface
-# for FreeBSD use tincd defaults - the network interface may be called
-# something like 'tun0' instead of the Linux default 'chaos_vpn'
+# for FreeBSD keep them empty, to use tincd defaults - the network interface
+# may be called something like 'tun0' instead of our Linux default 'chaos_vpn'
 $tincd_device		= "";
 $tincd_interface	= "";
 
