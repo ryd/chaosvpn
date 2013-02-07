@@ -98,6 +98,15 @@ bsdinstall: baseinstall
 		echo "Created config File $(TINCDIR)/chaosvpn.conf from BSD template"; \
 	fi
 
+appleinstall: baseinstall
+	# **FIXME** NEED REPLACEMENT - install -m 0755 freebsd.rc.d $(DESTDIR)$(PREFIX)/etc/rc.d/chaosvpn
+
+	@if [ ! -e $(DESTDIR)$(TINCDIR)/chaosvpn.conf ] ; then \
+		install -m 0755 -d $(DESTDIR)$(TINCDIR) ; \
+		install -m 0600 chaosvpn.conf.apple $(DESTDIR)$(TINCDIR)/chaosvpn.conf ; \
+		echo "Created config File $(TINCDIR)/chaosvpn.conf from Apple template"; \
+	fi
+
 splint:
 	splint +posixlib +allglobals -type -mayaliasunique -predboolint \
 		-retvalint $(CFLAGS) main.c $(SRC)
