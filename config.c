@@ -60,7 +60,7 @@ config_alloc(void)
 	config->networkname		= NULL;
 	config->my_ip			= NULL;
 	config->my_addressfamily	= NULL;
-	config->tincd_bin		= strdup("/usr/sbin/tincd");
+	config->tincd_bin		= strdup("tincd");
 	config->tincctl_bin		= NULL;
 	config->tincd_debuglevel	= 3;
 	config->tincd_restart_delay	= 20;
@@ -245,10 +245,13 @@ config_init(struct config *config)
 	reqparam(tincd_user, "$tincd_user");
 	reqparam(tincd_bin, "$tincd_bin");
 
-	if (stat(config->tincd_bin, &stat_buf) ||
-		(!(stat_buf.st_mode & S_IXUSR))) {
-		log_err("tinc binary %s not executable.", config->tincd_bin);
-		return false;
+	if (strchr(config->tincd_bin, '/') != NULL) {
+		/* Only check exec state if full path has been specified */
+		if (stat(config->tincd_bin, &stat_buf) ||
+			(!(stat_buf.st_mode & S_IXUSR))) {
+			log_err("tinc binary '%s' missing or not executable.", config->tincd_bin);
+			return false;
+		}
 	}
 
 	if (str_is_empty(config->my_ip) ||

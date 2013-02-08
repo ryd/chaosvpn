@@ -219,7 +219,6 @@ struct daemon_info {
     char* di_path;
     int di_numarguments;
     char** di_arguments;
-    char** di_envp;
 
     int di_stderr_fd[2];
     FILE *di_stderr;

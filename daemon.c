@@ -136,13 +136,6 @@ daemon_init(struct daemon_info* di, const char* path, ...)
     }
     va_end(ap);
 
-    // XXX: for now
-    di->di_envp = (char**)malloc(sizeof(char*));
-    if (di->di_envp == NULL) {
-        goto bail_out;
-    }
-    di->di_envp[0] = NULL;
-
     return true;
 
 bail_out:
@@ -157,9 +150,7 @@ bail_out:
         free(di->di_arguments);
         di->di_arguments = NULL;
     }
-    /* XXX: for now */
-    free(di->di_envp);
-    di->di_envp = NULL;
+
     return false;
 }
 
@@ -192,10 +183,6 @@ daemon_free(struct daemon_info* di)
     }
     free(di->di_arguments);
     di->di_arguments = NULL;
-    
-    /* XXX: for now */
-    free(di->di_envp);
-    di->di_envp = NULL;
     
     di->di_pid = -1;
     
@@ -236,7 +223,7 @@ daemon_start(struct daemon_info* di)
         dup2(di->di_stderr_fd[1], STDERR_FILENO);
         close(di->di_stderr_fd[0]);
         close(di->di_stderr_fd[1]);
-        (void)execve(di->di_path, di->di_arguments, di->di_envp);
+        (void)execvp(di->di_path, di->di_arguments);
         exit(EXIT_FAILURE);
     case -1:
         return false;
