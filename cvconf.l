@@ -19,6 +19,7 @@ static int stringcaller;
 \$my_addressfamily  {yylval.pval = &globalconfig->my_addressfamily; return KEYWORD_S;}
 \$networkname   {yylval.pval = &globalconfig->networkname; return KEYWORD_S;}
 \$tincd_bin   {yylval.pval = &globalconfig->tincd_bin; return KEYWORD_S;}
+\$tincctl_bin   {yylval.pval = &globalconfig->tincctl_bin; return KEYWORD_S;}
 \$routeadd   {yylval.pval = &globalconfig->routeadd; return KEYWORD_S;}
 \$routeadd6   {yylval.pval = &globalconfig->routeadd6; return KEYWORD_S;}
 \$routedel   {yylval.pval = &globalconfig->routedel; return KEYWORD_S;}

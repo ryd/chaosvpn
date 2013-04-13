@@ -414,7 +414,7 @@ config_init(struct config *config)
 				strncpy(tincctl, config->tincd_bin, len);
 				tincctl[len] = '\0';
 			}
-			snprintf(tincctl+len, sizeof(tincctl)-len, "tincctl");
+			snprintf(tincctl+len, sizeof(tincctl)-len, "tinc");
 
 			config->tincctl_bin = strdup(tincctl);
 		}
