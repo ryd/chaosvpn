@@ -6,6 +6,22 @@ to getting into the chaosvpn network. To join chaosvpn, you need to
 install some software (tinc, chaosvpn). You also have to register your
 node before you can connect to the rest of the network.
 
+
+The very short way building from git snapshot
+=============================================
+
+Debian and Ubuntu: make deb
+
+Other Linux: make && make linuxinstall
+
+FreeBSD: make && make bsdinstall
+
+Apple OSX: make && make appleinstall
+
+You can find the most uptodate instructions at
+  http://wiki.hamburg.ccc.de/ChaosVPN
+
+
 Preparation
 ===========
 
