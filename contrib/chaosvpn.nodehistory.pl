@@ -6,7 +6,7 @@ use DBD::SQLite;
 use POSIX;
 use Math::Round qw(:all);
 
-my $tincctl = "/usr/sbin/tincctl";
+my $tincctl = "/usr/sbin/tinc";
 my $network = "chaos";
 my $dbfile = "/var/www/chaosvpn.nodes.sqlite";
 my $html = "/var/www/chaosvpn.nodes.html";

@@ -10,7 +10,7 @@
 
 use strict;
 
-my $tincctl = "/usr/sbin/tincctl";
+my $tincctl = "/usr/sbin/tinc";
 my $network = "chaos";
 my $output = "/var/www/chaosvpn.png";
 
