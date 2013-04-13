@@ -5,6 +5,15 @@ chaosvpn (2.16-0) UNRELEASED; urgency=low
     Thanks to Thorben Went for debugging this.
   * addrmask.c: Fixed compile error on FreeBSD by including missing
     netinet/in.h
+  * Fixed handling of nodes marked as silent=1
+  * Added a couple of Apple OSX workarounds.
+  * Added "make appleinstall" Makefile target.
+  * More FreeBSD fixes.
+  * Allow $tincd_bin to be specified as a relative path, searching for
+    it in $PATH
+  * tinc 1.1pre support: Starting with current git (and 1.1pre7) the binary
+    that was called 'tincctl' is now just called 'tinc'. So change the
+    default value and introduce new $tincctl_bin config variable.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 22 Sep 2012 00:43:26 +0200
 
