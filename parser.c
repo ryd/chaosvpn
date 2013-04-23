@@ -16,7 +16,7 @@ parser_check_configitem(char *line, char *config)
 	int len;
 
 	len = strlen(config);
-	if (!strncmp(line, config, len)) {
+	if (!strncasecmp(line, config, len)) {
 		return line + len;
 	}
 	return NULL;
