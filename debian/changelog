@@ -14,6 +14,7 @@ chaosvpn (2.16-0) UNRELEASED; urgency=low
   * tinc 1.1pre support: Starting with current git (and 1.1pre7) the binary
     that was called 'tincctl' is now just called 'tinc'. So change the
     default value and introduce new $tincctl_bin config variable.
+  * warn only once about each unknown remote configstatement
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 22 Sep 2012 00:43:26 +0200
 

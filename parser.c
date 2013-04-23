@@ -7,6 +7,7 @@
 #include "chaosvpn.h"
 
 static struct peer_config *my_config = NULL;
+static struct list_head done_unknown_warnings;
 static bool parse_key_mode;
 
 static char*
@@ -131,6 +132,37 @@ parser_replace_item(char **var, char *newitem)
 	*var = strdup(newitem);
 }
 
+static void
+parser_warn_unknown(char *line)
+{
+	char *label;
+	char *saveptr;
+	struct list_head* ptr;
+	struct string_list *si;
+
+	if (line == NULL)
+		return;
+
+	label = strtok_r(line, "=", &saveptr);
+	if (label == NULL)
+		goto output;
+
+	list_for_each(ptr, &done_unknown_warnings) {
+		si = container_of(ptr, struct string_list, list);
+
+		if (strcasecmp(label, si->text) == 0) {
+			/* output already happened */
+			return;
+		}
+	}
+
+	/* remember output */
+	list_add_tail(parser_stringlist(label), &done_unknown_warnings);
+
+output:
+	log_warn("parser: warning: unparsed and ignored: '%s' - maybe a newer chaosvpn version needed?\n", line);
+}
+
 static bool
 parser_parse_line(char *line, struct list_head *configlist)
 {
@@ -235,7 +267,7 @@ parser_parse_line(char *line, struct list_head *configlist)
 		if (parse_key_mode) {
 			parser_extend_key(line);
 		} else {
-			log_warn("parser: warning: unparsed: %s\n", line);
+			parser_warn_unknown(line);
 		}
 	}
 	return true;
@@ -246,20 +278,26 @@ parser_parse_config (char *data, struct list_head *config_list)
 {
 	char *token;
 	char *search = "\n";
+	char *saveptr;
 
 	my_config = NULL;
+	parse_key_mode = false;
+	INIT_LIST_HEAD(&done_unknown_warnings);
 
 	data = strdup(data);
-	token = strtok(data, search);
+	token = strtok_r(data, search, &saveptr);
 	while (token) {
 		if (strncmp(token, "#", 1) &&
 				!parser_parse_line(token, config_list))  {
 			free(data);
+			parser_delete_string_list(&done_unknown_warnings);
 			return false;
 		}
-		token = strtok(NULL, search);
+		token = strtok_r(NULL, search, &saveptr);
 	}
 	free(data);
+
+	parser_delete_string_list(&done_unknown_warnings);
 
 	return true;
 }
