@@ -258,6 +258,8 @@ parser_parse_line(char *line, struct list_head *configlist)
 		my_config->primary = str_is_true(item, false);
 	} else if ((item = parser_check_configitem(line, "ecdsapublickey="))) {
 		parser_replace_item(&my_config->ecdsapublickey, item);
+	} else if ((item = parser_check_configitem(line, "pingtest="))) {
+		/* allow, but ignore in chaosvpn client */
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {
 		free(my_config->key);
 		my_config->key = calloc(sizeof(char), strlen(line) + 2);
