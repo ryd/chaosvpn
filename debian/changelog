@@ -15,6 +15,8 @@ chaosvpn (2.16-0) UNRELEASED; urgency=low
     that was called 'tincctl' is now just called 'tinc'. So change the
     default value and introduce new $tincctl_bin config variable.
   * warn only once about each unknown remote configstatement
+  * support new central config statement ecdsapublickey= and if present
+    and using tinc 1.1pre+ save it to hosts files.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 22 Sep 2012 00:43:26 +0200
 
