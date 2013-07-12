@@ -1,4 +1,4 @@
-chaosvpn (2.16-0) UNRELEASED; urgency=low
+chaosvpn (2.17-0) unstable; urgency=low
 
   * addrmask_parse(): Fixed IP address parsing under OpenWRT by setting a
     missing ai_socktype for getaddrinfo() calls.
@@ -17,8 +17,11 @@ chaosvpn (2.16-0) UNRELEASED; urgency=low
   * warn only once about each unknown remote configstatement
   * support new central config statement ecdsapublickey= and if present
     and using tinc 1.1pre+ save it to hosts files.
+  * Allow pingtest= in central config, but ignore it in client.
+    (May be used later to automatically build icinga config or something
+    like this)
 
- -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 22 Sep 2012 00:43:26 +0200
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 12 Jul 2013 00:03:46 +0200
 
 chaosvpn (2.15-0) unstable; urgency=low
 
