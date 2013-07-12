@@ -37,9 +37,8 @@ $tincd_user    = "root";
 ## are using a somewhat widespread linux distribution.
 
 # **FIXME**
-# Until we know the correct settings for $tincd_device and $tincd_interface
-# for FreeBSD use tincd defaults - the network interface may be called
-# something like 'tun0' instead of the Linux default 'chaos_vpn'
+# The network interface is named tun0 for now - if you use more than one
+# tun interface you may need to change it.
 $tincd_device		= "/dev/tun0";
 $tincd_interface	= "tun0";
 
@@ -47,13 +46,15 @@ $networkname		= "chaos";
 $tincd_bin		= "/usr/local/sbin/tincd";
 $routemetric		= "0";
 
-$routeadd	= "/sbin/route add %s $my_vpn_ip -iface -ifp \$INTERFACE";
+$routeadd		= "/sbin/route add %s $my_vpn_ip -iface -ifp \$INTERFACE";
 $routedel		= "/sbin/route delete -net %s $my_vpn_ip -iface -ifp \$INTERFACE";
 $ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask 255.255.255.255";
 #
 # **FIXME** $routeadd6	= "";
 # **FIXME** $routedel6	= "";
 # **FIXME** $ifconfig6	= "";
+
+@mergeroutes_supernet	= ("172.31.0.0/16", "10.100.0.0/14");
 
 $master_url		= "http://www.vpn.hamburg.ccc.de/chaosvpn-data/$my_peerid.dat";
 
