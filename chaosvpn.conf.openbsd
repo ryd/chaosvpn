@@ -1,0 +1,103 @@
+# Configuration file for the ChaosVPN utility.
+
+## Name of the node
+## You must choose a name for your node. This name must be unique in
+## the network you're trying to join.
+
+$my_peerid		= "unique_name";
+
+## Local IP address(es) of this node/gateway.
+## If you want to use IPv4 only, you can leave the IPv6 field empty.
+$my_vpn_ip		= "172.31.0.255";
+$my_vpn_ip6		= "";
+
+## Interface for tincd to listen on.
+## tincd will bind to all interfaces by default.
+$my_ip			= "";
+
+## Address family to use, can be ipv4, ipv6, or any
+$my_addressfamily	= "ipv4";
+
+## List of nodes this node should not connect to. You may want to
+## exclude nodes you are already connected to by some other means.
+@exclude		= ();
+@ignore_subnets		= ("127.0.0.1/8", "::1/128");
+
+## username tincd should su to once it has started up.
+## This is a mandatory setting. You must ensure your node's private
+## and public key are readable by this user, and that the chaosvpn
+## process can write to /etc/tinc
+##
+## It is better to use a non-root user account, but that needs some
+## non-default setup first.
+$tincd_user    = "root";
+
+## ===================================================================
+## You normally do not need to change anything below this line if you
+## are using a somewhat widespread linux distribution.
+
+# **FIXME**
+# Until we know the correct settings for $tincd_device and $tincd_interface
+# for FreeBSD use tincd defaults - the network interface may be called
+# something like 'tun0' instead of the Linux default 'chaos_vpn'
+$tincd_device		= "/dev/tun0";
+$tincd_interface	= "tun0";
+
+$networkname		= "chaos";
+$tincd_bin		= "/usr/local/sbin/tincd";
+$routemetric		= "0";
+
+$routeadd	= "/sbin/route add %s $my_vpn_ip -iface -ifp \$INTERFACE";
+$routedel		= "/sbin/route delete -net %s $my_vpn_ip -iface -ifp \$INTERFACE";
+$ifconfig		= "/sbin/ifconfig \$INTERFACE $my_vpn_ip netmask 255.255.255.255";
+#
+# **FIXME** $routeadd6	= "";
+# **FIXME** $routedel6	= "";
+# **FIXME** $ifconfig6	= "";
+
+$master_url		= "http://www.vpn.hamburg.ccc.de/chaosvpn-data/$my_peerid.dat";
+
+## public key used to sign the file at $master_url:
+## Do not change this unless you get a signed message from
+## <haegar@ccc.de> explaining why you need to enter a new public key
+## here. If in doubt, don't change it.
+$masterdata_signkey	= "-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnSHWfoa9hYgiMrTU4QTS
+uwsspcy7Ml7xVLN8AUtSvb5ORLDR9MfhuVargGxe4CMQ/VLx5gQ064l+P9Zr4fCQ
+Smgwjpza6hbSb++3EfN75QenolvfFLI0X2WAmCs8cgh3B6Li8Ia66xt7/cNDAvQm
+v6TzapCBupOZWLIzZ8i8LMfiAu0T6fF4/R566rCaDg+amKfLl/0R+jt92z4XDiUz
+/9LWwSsD+7VpJQKlSGqYJ/cgDxzhHsasc2itDgI4hmbZkj88NRzElh1rOOKZpiF2
+b9zI+les6vKenaZx79verTGaEi6YDPHZ99exIVkBn1pR2RM5YP0uAQL9Qb9bpIcx
+e1IB+kjgX67XFH51dS9rdqYaBz1ugnXAXNjuKp/g7C6A4Ti9Uv+4YwJaVu+U/trN
+by6+TpGStyfvxpm+13WgGl+FW3wlWg9yRb1efx9Gsmvou/nuJWfzTcYrNx6vaoI+
+/9W7ZaTl+UFhqg+WJltKvjOKA2ceH+nZs521dwpNrt26cRrKjhIO9sITYtXQcn9c
+cbSpcdENL+85aHpAkP15w0DFZWqcK/XYn8GD/MPtJnsCJVnj4+ZQ66S6orgeCqed
+Zas9nZDOJZOHlRDBemRahDebiEpesm5hNf0MWAKQh1vhl2dVCXGCZtF2e4x/594e
+JVw7sWohWm4buu0iKlfPWIsCAwEAAQ==
+-----END PUBLIC KEY-----";
+
+$base			= "/etc/tinc/$networkname";
+$pidfile		= "/var/run/tinc.$networkname.pid";
+$tmpconffile            = "$base/chaosvpn-config.temp";
+$tincd_debuglevel	= 2;
+
+#$tincd_graphdumpfile	= "/var/run/tinc.$networkname.dump";
+
+## Number of seconds to sleep before tincd is restarted after it has
+## unexpectedly terminated
+$tincd_restart_delay = 20;
+
+
+## Number of seconds to sleep between refetching the remote config.
+## 3600 is a reasonable default.
+$update_interval = 3600;
+
+## Add LocalDiscovery option allowing tinc to detect peers that are behind the
+## same NAT.
+$localdiscovery = yes;
+
+## Run the ifdown script manually. This may be useful on systems where
+## the routes are not automatically removed when tincd stops.
+## Since tincd does not run as root, it is unable to remove the
+## routes; chaosvpn has the ability to run commands as root.
+$run_ifdown = no;
