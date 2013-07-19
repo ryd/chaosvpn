@@ -83,7 +83,7 @@ foreach (@edges) {
     $last = $from;
   }
 
-  $links .= " $from -> $to [weight=\"$weight\",arrowhead=\"normal\",arrowtail=\"none\",arrowsize=\"0.5\",color=\"$color\"];\n";
+  $links .= " \"$from\" -> \"$to\" [weight=\"$weight\",arrowhead=\"normal\",arrowtail=\"none\",arrowsize=\"0.5\",color=\"$color\"];\n";
 }
 
 
@@ -93,9 +93,9 @@ my %levels = ();
 foreach (sort(keys(%nodes))) {
   push @{$levels{$nodes{$_}}}, $_;
   if ($nodes{$_} > 0) {
-    $nodes .= " $_ [fillcolor=\"$colors{$_}\",label = \"$_\"];\n";
+    $nodes .= " \"$_\" [fillcolor=\"$colors{$_}\",label = \"$_\"];\n";
   } elsif ($include_offline) {
-    $nodes .= " $_ [label=\"$_\",shape=\"diamond\",fontsize=\"7\",color=\"#888888\",style=\"dashed\"];\n";
+    $nodes .= " \"$_\" [label=\"$_\",shape=\"diamond\",fontsize=\"7\",color=\"#888888\",style=\"dashed\"];\n";
   }
 }
 
@@ -105,7 +105,7 @@ foreach my $l (keys(%levels)) {
   $subgraphs .= " {rank=same; ";
   
   foreach (@{$levels{$l}}) {
-    $subgraphs .= "$_ ";
+    $subgraphs .= "\"$_\" ";
   }
 
   $subgraphs .= "}\n";
