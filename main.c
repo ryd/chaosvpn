@@ -968,7 +968,7 @@ sigchild(int sig /*__unused*/)
 	} else if (pid == -1) {
 	        log_err("some child has terminated, but waitpid() returned error: %s", strerror(errno));
 	} else if (pid == di_tincd.di_pid) {
-		log_err("tincd terminated. Restarting in %d seconds. (pid %d)", config->tincd_restart_delay, pid);
+		log_err("tincd terminated. Restarting in %d seconds. (pid %d, returncode %d)", config->tincd_restart_delay, pid, status);
 		tinc_invoke_ifdown(config);
 		if (config->tincd_restart_delay != 0) {
 			(void)sleep(config->tincd_restart_delay);
@@ -978,7 +978,7 @@ sigchild(int sig /*__unused*/)
 			exit(1);
 		}
 	} else {
-		log_err("some child (pid %d) has terminated; reaping.", pid);
+		log_err("some child (pid %d, returncode %d) has terminated; reaping.", pid, status);
 	}
 }
 
