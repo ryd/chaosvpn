@@ -945,16 +945,19 @@ handler_signal_old_tincd(void)
 #endif
 }
 
+#ifndef WIN32
 static void
 p_sigchild(int sig/*__unused*/)
 {
 	int status;
 
 	waitpid(pid_tincd_handler, &status, 0);
-	log_err("tincd manager slave has died with status %d.", status);
-	exit(status);
+	log_err("tincd manager slave has died with returncode %d, status %d.", WEXITSTATUS(status), status);
+	exit(status>>8);
 }
+#endif
 
+#ifndef WIN32
 static void
 sigchild(int sig /*__unused*/)
 {
@@ -968,8 +971,15 @@ sigchild(int sig /*__unused*/)
 	} else if (pid == -1) {
 	        log_err("some child has terminated, but waitpid() returned error: %s", strerror(errno));
 	} else if (pid == di_tincd.di_pid) {
-		log_err("tincd terminated. Restarting in %d seconds. (pid %d, returncode %d)", config->tincd_restart_delay, pid, status);
 		tinc_invoke_ifdown(config);
+
+		if (WIFEXITED(status) && (WEXITSTATUS(status) == 1)) {
+		        log_err("tincd reported a fatal error and can't continue, chaosvpn will die now. (pid %d, returncode %d)", pid, WEXITSTATUS(status));
+		        exit(1);
+                }
+
+		log_err("tincd terminated. Restarting in %d seconds. (pid %d, returncode %d)", config->tincd_restart_delay, pid, WEXITSTATUS(status));
+
 		if (config->tincd_restart_delay != 0) {
 			(void)sleep(config->tincd_restart_delay);
 		}
@@ -978,9 +988,10 @@ sigchild(int sig /*__unused*/)
 			exit(1);
 		}
 	} else {
-		log_err("some child (pid %d, returncode %d) has terminated; reaping.", pid, status);
+		log_err("some child (pid %d, returncode %d) has terminated; reaping.", pid, WEXITSTATUS(status));
 	}
 }
+#endif
 
 static void
 sigterm(int sig /*__unused*/)
