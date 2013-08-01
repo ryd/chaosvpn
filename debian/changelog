@@ -1,3 +1,15 @@
+chaosvpn (2.18~alpha-0) unstable; urgency=low
+
+  * Include chaosvpn.conf template for OpenBSD.
+  * Do not automatically restart tincd if it aborted cleanly with
+    a fatal error.
+    Can happen for example with config incompatibilities between tinc
+    and chaosvpn, or if two instances of the same node are running on
+    two different hosts and the conflict-resolution in tinc decided
+    to kill one.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 01 Aug 2013 19:42:44 +0200
+
 chaosvpn (2.17-0) unstable; urgency=low
 
   * addrmask_parse(): Fixed IP address parsing under OpenWRT by setting a
