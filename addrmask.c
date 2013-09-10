@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #endif
 #include <netinet/in.h>
+#include <netdb.h>
 
 #include "chaosvpn.h"
 #include "addrmask.h"
@@ -254,6 +255,7 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   char buffer[255];
   int res;
   struct sockaddr_storage sock;
+  socklen_t len;
 
   if (!target || !addr)
     return false;
@@ -261,11 +263,13 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   memset(&sock, 0, sizeof(sock));
   if (addr->addr_family == AF_INET) {
     struct sockaddr_in *sock4 = (struct sockaddr_in *) &sock;
+    len = sizeof(struct sockaddr_in);
 
     sock4->sin_family = addr->addr_family;
     memcpy(&sock4->sin_addr.s_addr, addr->net_bytes, addr->addr_byte_count);
   } else if (addr->addr_family == AF_INET6) {
     struct sockaddr_in6 *sock6 = (struct sockaddr_in6 *) &sock;
+    len = sizeof(struct sockaddr_in6);
 
     sock6->sin6_family = addr->addr_family;
     memcpy(sock6->sin6_addr.s6_addr, addr->net_bytes, addr->addr_byte_count);
@@ -273,7 +277,7 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
     return false;
   }
 
-  res = getnameinfo((struct sockaddr *) &sock, sizeof(sock), buffer, sizeof(buffer), NULL, 0, NI_NUMERICHOST);
+  res = getnameinfo((struct sockaddr *) &sock, len, buffer, sizeof(buffer), NULL, 0, NI_NUMERICHOST);
   if (res != 0)
     return false;
 
