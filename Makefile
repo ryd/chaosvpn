@@ -4,8 +4,8 @@ LIBDIRS?=-L/usr/local/lib
 LIB?=-lz -lcrypto
 
 OS=$(shell uname)
-ifneq (,$(findstring FreeBSD,$(OS)))
-	# FreeBSD
+ifneq (,$(findstring BSD,$(OS)))
+	# hopefully FreeBSD, OpenBSD, NetBSD
 	CFLAGS+=-DBSD -std=c99 -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
 	PREFIX?=/usr/local
 	TINCDIR?=/usr/local/etc/tinc
