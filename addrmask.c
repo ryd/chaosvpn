@@ -252,7 +252,7 @@ found:
 
 bool addrmask_to_string(struct string *target, struct addr_info *addr)
 {
-  char buffer[255];
+  char buffer[NI_MAXHOST];
   int res;
   struct sockaddr_storage sock;
   socklen_t len;
