@@ -48,6 +48,9 @@ all: $(NAME)
 $(NAME): main.o $(OBJ) $(HEADERS)
 	$(CC) $(LDFLAGS) -o $@ main.o $(OBJ) $(LIB) $(LIBDIRS)
 
+test_addrmask: test_addrmask.o $(OBJ) $(HEADERS)
+	$(CC) $(LDFLAGS) -o $@ test_addrmask.o $(OBJ) $(LIB) $(LIBDIRS)
+
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -o $(patsubst %.c,%.o,$<) -c $<
 
@@ -60,7 +63,7 @@ lex.yy.c: cvconf.l
 	$(LEX) cvconf.l
 
 clean:
-	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME)
+	rm -f *.o y.tab.c y.tab.h lex.yy.c string/*.o httplib/*.o $(NAME) test_addrmask
 
 CHANGES:
 	[ -e .git/HEAD -a -n "$(shell which git)" ] && git log >CHANGES || true

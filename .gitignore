@@ -13,3 +13,4 @@ up.sh
 CHANGES
 build-stamp
 .#*
+test_addrmask
