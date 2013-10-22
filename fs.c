@@ -293,7 +293,7 @@ fs_empty_dir(char* dest)
 			dstdirlen = dst._u._s.length;
 			if (!string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
 			if (unlink(string_get(&dst))) {
-				log_err("fs_empty_dir: failed to unlink %s\n", string_get(&dst));
+				log_err("fs_empty_dir: failed to unlink %s: %s\n", string_get(&dst), strerror(errno));
 			}
 			dst._u._s.length = dstdirlen;
 		}
