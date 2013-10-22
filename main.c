@@ -618,11 +618,16 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 	}
 
 	fd = open(config->tmpconffile, O_WRONLY | O_CREAT, 0600);
-	if (fd == -1) return;
+	if (fd == -1) {
+	        log_debug("Error creating $tmpconffile: %s", strerror(errno));
+	        return;
+        }
 
 	if (write(fd, string_get(cnf), string_length(cnf)) != string_length(cnf)) {
 		(void)unlink(config->tmpconffile);
+		log_debug("Error writing $tmpconffile: %s", strerror(errno));
 	}
+
 	close(fd);
 }
 
