@@ -16,7 +16,7 @@ string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_re
         growby = s->_u._s.growby;
         while ((s->_u._s.size + growby - s->_u._s.length) < len) {
             growby += s->_u._s.growby;
-            if ((s->_u._s.size + growby) < s->_u._s.size) return 1;
+            if ((s->_u._s.size + growby) < s->_u._s.size) return false;
         }
         buf = realloc(s->s, s->_u._s.size + growby);
         if (!buf) return false;

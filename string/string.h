@@ -64,7 +64,7 @@ string_ensurez(struct string* s)
     if (s->s)
         if (s->s[s->_u._s.length - 1] == 0)
             return true;
-    if (string_putc(s, 0)) return 1;
+    if (!string_putc(s, 0)) return false;
     --s->_u._s.length;
     return true;
 }
