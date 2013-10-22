@@ -1,4 +1,13 @@
+#include <string.h>
+#include <sys/socket.h>
+#ifndef WIN32
+#include <arpa/inet.h>
+#endif
+#include <netinet/in.h>
+#include <netdb.h>
+
 #include "chaosvpn.h"
+#include "addrmask.h"
 
 struct addr_info ip;
 struct string str;
