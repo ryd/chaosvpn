@@ -93,9 +93,8 @@ fs_cp_file(const char *src, const char *dst)
 	ssize_t filesize;
 	ssize_t readbytes;
 	ssize_t writtenbytes;
-	char* buf;
+	char buf[65536];
 	bool retval = false;
-	const size_t blksize = 65536;
 
 	if (stat(src, &stat_source)) return false;
 	fh_source = open(src, O_RDONLY);
@@ -105,23 +104,17 @@ fs_cp_file(const char *src, const char *dst)
 		goto bail_out_close_source;
 	}
 	filesize = stat_source.st_size;
-	buf = malloc(blksize);
-	if (!buf) {
-		goto bail_out_close_dest;
-	}
 	while (filesize > 0) {
-		readbytes = read(fh_source, buf, blksize);
-		writtenbytes = write(fh_destination, buf, readbytes);
+		readbytes = read(fh_source, &buf, sizeof(buf));
+		writtenbytes = write(fh_destination, &buf, readbytes);
 		if (writtenbytes != readbytes) {
-			goto bail_out_free_buf;
+			goto bail_out_close_dest;
 		}
 		filesize -= writtenbytes;
 	}
 
 	retval = true;
 
-bail_out_free_buf:
-	(void)free(buf);
 bail_out_close_dest:
 	(void)close(fh_destination);
 bail_out_close_source:
