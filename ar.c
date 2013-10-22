@@ -175,7 +175,7 @@ main (int argc,char *argv[]) {
     exit(1);
   }
 
-  string_putc(&extracted, '\0'); // zero-terminate before output!
+  string_ensurez(&extracted); // zero-terminate before output!
   printf("contents: %s\n", string_get(&extracted));
 
   string_free(&archive);

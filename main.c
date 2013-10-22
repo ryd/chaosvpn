@@ -461,7 +461,7 @@ main_request_config(struct config *config, struct string *http_response)
 		log_err("chaosvpn-version missing - can't work with this config\n");
 		goto bail_out;
 	}
-	string_putc(&chaosvpn_version, '\0');
+	string_ensurez(&chaosvpn_version);
 	if (strcmp(string_get(&chaosvpn_version), "3") != 0) {
 		string_free(&chaosvpn_version);
 		log_err("unusable data-version from backend, we only support version 3!\n");
