@@ -571,7 +571,7 @@ bail_out:
 
 	// make sure result is null-terminated
 	// ar_extract() and crypto_*_decrypt() do not guarantee this!
-	string_putc(http_response, '\0');
+	string_ensurez(http_response);
 
 	crypto_finish();
 
@@ -613,9 +613,7 @@ main_free_parsed_info(struct config* config)
 static void
 main_tempsave_fetched_config(struct config *config, struct string* cnf)
 {
-	int fd;
 	static bool NOTMPFILEWARNED = false;
-	uintptr_t len;
 
 	if (str_is_empty(config->tmpconffile)) {
 		if (NOTMPFILEWARNED) return;
@@ -624,19 +622,12 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 		return;
 	}
 
-	fd = open(config->tmpconffile, O_WRONLY | O_CREAT, 0600);
-	if (fd == -1) {
-	        log_debug("Error creating $tmpconffile: %s", strerror(errno));
-	        return;
-        }
+	string_ensurez(cnf);
 
-	len = string_length(cnf) - 1;  /* not including zero byte from end */
-	if (write(fd, string_get(cnf), len) != len) {
+        if (!fs_writecontents(config->tmpconffile, string_get(cnf), string_length(cnf), 0600)) {
 		(void)unlink(config->tmpconffile);
 		log_debug("Error writing $tmpconffile: %s", strerror(errno));
 	}
-
-	close(fd);
 }
 
 static bool
@@ -665,7 +656,7 @@ main_load_previous_config(struct config *config, struct string* cnf)
 		goto bail_out;
 	}
 
-	string_putc(cnf, '\0');
+	string_ensurez(cnf);
 	retval = true;
 
 bail_out:
