@@ -170,6 +170,7 @@ main (int argc,char *argv[])
 					goto bail_out;
 				}
 			}
+
 			switch (main_fetch_and_apply_config(config, &oldconfig)) {
 			case -1:
 				log_err("Error while updating config. Not terminating tincd.");
@@ -179,9 +180,10 @@ main (int argc,char *argv[])
 				log_info("No update needed.");
 				break;
 
-			default:;
+			default:
 				log_info("Restarting tincd.");
 				handler_restart_tincd();
+				break;
 			}
 		} while (!r_sigterm && !r_sigint);
 
