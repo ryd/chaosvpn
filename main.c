@@ -236,7 +236,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 		}
 	}
 
-	if (string_equals(&http_response, oldconfig) == 0) {
+	if (string_equals(&http_response, oldconfig)) {
 		string_free(&http_response);
 		return 0;
 	}
