@@ -56,13 +56,13 @@ int fs_mkdir_p( char *path, mode_t mode )
 bool
 fs_get_cwd(struct string* s)
 {
-	char stack[128];
+	char stack[256];
 	char* path;
 	size_t bta;
 	int retval;
 
 	path = stack;
-	if (getcwd(path, 128) != NULL) {
+	if (getcwd(path, 256) != NULL) {
 		if (!string_concat(s, path)) return false;
 		if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 		return string_putc(s, '/');
@@ -74,7 +74,7 @@ fs_get_cwd(struct string* s)
 		if (getcwd(path, bta) != NULL) {
 			retval = string_concat(s, path);
 			free(path);
-			if (retval) return retval;
+			if (!retval) return false;
 			if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 			return string_putc(s, '/');
 		}
@@ -140,9 +140,15 @@ handledir(struct string* src, struct string* dst)
 	if (!stat(string_get(src), &st)) return false;
 	(void)mkdir(string_get(dst), st.st_mode & 07777);
 
-	if (chdir(string_get(src))) return false;
+	if (chdir(string_get(src))) {
+		log_warn("fs_cp_r: chdir(%s) failed: %s", string_get(src), strerror(errno));
+		return false;
+	}
 	dir = opendir(string_get(src));
-	if (!dir) return false;
+	if (!dir) {
+		log_warn("fs_cp_r: opendir(%s) failed: %s", string_get(src), strerror(errno));
+		return false;
+	}
 
 	tv[0].tv_usec = 0;
 	tv[1].tv_usec = 0;
@@ -165,7 +171,7 @@ handledir(struct string* src, struct string* dst)
 			if (!handledir(src, dst)) goto bail_out;
 #ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
-				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+				log_warn("fs_cp_r: warning: utimes failed for %s", string_get(dst));
 			}
 #endif
 			src->_u._s.length = srcdirlen;
@@ -177,10 +183,13 @@ handledir(struct string* src, struct string* dst)
 			dstdirlen = dst->_u._s.length;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
 			if (!string_ensurez(dst)) goto bail_out;
-			if (!fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
+			if (!fs_cp_file(dirent->d_name, string_get(dst))) {
+				log_warn("fs_cp_r: copy %s to %s failed: %s", dirent->d_name, string_get(dst), strerror(errno));
+				goto bail_out;
+			}
 #ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
-				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
+				log_warn("fs_cp_r: warning: utimes failed for %s", string_get(dst));
 			}
 #endif
 			dst->_u._s.length = dstdirlen;

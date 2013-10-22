@@ -658,7 +658,8 @@ main_create_backup(struct config *config)
 
 	if (!string_init(&base_backup_fn, 512, 512)) return false; /* don't goto bail_out here */
 	if (!string_concat(&base_backup_fn, config->base_path)) goto bail_out;
-	if (!string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
+	if (!string_concat(&base_backup_fn, ".old")) goto bail_out;
+	string_ensurez(&base_backup_fn);
 
 	retval = fs_cp_r(config->base_path, string_get(&base_backup_fn));
 
