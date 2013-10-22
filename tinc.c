@@ -6,6 +6,7 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "chaosvpn.h"
 
@@ -476,7 +477,12 @@ tinc_write_subnetupdown(struct config *config, bool up)
                 string_ensurez(&localpath);
 
                 if (access(string_get(&localpath), X_OK) == 0) {
-                        symlink(string_get(&localpath), string_get(&filepath));
+                        if (symlink(string_get(&localpath), string_get(&filepath)) != 0) {
+                                log_err("Symlink %s -> %s failed: %s",
+                                        string_get(&localpath),
+                                        string_get(&filepath),
+                                        strerror(errno));
+                        }
                 }
 
                 string_free(&localpath);
