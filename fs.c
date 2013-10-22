@@ -15,9 +15,6 @@
 
 #define NOERR (0)
 
-static bool fs_ensure_suffix(struct string*);
-static bool handledir(struct string*, struct string*);
-
 
 /* Note the function definition -- this CANNOT take a const char for the path!
  * Returns 0 on success, -1 on error.  errno should be set.
@@ -53,32 +50,39 @@ int fs_mkdir_p( char *path, mode_t mode )
     return err;
 }
 
+static bool
+fs_ensure_suffix(struct string* s)
+{
+	if (string_get(s)[s->_u._s.length - 1] == '/') return true;
+	if (!string_putc(s, '/')) return false;
+	return string_ensurez(s);
+}
+
 bool
 fs_get_cwd(struct string* s)
 {
-	char stack[256];
-	char* path;
+	char stackpath[256];
+	char* allocpath;
 	size_t bta;
 	int retval;
 
-	path = stack;
-	if (getcwd(path, 256) != NULL) {
-		if (!string_concat(s, path)) return false;
+	if (getcwd(stackpath, sizeof(stackpath)) != NULL) {
+		if (!string_concat(s, stackpath)) return false;
 		if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 		return string_putc(s, '/');
 	}
 	if (errno != ERANGE) return false;
 	for (bta = 4096; bta < 65536; bta+=4096) {
-		path = malloc(bta);
-		if (path == NULL) { return false; }
-		if (getcwd(path, bta) != NULL) {
-			retval = string_concat(s, path);
-			free(path);
+		allocpath = malloc(bta);
+		if (allocpath == NULL) { return false; }
+		if (getcwd(allocpath, bta) != NULL) {
+			retval = string_concat(s, allocpath);
+			free(allocpath);
 			if (!retval) return false;
 			if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 			return string_putc(s, '/');
 		}
-		free(path);
+		free(allocpath);
 		if (errno != ERANGE) return false;
 	}
 	return true;
@@ -137,7 +141,12 @@ handledir(struct string* src, struct string* dst)
 	if (!string_ensurez(src)) return false;
 	if (!string_ensurez(dst)) return false;
 
-	if (!stat(string_get(src), &st)) return false;
+	//log_debug("fs_cp_r: handledir(%s, %s)", string_get(src), string_get(dst));
+
+	if (stat(string_get(src), &st)) {
+		log_warn("fs_cp_r: stat(%s) failed: %s", string_get(src), strerror(errno));
+		return false;
+	}
 	(void)mkdir(string_get(dst), st.st_mode & 07777);
 
 	if (chdir(string_get(src))) {
@@ -161,6 +170,9 @@ handledir(struct string* src, struct string* dst)
 				(dirent->d_name[2] == 0)))) continue;
 		tv[0].tv_sec = st.st_atime;
 		tv[1].tv_sec = st.st_mtime;
+
+		//log_debug("handle %s %s", string_get(src), dirent->d_name);
+
 		if (S_ISDIR(st.st_mode)) {
 			srcdirlen = src->_u._s.length;
 			dstdirlen = dst->_u._s.length;
@@ -178,7 +190,10 @@ handledir(struct string* src, struct string* dst)
 			dst->_u._s.length = dstdirlen;
 			(void)string_ensurez(src);
 			(void)string_ensurez(dst);
-			if (chdir(string_get(src))) goto bail_out;
+			if (chdir(string_get(src))) {
+				log_warn("fs_cp_r: chdir(%s) failed: %s", string_get(src), strerror(errno));
+				goto bail_out;
+			}
 		} else if (S_ISREG(st.st_mode)) {
 			dstdirlen = dst->_u._s.length;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
@@ -203,14 +218,6 @@ handledir(struct string* src, struct string* dst)
 bail_out:
 	(void)closedir(dir);
 	return retval;
-}
-
-static bool
-fs_ensure_suffix(struct string* s)
-{
-	if (string_get(s)[s->_u._s.length - 1] == '/') return true;
-	if (!string_putc(s, '/')) return false;
-	return string_ensurez(s);
 }
 
 bool
@@ -238,7 +245,7 @@ fs_cp_r(char* src, char* dest)
 
 	/* fallthrough */
 bail_out:
-	if (string_ensurez(&curwd)) goto nrcwd_bail_out;
+	if (!string_ensurez(&curwd)) goto nrcwd_bail_out;
 	if (chdir(string_get(&curwd))) {
 		log_err("fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
