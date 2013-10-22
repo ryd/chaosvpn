@@ -6,15 +6,17 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <dirent.h>
 
 #include "chaosvpn.h"
 
 
-static int fs_ensure_suffix(struct string*);
-static int handledir(struct string*, struct string*);
-static int fs_ensure_z(struct string* s);
+#define NOERR (0)
+
+static bool fs_ensure_suffix(struct string*);
+static bool handledir(struct string*, struct string*);
 
 
 /* Note the function definition -- this CANNOT take a const char for the path!
@@ -82,7 +84,7 @@ fs_get_cwd(struct string* s)
 	return true;
 }
 
-static int
+static bool
 fs_cp_file(const char *src, const char *dst)
 {
 	int fh_source;
@@ -92,12 +94,12 @@ fs_cp_file(const char *src, const char *dst)
 	ssize_t readbytes;
 	ssize_t writtenbytes;
 	char* buf;
-	int retval = 1;
+	bool retval = false;
 	const size_t blksize = 65536;
 
-	if (stat(src, &stat_source)) return 1;
+	if (stat(src, &stat_source)) return false;
 	fh_source = open(src, O_RDONLY);
-	if (fh_source == -1) return 1;
+	if (fh_source == -1) return false;
 	fh_destination = open(dst, O_CREAT | O_WRONLY, stat_source.st_mode & 07777);
 	if (fh_destination == -1) {
 		goto bail_out_close_source;
@@ -116,7 +118,7 @@ fs_cp_file(const char *src, const char *dst)
 		filesize -= writtenbytes;
 	}
 
-	retval = 0;
+	retval = true;
 
 bail_out_free_buf:
 	(void)free(buf);
@@ -128,7 +130,7 @@ bail_out_close_source:
 	return retval;
 }
 
-static int
+static bool
 handledir(struct string* src, struct string* dst)
 {
 	DIR* dir;
@@ -137,17 +139,17 @@ handledir(struct string* src, struct string* dst)
 	size_t dstdirlen;
 	struct stat st;
 	struct timeval tv[2];
-	int retval = 1;
+	bool retval = false;
 
-	if (fs_ensure_z(src)) return 1;
-	if (fs_ensure_z(dst)) return 1;
+	if (!string_ensurez(src)) return false;
+	if (!string_ensurez(dst)) return false;
 
-	if (!stat(string_get(src), &st)) return 1;
+	if (!stat(string_get(src), &st)) return false;
 	(void)mkdir(string_get(dst), st.st_mode & 07777);
 
-	if (chdir(string_get(src))) return 1;
+	if (chdir(string_get(src))) return false;
 	dir = opendir(string_get(src));
-	if (!dir) return 1;
+	if (!dir) return false;
 
 	tv[0].tv_usec = 0;
 	tv[1].tv_usec = 0;
@@ -164,10 +166,10 @@ handledir(struct string* src, struct string* dst)
 			srcdirlen = src->_u._s.length;
 			dstdirlen = dst->_u._s.length;
 			if (!string_concat(src, dirent->d_name)) goto bail_out;
-			if (fs_ensure_suffix(src)) goto bail_out;
+			if (!fs_ensure_suffix(src)) goto bail_out;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
-			if (fs_ensure_suffix(dst)) goto bail_out;
-			if (handledir(src, dst)) goto bail_out;
+			if (!fs_ensure_suffix(dst)) goto bail_out;
+			if (!handledir(src, dst)) goto bail_out;
 #ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
 				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
@@ -175,14 +177,14 @@ handledir(struct string* src, struct string* dst)
 #endif
 			src->_u._s.length = srcdirlen;
 			dst->_u._s.length = dstdirlen;
-			(void)fs_ensure_z(src);
-			(void)fs_ensure_z(dst);
+			(void)string_ensurez(src);
+			(void)string_ensurez(dst);
 			if (chdir(string_get(src))) goto bail_out;
 		} else if (S_ISREG(st.st_mode)) {
 			dstdirlen = dst->_u._s.length;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
-			if (fs_ensure_z(dst)) goto bail_out;
-			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
+			if (!string_ensurez(dst)) goto bail_out;
+			if (!fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
 #ifndef WIN32
 			if (utimes(string_get(dst), tv)) {
 				log_warn("fs_cp_r: warning: utimes failed for %s\n", string_get(dst));
@@ -191,36 +193,31 @@ handledir(struct string* src, struct string* dst)
 			dst->_u._s.length = dstdirlen;
 		}
 	}
-	retval = 0;
+
+	retval = true;
+
 	/* fallthrough */
+
 bail_out:
 	(void)closedir(dir);
 	return retval;
 }
 
-static int
-fs_ensure_z(struct string* s)
-{
-	if (!string_putc(s, 0)) return 1;
-	--s->_u._s.length;
-	return 0;
-}
-
-static int
+static bool
 fs_ensure_suffix(struct string* s)
 {
-	if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
-	if (!string_putc(s, '/')) return 1;
-	return fs_ensure_z(s);
+	if (string_get(s)[s->_u._s.length - 1] == '/') return true;
+	if (!string_putc(s, '/')) return false;
+	return string_ensurez(s);
 }
 
-int
+bool
 fs_cp_r(char* src, char* dest)
 {
 	struct string source;
 	struct string destination;
 	struct string curwd;
-	int retval = 1;
+	bool retval = false;
 
 	(void)string_init(&source, 512, 512);
 	(void)string_init(&destination, 512, 512);
@@ -229,17 +226,17 @@ fs_cp_r(char* src, char* dest)
 	if (!fs_get_cwd(&curwd)) goto nrcwd_bail_out;
 	if (*src != '/') if (!fs_get_cwd(&source)) goto bail_out;
 	if (!string_concat(&source, src)) goto bail_out;
-	if (fs_ensure_suffix(&source)) goto bail_out;
+	if (!fs_ensure_suffix(&source)) goto bail_out;
 	if (*dest != '/') if (!fs_get_cwd(&destination)) goto bail_out;
 	if (!string_concat(&destination, dest)) goto bail_out;
-	if (fs_ensure_suffix(&destination)) goto bail_out;
+	if (!fs_ensure_suffix(&destination)) goto bail_out;
 
 
 	retval = handledir(&source, &destination);
 
 	/* fallthrough */
 bail_out:
-	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
+	if (string_ensurez(&curwd)) goto nrcwd_bail_out;
 	if (chdir(string_get(&curwd))) {
 		log_err("fs_cp_r: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
@@ -253,7 +250,7 @@ nrcwd_bail_out:
 
 /* unlinks all regular files in a specified directory */
 /* does not use recursion! does not touch symlinks! */
-int
+bool
 fs_empty_dir(char* dest)
 {
 	struct string dst;
@@ -262,7 +259,7 @@ fs_empty_dir(char* dest)
 	DIR* dir;
 	struct dirent* dirent;
 	struct stat st;
-	int retval = 1;
+	bool retval = false;
 
 	(void)string_init(&dst, 512, 512);
 	(void)string_init(&curwd, 512, 512);
@@ -271,15 +268,15 @@ fs_empty_dir(char* dest)
 	if (*dest != '/') if (!fs_get_cwd(&dst)) goto bail_out;
 	if (!string_concat(&dst, dest)) goto bail_out;
 
-	if (fs_ensure_z(&dst)) goto bail_out;
+	if (!string_ensurez(&dst)) goto bail_out;
 
 	if (stat(string_get(&dst), &st)) {
-		retval = 0; /* non-existance is not an error reason! */
+		retval = true; /* non-existance is not an error reason! */
 		goto bail_out;
 	}
 	if (!S_ISDIR(st.st_mode)) goto bail_out;
 
-	if (fs_ensure_suffix(&dst)) goto bail_out;
+	if (!fs_ensure_suffix(&dst)) goto bail_out;
 	if (chdir(string_get(&dst))) goto bail_out;
 
 	dir = opendir(string_get(&dst));
@@ -302,14 +299,14 @@ fs_empty_dir(char* dest)
 		}
 	}
 
-	retval = 0;
+	retval = true;
 
 	/* fallthrough */
 bail_out_closedir:
 	(void)closedir(dir);
 
 bail_out:
-	if (fs_ensure_z(&curwd)) goto nrcwd_bail_out;
+	if (!string_ensurez(&curwd)) goto nrcwd_bail_out;
 	if (chdir(string_get(&curwd))) {
 		log_err("fs_empty_dir: couldn't restore old cwd %s\n", string_get(&curwd));
 	}
@@ -320,7 +317,7 @@ nrcwd_bail_out:
 	return retval;
 }
 
-int
+bool
 fs_writecontents(const char *fn,
                  const char *cnt,
                  const size_t len,
@@ -330,17 +327,17 @@ fs_writecontents(const char *fn,
 	size_t bw;
 	fh = open(fn, O_CREAT | O_WRONLY | O_TRUNC, mode);
 	if (fh == -1) {
-		return 1;
+		return false;
 	}
 	/* ABABAB: should throw proper error here */
 	bw = write(fh, cnt, len);
 	(void)close(fh);
-	if (len != bw) return 1;
-    return 0;
+	if (len != bw) return false;
+	return true;
 }
 
 
-int
+bool
 fs_writecontents_safe(const char *dir,
                       const char *fn,
                       const char *cnt,
@@ -348,7 +345,7 @@ fs_writecontents_safe(const char *dir,
                       const int mode)
 {
 	char *buf = NULL, *ptr = NULL;
-	int res;
+	bool res;
 	unsigned int dlen, reqlen;
 
 	dlen = strlen(dir) + 1;
@@ -369,22 +366,22 @@ fs_writecontents_safe(const char *dir,
 
 /* read file into struct string */
 /* note: not NULL terminated! binary clean */
-int
+bool
 fs_read_file(struct string *buffer, char *fname)
 {
-	int retval = 1;
+	bool retval = false;
 	FILE *fp;
 	char chunk[4096];
 	size_t read_size;
 
 	fp = fopen(fname, "r");
-	if (fp==NULL) return 1;
+	if (fp==NULL) return false;
 
 	while ((read_size = fread(&chunk, 1, sizeof(chunk), fp)) > 0) {
 		if (!string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 
-	retval = 0;
+	retval = true;
 
 bail_out:
 	fclose(fp);
@@ -393,10 +390,10 @@ bail_out:
 
 /* read everything from fd into struct string */
 /* note: not NULL terminated! binary clean */
-int
+bool
 fs_read_fd(struct string *buffer, FILE *fd)
 {
-	int retval = 1;
+	bool retval = false;
 	char chunk[4096];
 	ssize_t read_size;
 	
@@ -404,17 +401,17 @@ fs_read_fd(struct string *buffer, FILE *fd)
 		if (!string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 	
-	retval = 0;
+	retval = true;
 
 bail_out:
 	return retval;
 }
 
 /* execute cmd, return stdout output in struct string *outputbuffer */
-int
+bool
 fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 {
-	int retval = 1;
+	bool retval = false;
 	FILE *pfd;
 
 	pfd = popen(cmd, "r");
@@ -424,7 +421,6 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 		goto bail_out;
 	}
 	
-
 	retval = fs_read_fd(outputbuffer, pfd);
 	fclose(pfd);
 	

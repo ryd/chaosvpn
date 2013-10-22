@@ -382,7 +382,7 @@ config_init(struct config *config)
 	if (!string_concat_sprintf(&privkey_name, "%s/rsa_key.priv", config->base_path)) { return false; }
 
 	string_free(&config->privkey); /* just to be sure */
-	if (fs_read_file(&config->privkey, string_get(&privkey_name))) {
+	if (!fs_read_file(&config->privkey, string_get(&privkey_name))) {
 		log_err("error: can't read private rsa key at %s\n", string_get(&privkey_name));
 		string_free(&privkey_name);
 		return false;

@@ -66,8 +66,6 @@
 #endif
 
 
-#define NOERR   (0)
-
 extern bool ar_is_ar_file(struct string *archive);
 extern bool ar_extract(struct string *archive, char *membername, struct string *result);
 
@@ -237,16 +235,16 @@ extern bool daemon_sigchld(struct daemon_info*, unsigned int waitbeforerestart);
 
 
 
-extern int fs_writecontents_safe(const char*, const char*, const char*, const int, const int);
-extern int fs_writecontents(const char * fn, const char * cnt, const size_t len, const int mode);
+extern bool fs_writecontents_safe(const char*, const char*, const char*, const int, const int);
+extern bool fs_writecontents(const char * fn, const char * cnt, const size_t len, const int mode);
 extern int fs_mkdir_p(char *, mode_t);
-extern int fs_cp_r(char*, char*);
-extern int fs_empty_dir(char*);
+extern bool fs_cp_r(char*, char*);
+extern bool fs_empty_dir(char*);
 extern bool fs_get_cwd(struct string*);
-extern int fs_read_file(struct string *buffer, char *fname);
-extern int fs_read_fd(struct string *buffer, FILE *fd);
+extern bool fs_read_file(struct string *buffer, char *fname);
+extern bool fs_read_fd(struct string *buffer, FILE *fd);
 
-extern int fs_backticks_exec(const char *cmd, struct string *outputbuffer);
+extern bool fs_backticks_exec(const char *cmd, struct string *outputbuffer);
 
 #ifdef WIN32
 #define LOG_ERR 1

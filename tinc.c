@@ -100,7 +100,7 @@ tinc_write_hosts(struct config *config)
 			return false;
 		}
 
-		if (fs_writecontents_safe(string_get(&hostfilepath), 
+		if (!fs_writecontents_safe(string_get(&hostfilepath), 
 				i->peer_config->name, string_get(&peer_config),
 				string_length(&peer_config), 0600)) {
 			log_err("unable to write host config file %s/%s.", string_get(&hostfilepath), i->peer_config->name);
@@ -224,7 +224,7 @@ tinc_write_config(struct config *config)
 	string_concat(&configfilename, "/tinc.conf");
 	string_ensurez(&configfilename);
 
-	if (fs_writecontents(string_get(&configfilename), string_get(&buffer),
+	if (!fs_writecontents(string_get(&configfilename), string_get(&buffer),
 			string_length(&buffer), 0600)) {
 		log_err("unable to write tinc config file!");
 		string_free(&buffer);
@@ -425,7 +425,7 @@ tinc_write_updown(struct config *config, bool up)
 		string_concat(&filepath, "/tinc-down" SCRIPT);
         string_ensurez(&filepath);
 
-	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
+	if (!fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
 		log_err("unable to write to %s!", string_get(&filepath));
 		res = false;
 	}
@@ -604,7 +604,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 	
 	unlink(string_get(&filepath)); /* unlink first, may be a symlink */
 
-	if (fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
+	if (!fs_writecontents(string_get(&filepath), string_get(&buffer), string_length(&buffer), 0700)) {
 		log_err("unable to write to %s!\n", string_get(&filepath));
 		res = false;
 	}
@@ -667,7 +667,7 @@ tinc_get_pid(struct config *config)
 	struct string pid_text;
 	pid_t pid = 0;
 	char cmd[1024];
-	int res;
+	bool res;
 
 	string_init(&pid_text, 256, 128);
 
@@ -688,7 +688,7 @@ tinc_get_pid(struct config *config)
 			goto bail_out;
 		}
 
-		if (fs_read_file(&pid_text, config->tincd_pidfile)) {
+		if (!fs_read_file(&pid_text, config->tincd_pidfile)) {
 			log_info("Notice: unable to open pidfile '%s'; assuming an old tincd is not running", config->tincd_pidfile);
 			goto bail_out;
 		}

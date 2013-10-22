@@ -683,7 +683,7 @@ main_create_backup(struct config *config)
 	if (!string_concat(&base_backup_fn, config->base_path)) goto bail_out;
 	if (!string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
 
-	retval = !fs_cp_r(config->base_path, string_get(&base_backup_fn));
+	retval = fs_cp_r(config->base_path, string_get(&base_backup_fn));
 
 	/* fall through */
 bail_out:
@@ -701,7 +701,7 @@ main_cleanup_hosts_subdir(struct config *config)
 	if (!string_concat(&hosts_dir, config->base_path)) goto bail_out;
 	if (!string_concat(&hosts_dir, "/hosts")) goto bail_out;
 
-	retval = !fs_empty_dir(string_get(&hosts_dir));
+	retval = fs_empty_dir(string_get(&hosts_dir));
 
 	/* fall through */
 bail_out:
