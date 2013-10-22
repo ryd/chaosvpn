@@ -381,7 +381,8 @@ fs_read_file(struct string *buffer, char *fname)
 		if (!string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 
-	retval = true;
+	if (!ferror(fp))
+		retval = true;
 
 bail_out:
 	fclose(fp);

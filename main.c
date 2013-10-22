@@ -633,34 +633,20 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 static bool
 main_load_previous_config(struct config *config, struct string* cnf)
 {
-	int fd;
-	struct stat sb;
-	intptr_t readbytes;
 	bool retval = false;
 
 	if (str_is_empty(config->tmpconffile)) return false;
 
-	fd = open(config->tmpconffile, O_RDONLY);
-	if (fd == -1) return false;
-
-	if (fstat(fd, &sb)) goto bail_out;
-	if (!string_read(cnf, fd, sb.st_size, &readbytes)) {
-		log_err("Error: not enough memory to read stored config file.");
+	if (!fs_read_file(cnf, config->tmpconffile)) {
+		log_err("Error: unable to read stored config file: %s", strerror(errno));
 		string_clear(cnf);
 		goto bail_out;
 	}
 
-	if (readbytes != sb.st_size) {
-		log_err("Error: unable to fully read stored config file.");
-		string_clear(cnf);
-		goto bail_out;
-	}
-
-	string_ensurez(cnf);
 	retval = true;
 
 bail_out:
-	close(fd);
+	string_ensurez(cnf);
 	return retval;
 }
 
