@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "string.h"
 
-int
+bool
 string_init(struct string* s, uintptr_t size, uintptr_t growby)
 {
     s->_u._s.length = 0;
@@ -15,5 +16,5 @@ string_init(struct string* s, uintptr_t size, uintptr_t growby)
         s->_u._s.size = size;
         s->_u._s.growby = growby;
     }
-    return 0;
+    return true;
 }

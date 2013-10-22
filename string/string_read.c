@@ -1,11 +1,12 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include "string.h"
 
-int
+bool
 string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_read)
 {
     uintptr_t growby;
@@ -18,7 +19,7 @@ string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_re
             if ((s->_u._s.size + growby) < s->_u._s.size) return 1;
         }
         buf = realloc(s->s, s->_u._s.size + growby);
-        if (!buf) return 1;
+        if (!buf) return false;
         memset(buf+s->_u._s.size, 0, growby);
         s->_u._s.size += growby;
         s->s = buf;
@@ -28,5 +29,5 @@ string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_re
 
     if (*bytes_read > 0)
         s->_u._s.length += *bytes_read;
-    return 0;
+    return true;
 }

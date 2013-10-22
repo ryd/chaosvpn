@@ -133,7 +133,7 @@ ar_extract(struct string *archive, char *membername, struct string *result)
     
     if (ar_compare_name(arh->ar_name, sizeof(arh->ar_name), membername)) {
       // found!
-      if (string_concatb(result, pos, memberlen)) {
+      if (!string_concatb(result, pos, memberlen)) {
         log_warn("ar_extract: extract copy failed\n");
         return false;
       }

@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "string.h"
 
 #define STRING_CFS_SIZE 32
 
-static int
+static bool
 defprintf(struct string* s, const char const* fmt, va_list exactlyonearg)
 {
     char buf[4096];
@@ -17,7 +18,7 @@ defprintf(struct string* s, const char const* fmt, va_list exactlyonearg)
     return string_concatb(s, buf, len);
 }
 
-int
+bool
 string_concat_sprintf(struct string* s, const char *msg, ...)
 {
     va_list args;
@@ -43,17 +44,17 @@ string_concat_sprintf(struct string* s, const char *msg, ...)
 
             case 's':
                 a_s = va_arg(args, char*);
-                if (string_concat(s, a_s)) return 1;
+                if (!string_concat(s, a_s)) return false;
                 break;
 
             case 'S':
                 a_S = va_arg(args, struct string*);
-                if (string_concats(s, a_S)) return 1;
+                if (!string_concats(s, a_S)) return false;
                 break;
 
             case 'd':
                 a_i = va_arg(args, int);
-                if (string_putint(s, a_i)) return 1;
+                if (!string_putint(s, a_i)) return false;
                 break;
 
             case '0' ... '9':
@@ -77,17 +78,18 @@ string_concat_sprintf(struct string* s, const char *msg, ...)
                 /* guaranteed to have two bytes left */
                 cfs[cfsptr++] = curchar;
                 cfs[cfsptr] = 0;
-                if (defprintf(s, cfs, args)) return 1;
+                if (!defprintf(s, cfs, args)) return false;
             }
         } else {
-            if (string_putc(s, *msg)) return 1;
+            if (!string_putc(s, *msg)) return false;
         }
     }
+
 finished:
     va_end(args);
 
-    if (string_putc(s, 0)) return 1;
+    if (!string_putc(s, 0)) return false;
     --s->_u._s.length;
 
-    return 0;
+    return true;
 }

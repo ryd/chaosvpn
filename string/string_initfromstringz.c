@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "string.h"
 
-int
+bool
 string_initfromstringz(struct string* s, const char *is)
 {
     uintptr_t l;

@@ -379,7 +379,7 @@ config_init(struct config *config)
 	}
 
 	string_init(&privkey_name, 1024, 512);
-	if (string_concat_sprintf(&privkey_name, "%s/rsa_key.priv", config->base_path)) { return 1; }
+	if (!string_concat_sprintf(&privkey_name, "%s/rsa_key.priv", config->base_path)) { return false; }
 
 	string_free(&config->privkey); /* just to be sure */
 	if (fs_read_file(&config->privkey, string_get(&privkey_name))) {

@@ -11,10 +11,10 @@
 
 static bool tinc_add_subnet(struct string*, struct list_head*);
 
-#define CONCAT(buffer, value)	if (string_concat(buffer, value)) return false
-#define CONCAT_F(buffer, format, value)	if (string_concat_sprintf(buffer, format, value)) return false
-#define CONCAT_DF(buffer, format, value, default_value)	if (string_concat_sprintf(buffer, format, str_is_nonempty(value) ? value : default_value)) return false
-#define CONCAT_YN(buffer, format, value)    if (string_concat_sprintf(buffer, format, (value ? "yes" : "no"))) return false
+#define CONCAT(buffer, value)	if (!string_concat(buffer, value)) return false
+#define CONCAT_F(buffer, format, value)	if (!string_concat_sprintf(buffer, format, value)) return false
+#define CONCAT_DF(buffer, format, value, default_value)	if (!string_concat_sprintf(buffer, format, str_is_nonempty(value) ? value : default_value)) return false
+#define CONCAT_YN(buffer, format, value)    if (!string_concat_sprintf(buffer, format, (value ? "yes" : "no"))) return false
 #define CONCAT_SN(buffer, value)	if (!tinc_add_subnet(buffer, value)) return false
 
 static bool
@@ -93,7 +93,7 @@ tinc_write_hosts(struct config *config)
 		log_debug("Writing config file for peer %s", i->peer_config->name);
 		(void)fflush(stdout);
 
-		if (string_init(&peer_config, 2048, 512)) return false;
+		if (!string_init(&peer_config, 2048, 512)) return false;
 
 		if (!tinc_generate_peer_config(config, &peer_config, i->peer_config)) {
 			string_free(&peer_config);
@@ -544,7 +544,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 				CONCAT(&buffer, "if [ -n \"$excluded\" ] ; then\n");
 				CONCAT(&buffer, "\t");
-				if (string_concat_sprintf(&buffer, logger, "ignore", " (excluded)")) return false;
+				if (!string_concat_sprintf(&buffer, logger, "ignore", " (excluded)")) return false;
 				CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 				CONCAT(&buffer, "\texit 0\n");
 				CONCAT(&buffer, "fi\n\n");
@@ -554,7 +554,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
 			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
 			CONCAT(&buffer, "\t");
-			if (string_concat_sprintf(&buffer, logger, "ipv4", "")) return false;
+			if (!string_concat_sprintf(&buffer, logger, "ipv4", "")) return false;
 			
 			CONCAT(&buffer, "\t");
 			CONCAT_F(&buffer, routecmd, "$SUBNET");
@@ -566,7 +566,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		} else {
 			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
 			CONCAT(&buffer, "\t");
-			if (string_concat_sprintf(&buffer, logger, "ipv4", " (disabled)")) return false;
+			if (!string_concat_sprintf(&buffer, logger, "ipv4", " (disabled)")) return false;
 			CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 			CONCAT(&buffer, "\texit 0\n");
 
@@ -576,7 +576,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd6)) {
 			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
 			CONCAT(&buffer, "\t");
-			if (string_concat_sprintf(&buffer, logger, "ipv6", "")) return false;
+			if (!string_concat_sprintf(&buffer, logger, "ipv6", "")) return false;
 
 			CONCAT(&buffer, "\t");
 			CONCAT_F(&buffer, routecmd6, "$SUBNET");
@@ -588,14 +588,14 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		} else {
 			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
 			CONCAT(&buffer, "\t");
-			if (string_concat_sprintf(&buffer, logger, "ipv6", " (disabled)")) return false;
+			if (!string_concat_sprintf(&buffer, logger, "ipv6", " (disabled)")) return false;
 			CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 			CONCAT(&buffer, "\texit 0\n");
 
 			CONCAT(&buffer, "fi\n");
 		}
 
-		if (string_concat_sprintf(&buffer, logger, "unknown", " (ignored)")) return false;
+		if (!string_concat_sprintf(&buffer, logger, "unknown", " (ignored)")) return false;
 		CONCAT(&buffer, "[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
 		CONCAT(&buffer, "exit 0\n\n");
 	}

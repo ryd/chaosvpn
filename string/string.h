@@ -25,19 +25,19 @@ struct string {
 };
 
 void string_clear(struct string*);
-int string_concat(struct string*, const char*);
-int string_concatb(struct string*, const char*, uintptr_t);
-int string_concat_sprintf(struct string* s, const char *msg, ...);
-int string_putc(struct string*, char);
-int string_putint(struct string*, int);
+bool string_concat(struct string*, const char*);
+bool string_concatb(struct string*, const char*, uintptr_t);
+bool string_concat_sprintf(struct string* s, const char *msg, ...);
+bool string_putc(struct string*, char);
+bool string_putint(struct string*, int);
 void string_free(struct string*);
 char* string_get(struct string*);
-int string_init(struct string*, uintptr_t, uintptr_t);
+bool string_init(struct string*, uintptr_t, uintptr_t);
 void string_move(struct string*, struct string*);
 bool string_equals(struct string*, struct string*);
 void string_lazyinit(struct string*, uintptr_t);
-int string_initfromstringz(struct string*, const char *);
-int string_read(struct string*, const int, const size_t, intptr_t*);
+bool string_initfromstringz(struct string*, const char *);
+bool string_read(struct string*, const int, const size_t, intptr_t*);
 void string_hexdump(struct string*, const void *, const size_t);
 void debug_hexdump(const void *, const size_t);
 
@@ -52,21 +52,21 @@ static inline uintptr_t string_size(struct string *s) {
     return s->_u._s.size;
 }
 
-static inline int
+static inline bool
 string_concats(struct string* s, struct string* ss)
 {
     return string_concatb(s, ss->s, ss->_u._s.length);
 }
 
-static inline int
+static inline bool
 string_ensurez(struct string* s)
 {
     if (s->s)
         if (s->s[s->_u._s.length - 1] == 0)
-            return 0;
+            return true;
     if (string_putc(s, 0)) return 1;
     --s->_u._s.length;
-    return 0;
+    return true;
 }
 
 static inline void

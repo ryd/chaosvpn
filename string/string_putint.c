@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -7,7 +8,7 @@
 #define MAXSTRINGLEN 32
 
 // ugly
-int string_putint(struct string* s, int i)
+bool string_putint(struct string* s, int i)
 {
     char buf[MAXSTRINGLEN];
     int len;

@@ -71,7 +71,7 @@ http_get(struct string* url, struct string* buffer,
     hints.ai_flags = 0;
     hints.ai_protocol = 0;
 
-    if (string_ensurez(&hostname)) {
+    if (!string_ensurez(&hostname)) {
         retval = HTTP_ENOMEM;
         goto bail_out_free_hostname;
     }
@@ -110,15 +110,15 @@ http_get(struct string* url, struct string* buffer,
             retval = HTTP_ENOMEM;
             goto bail_out;
         }
-        if (string_concat_sprintf(&request, "If-Modified-Since: %S\r\n", &ims)) {
+        if (!string_concat_sprintf(&request, "If-Modified-Since: %S\r\n", &ims)) {
             string_free(&ims);
             retval = HTTP_ENOMEM;
             goto bail_out;
         }
         string_free(&ims);
     }
-    if (string_concat(&request, "Connection: close\r\n")) { retval=HTTP_ENOMEM; goto bail_out; };
-    if (string_concat(&request, "\r\n")) { retval=HTTP_ENOMEM; goto bail_out; }
+    if (!string_concat(&request, "Connection: close\r\n")) { retval=HTTP_ENOMEM; goto bail_out; };
+    if (!string_concat(&request, "\r\n")) { retval=HTTP_ENOMEM; goto bail_out; }
 
     if (sendall(sfd, request.s, request._u._s.length, 0)) {
         retval = HTTP_ENETERR;
@@ -167,7 +167,7 @@ httprecv(int sfd, struct string* buf, int* httpres)
         for (i = 0; i < bptr; i++) {
             if (b[i] == '\n') {
                 string_clear(&oneline);
-                if (string_concatb(&oneline, b, i)) { retval=HTTP_ENOMEM; goto bail_out; }
+                if (!string_concatb(&oneline, b, i)) { retval=HTTP_ENOMEM; goto bail_out; }
                 if (oneline.s[oneline._u._s.length - 1] == '\r') --oneline._u._s.length;
                 if (++i >= bptr) { retval=HTTP_ESRVERR; goto bail_out; }
                 if (bptr != i) {
@@ -195,12 +195,12 @@ finished:
             }
         }
     }
-    if (string_concatb(buf, b + bl, bptr - bl)) { retval=HTTP_ENOMEM; goto bail_out; }
+    if (!string_concatb(buf, b + bl, bptr - bl)) { retval=HTTP_ENOMEM; goto bail_out; }
     while(1) {
         bl = recv(sfd, b, BUFSIZE, 0);
         if (bl == 0) break;
         if (bl < 0) { retval=HTTP_ENETERR; goto bail_out; }
-        if (string_concatb(buf, b, bl)) { retval=HTTP_ENOMEM; goto bail_out; }
+        if (!string_concatb(buf, b, bl)) { retval=HTTP_ENOMEM; goto bail_out; }
     }
 
     if (retval == HTTP_EOK) if (*httpres != 200) retval = HTTP_ESRVERR;
@@ -223,7 +223,7 @@ handle_header(struct string* s, int* httpres)
     l = string_length(s);
     if (l < 4) return HTTP_ENETERR;
     for (i = 0; i < l; i++) if (b[i] == 0) return HTTP_ENETERR;
-    if (string_putc(s, 0)) return HTTP_ENOMEM;
+    if (!string_putc(s, 0)) return HTTP_ENOMEM;
     if (memcmp(b, "HTTP", 4)) return HTTP_ENETERR;
     if ((p = strchr(b, ' ')) == NULL) return HTTP_ENETERR;
     if ((p2 = strchr(p + 1, ' ')) == NULL) return HTTP_ENETERR;
@@ -256,5 +256,5 @@ epoch2http(struct string* s, time_t time)
 
     tm = gmtime(&time);
     strftime(buf, 512, "%a, %d %b %Y %H:%M:%S GMT", tm);
-    return(string_concat(s, buf));
+    return(!string_concat(s, buf));
 }

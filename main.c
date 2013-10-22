@@ -653,7 +653,7 @@ main_load_previous_config(struct config *config, struct string* cnf)
 	if (fd == -1) return false;
 
 	if (fstat(fd, &sb)) goto bail_out;
-	if (string_read(cnf, fd, sb.st_size, &readbytes)) {
+	if (!string_read(cnf, fd, sb.st_size, &readbytes)) {
 		log_err("Error: not enough memory to read stored config file.");
 		string_clear(cnf);
 		goto bail_out;
@@ -679,9 +679,9 @@ main_create_backup(struct config *config)
 	int retval = false;
 	struct string base_backup_fn;
 
-	if (string_init(&base_backup_fn, 512, 512)) return false; /* don't goto bail_out here */
-	if (string_concat(&base_backup_fn, config->base_path)) goto bail_out;
-	if (string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
+	if (!string_init(&base_backup_fn, 512, 512)) return false; /* don't goto bail_out here */
+	if (!string_concat(&base_backup_fn, config->base_path)) goto bail_out;
+	if (!string_concatb(&base_backup_fn, ".old", 5)) goto bail_out;
 
 	retval = !fs_cp_r(config->base_path, string_get(&base_backup_fn));
 
@@ -697,9 +697,9 @@ main_cleanup_hosts_subdir(struct config *config)
 	bool retval = false;
 	struct string hosts_dir;
 
-	if (string_init(&hosts_dir, 512, 512)) return false; /* don't goto bail_out here */
-	if (string_concat(&hosts_dir, config->base_path)) goto bail_out;
-	if (string_concat(&hosts_dir, "/hosts")) goto bail_out;
+	if (!string_init(&hosts_dir, 512, 512)) return false; /* don't goto bail_out here */
+	if (!string_concat(&hosts_dir, config->base_path)) goto bail_out;
+	if (!string_concat(&hosts_dir, "/hosts")) goto bail_out;
 
 	retval = !fs_empty_dir(string_get(&hosts_dir));
 

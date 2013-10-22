@@ -51,7 +51,7 @@ int fs_mkdir_p( char *path, mode_t mode )
     return err;
 }
 
-int
+bool
 fs_get_cwd(struct string* s)
 {
 	char stack[128];
@@ -61,25 +61,25 @@ fs_get_cwd(struct string* s)
 
 	path = stack;
 	if (getcwd(path, 128) != NULL) {
-		if (string_concat(s, path)) return 1;
-		if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
+		if (!string_concat(s, path)) return false;
+		if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 		return string_putc(s, '/');
 	}
-	if (errno != ERANGE) return 1;
+	if (errno != ERANGE) return false;
 	for (bta = 4096; bta < 65536; bta+=4096) {
 		path = malloc(bta);
-		if (path == NULL) { return 1; }
+		if (path == NULL) { return false; }
 		if (getcwd(path, bta) != NULL) {
 			retval = string_concat(s, path);
 			free(path);
 			if (retval) return retval;
-			if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
+			if (string_get(s)[s->_u._s.length - 1] == '/') return true;
 			return string_putc(s, '/');
 		}
 		free(path);
-		if (errno != ERANGE) return 1;
+		if (errno != ERANGE) return false;
 	}
-	return 0;
+	return true;
 }
 
 static int
@@ -142,7 +142,7 @@ handledir(struct string* src, struct string* dst)
 	if (fs_ensure_z(src)) return 1;
 	if (fs_ensure_z(dst)) return 1;
 
-	if (stat(string_get(src), &st)) return 1;
+	if (!stat(string_get(src), &st)) return 1;
 	(void)mkdir(string_get(dst), st.st_mode & 07777);
 
 	if (chdir(string_get(src))) return 1;
@@ -163,9 +163,9 @@ handledir(struct string* src, struct string* dst)
 		if (S_ISDIR(st.st_mode)) {
 			srcdirlen = src->_u._s.length;
 			dstdirlen = dst->_u._s.length;
-			if (string_concat(src, dirent->d_name)) goto bail_out;
+			if (!string_concat(src, dirent->d_name)) goto bail_out;
 			if (fs_ensure_suffix(src)) goto bail_out;
-			if (string_concat(dst, dirent->d_name)) goto bail_out;
+			if (!string_concat(dst, dirent->d_name)) goto bail_out;
 			if (fs_ensure_suffix(dst)) goto bail_out;
 			if (handledir(src, dst)) goto bail_out;
 #ifndef WIN32
@@ -180,7 +180,7 @@ handledir(struct string* src, struct string* dst)
 			if (chdir(string_get(src))) goto bail_out;
 		} else if (S_ISREG(st.st_mode)) {
 			dstdirlen = dst->_u._s.length;
-			if (string_concat(dst, dirent->d_name)) goto bail_out;
+			if (!string_concat(dst, dirent->d_name)) goto bail_out;
 			if (fs_ensure_z(dst)) goto bail_out;
 			if (fs_cp_file(dirent->d_name, string_get(dst))) goto bail_out;
 #ifndef WIN32
@@ -201,7 +201,7 @@ bail_out:
 static int
 fs_ensure_z(struct string* s)
 {
-	if (string_putc(s, 0)) return 1;
+	if (!string_putc(s, 0)) return 1;
 	--s->_u._s.length;
 	return 0;
 }
@@ -210,7 +210,7 @@ static int
 fs_ensure_suffix(struct string* s)
 {
 	if (string_get(s)[s->_u._s.length - 1] == '/') return 0;
-	if (string_putc(s, '/')) return 1;
+	if (!string_putc(s, '/')) return 1;
 	return fs_ensure_z(s);
 }
 
@@ -226,12 +226,12 @@ fs_cp_r(char* src, char* dest)
 	(void)string_init(&destination, 512, 512);
 	(void)string_init(&curwd, 512, 512);
 
-	if (fs_get_cwd(&curwd)) goto nrcwd_bail_out;
-	if (*src != '/') if (fs_get_cwd(&source)) goto bail_out;
-	if (string_concat(&source, src)) goto bail_out;
+	if (!fs_get_cwd(&curwd)) goto nrcwd_bail_out;
+	if (*src != '/') if (!fs_get_cwd(&source)) goto bail_out;
+	if (!string_concat(&source, src)) goto bail_out;
 	if (fs_ensure_suffix(&source)) goto bail_out;
-	if (*dest != '/') if (fs_get_cwd(&destination)) goto bail_out;
-	if (string_concat(&destination, dest)) goto bail_out;
+	if (*dest != '/') if (!fs_get_cwd(&destination)) goto bail_out;
+	if (!string_concat(&destination, dest)) goto bail_out;
 	if (fs_ensure_suffix(&destination)) goto bail_out;
 
 
@@ -267,9 +267,9 @@ fs_empty_dir(char* dest)
 	(void)string_init(&dst, 512, 512);
 	(void)string_init(&curwd, 512, 512);
 
-	if (fs_get_cwd(&curwd)) goto nrcwd_bail_out;
-	if (*dest != '/') if (fs_get_cwd(&dst)) goto bail_out;
-	if (string_concat(&dst, dest)) goto bail_out;
+	if (!fs_get_cwd(&curwd)) goto nrcwd_bail_out;
+	if (*dest != '/') if (!fs_get_cwd(&dst)) goto bail_out;
+	if (!string_concat(&dst, dest)) goto bail_out;
 
 	if (fs_ensure_z(&dst)) goto bail_out;
 
@@ -294,7 +294,7 @@ fs_empty_dir(char* dest)
 
 		if (S_ISREG(st.st_mode)) {
 			dstdirlen = dst._u._s.length;
-			if (string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
+			if (!string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
 			if (unlink(string_get(&dst))) {
 				log_err("fs_empty_dir: failed to unlink %s\n", string_get(&dst));
 			}
@@ -381,7 +381,7 @@ fs_read_file(struct string *buffer, char *fname)
 	if (fp==NULL) return 1;
 
 	while ((read_size = fread(&chunk, 1, sizeof(chunk), fp)) > 0) {
-		if (string_concatb(buffer, chunk, read_size)) goto bail_out;
+		if (!string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 
 	retval = 0;
@@ -401,7 +401,7 @@ fs_read_fd(struct string *buffer, FILE *fd)
 	ssize_t read_size;
 	
 	while ((read_size = fread(&chunk, 1, sizeof(chunk), fd)) > 0) {
-		if (string_concatb(buffer, chunk, read_size)) goto bail_out;
+		if (!string_concatb(buffer, chunk, read_size)) goto bail_out;
 	}
 	
 	retval = 0;

@@ -75,9 +75,9 @@ bool addrmask_parse(struct addr_info *ip, const char *addressmask)
     goto out;
   memset(ip, 0, sizeof(struct addr_info));
 
-  if (string_initfromstringz(&patternstruct, addressmask))
+  if (!string_initfromstringz(&patternstruct, addressmask))
     goto out;
-  if (string_putc(&patternstruct, 0))
+  if (!string_putc(&patternstruct, 0))
     goto out;
   pattern = string_get(&patternstruct);
 
@@ -281,12 +281,12 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   if (res != 0)
     return false;
 
-  if (string_concat(target, buffer))
+  if (!string_concat(target, buffer))
     return false;
-  if (string_putc(target, '/'))
+  if (!string_putc(target, '/'))
     return false;
   
-  if (string_putint(target, addr->mask_shift))
+  if (!string_putint(target, addr->mask_shift))
     return false;
 
   return true;
