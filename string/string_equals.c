@@ -10,12 +10,14 @@
 int
 string_equals(struct string* s1, struct string* s2)
 {
-    uintptr_t i;
-
     if (s1 == s2) return 0;
     if (s1->s == s2->s) return 0;
     if (s1->_u._s.length != s2->_u._s.length) return 1;
-    
-    for (i = 0; i < s1->_u._s.length; i++) if (s1->s[i] != s2->s[i]) return 1;
+
+    if (s1->s == NULL || s2->s == NULL)
+        return 1;
+
+    if (memcmp(string_get(s1), string_get(s2), s1->_u._s.length) != 0)
+        return 1;
     return 0;
 }
