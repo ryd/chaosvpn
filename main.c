@@ -176,7 +176,7 @@ main (int argc,char *argv[])
 				log_err("Error while updating config. Not terminating tincd.");
 				break;
 
-			case 1:
+			case 0:
 				log_info("No update needed.");
 				break;
 
@@ -208,6 +208,12 @@ main_updated(struct config *config)
 
 static int
 main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
+/*
+ * Returns:
+ * -1: Error
+ *  0: Not changed
+ *  1: Everything ok
+ */
 {
 	int err;
 	struct string http_response;
@@ -232,7 +238,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	if (string_equals(&http_response, oldconfig) == 0) {
 		string_free(&http_response);
-		return 1;
+		return 0;
 	}
 
 	err = !main_parse_config(config, &http_response);
@@ -267,7 +273,7 @@ main_fetch_and_apply_config(struct config* config, struct string* oldconfig)
 
 	main_free_parsed_info(config);
 
-	return 0;
+	return 1;
 }
 
 static void
