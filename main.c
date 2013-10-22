@@ -614,12 +614,13 @@ static void
 main_tempsave_fetched_config(struct config *config, struct string* cnf)
 {
 	int fd;
-	static int NOTMPFILEWARNED = 0;
+	static bool NOTMPFILEWARNED = false;
+	uintptr_t len;
 
 	if (str_is_empty(config->tmpconffile)) {
 		if (NOTMPFILEWARNED) return;
 		log_debug("Info: not tempsaving fetched config. Set $tmpconffile in chaosvpn.conf to enable.");
-	        NOTMPFILEWARNED = 1;
+	        NOTMPFILEWARNED = true;
 		return;
 	}
 
@@ -629,7 +630,8 @@ main_tempsave_fetched_config(struct config *config, struct string* cnf)
 	        return;
         }
 
-	if (write(fd, string_get(cnf), string_length(cnf)) != string_length(cnf)) {
+	len = string_length(cnf) - 1;  /* not including zero byte from end */
+	if (write(fd, string_get(cnf), len) != len) {
 		(void)unlink(config->tmpconffile);
 		log_debug("Error writing $tmpconffile: %s", strerror(errno));
 	}
@@ -663,7 +665,9 @@ main_load_previous_config(struct config *config, struct string* cnf)
 		goto bail_out;
 	}
 
+	string_putc(cnf, '\0');
 	retval = true;
+
 bail_out:
 	close(fd);
 	return retval;
