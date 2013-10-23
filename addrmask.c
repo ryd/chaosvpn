@@ -253,13 +253,20 @@ found:
 bool addrmask_to_string(struct string *target, struct addr_info *addr)
 {
   char buffer[NI_MAXHOST];
+#ifdef WIN32
   int res;
   struct sockaddr_storage sock;
   socklen_t len;
+#endif
 
   if (!target || !addr)
     return false;
 
+#ifndef WIN32
+  if (inet_ntop(addr->addr_family, addr->net_bytes, buffer, sizeof(buffer)) == NULL) {
+    return false;
+  }
+#else
   memset(&sock, 0, sizeof(sock));
   if (addr->addr_family == AF_INET) {
     struct sockaddr_in *sock4 = (struct sockaddr_in *) &sock;
@@ -282,6 +289,7 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
     log_err("addrmask_to_string: getnameinfo() failed: %s", gai_strerror(res));
     return false;
   }
+#endif
 
   if (!string_concat(target, buffer))
     return false;
