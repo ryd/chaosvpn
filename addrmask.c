@@ -278,8 +278,10 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
   }
 
   res = getnameinfo((struct sockaddr *) &sock, len, buffer, sizeof(buffer), NULL, 0, NI_NUMERICHOST);
-  if (res != 0)
+  if (res != 0) {
+    log_err("addrmask_to_string: getnameinfo() failed: %s", gai_strerror(res));
     return false;
+  }
 
   if (!string_concat(target, buffer))
     return false;
