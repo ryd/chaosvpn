@@ -253,7 +253,6 @@ found:
 bool addrmask_to_string(struct string *target, struct addr_info *addr)
 {
   char buffer[NI_MAXHOST];
-  char buffer2[NI_MAXSERV];
   int res;
   struct sockaddr_storage sock;
   socklen_t len;
@@ -268,19 +267,17 @@ bool addrmask_to_string(struct string *target, struct addr_info *addr)
 
     sock4->sin_family = addr->addr_family;
     memcpy(&sock4->sin_addr.s_addr, addr->net_bytes, addr->addr_byte_count);
-    sock4->sin_port = 655;
   } else if (addr->addr_family == AF_INET6) {
     struct sockaddr_in6 *sock6 = (struct sockaddr_in6 *) &sock;
     len = sizeof(struct sockaddr_in6);
 
     sock6->sin6_family = addr->addr_family;
     memcpy(sock6->sin6_addr.s6_addr, addr->net_bytes, addr->addr_byte_count);
-    sock6->sin6_port = 655;
   } else {
     return false;
   }
 
-  res = getnameinfo((struct sockaddr *) &sock, len, buffer, sizeof(buffer), buffer2, sizeof(buffer2), NI_NUMERICHOST|NI_NUMERICSERV);
+  res = getnameinfo((struct sockaddr *) &sock, len, buffer, sizeof(buffer), NULL, 0, NI_NUMERICHOST);
   if (res != 0) {
     log_err("addrmask_to_string: getnameinfo() failed: %s", gai_strerror(res));
     return false;
