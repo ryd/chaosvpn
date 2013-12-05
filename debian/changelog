@@ -7,6 +7,13 @@ chaosvpn (2.18~alpha-0) unstable; urgency=low
     and chaosvpn, or if two instances of the same node are running on
     two different hosts and the conflict-resolution in tinc decided
     to kill one.
+  * calcdebversion: Make the version number in "make deb" look nicer.
+  * Created test_addrmask.c, a small test program to verify that the
+    addressmask parsing and output functions work on a system.
+    Use it as 'make test_addrmask && ./test_addrmask'
+  * Makefile: Use BSD gcc parameters for all kinds of BSD, not just FreeBSD
+  * addrmask_to_string(): use inet_ntop() on unix, and getnameinfo() only on
+    win32 - fixes NetBSD support.
   * Added a couple of internal cleanups.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Thu, 01 Aug 2013 19:42:44 +0200
