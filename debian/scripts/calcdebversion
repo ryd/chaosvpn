@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This scripts adds local version information from the version
 # control systems git, mercurial (hg) and subversion (svn).
@@ -22,7 +22,7 @@ usage() {
 cd "${1:-.}" || usage
 
 # Check for git and a git repo.
-if ! head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+if ! head="$( git rev-parse --verify --short HEAD 2>/dev/null )" ; then
 	# only usable on a git tree
 	exit 1
 fi
@@ -31,32 +31,32 @@ basever="$( perl -ne 'print $1 if (/^\#define VERSION \"(.*?)\"/);' <version.h )
 
 # If we are at a tagged commit (like "v2.6.30-rc6"), we ignore it,
 # because this version is defined in the top level Makefile.
-desc="`git describe --tags --exact-match 2>/dev/null`"
+desc="$( git describe --tags --exact-match 2>/dev/null )"
 if [ -z "$desc" ]; then
 
         # If we are past a tagged commit (like "v2.6.30-rc5-302-g72357d5"),
         # we pretty print it.
-        if atag="`git describe --tags 2>/dev/null`"; then
+        if atag="$( git describe --tags 2>/dev/null )"; then
                 if [ -z "$basever" ] ; then
-                        basever="$( echo "$atag" sed -e 's/^v//' | awk -F- '{printf("%s", $1)}' )"
+                        basever="$( echo -n "$atag" | sed -e 's/^v//' | awk -F- '{printf("%s", $1)}' )"
                 fi
 
-                echo "$atag-$basever" | sed -e 's/^v//' | awk -F- '{printf("%s+%05d", $(NF), $2)}'
+                echo -n "$atag-$basever" | sed -e 's/^v//' | awk -F- '{printf("%s+%05d", $(NF), $2)}'
         else
 	        # If we don't have a tag at all we print 0.0-g{commitish}.
-                printf '0.0%s%s' -g $head
+                printf '0.0%s%s' -g "$head"
         fi
 else
 	if [ -n "$basever" ] ; then
-		echo "$basever"
+		echo -n "$basever"
 	else
-	        echo "$desc" | sed -e 's/^v//' | awk -F- '{printf("%s", $1)}'
+	        echo -n "$desc" | sed -e 's/^v//' | awk -F- '{printf("%s", $1)}'
 	fi
 fi
 
 # Is this git on svn?
 if git config --get svn-remote.svn.url >/dev/null; then
-        printf -- '-svn%s' "`git svn find-rev $head`"
+        printf -- '-svn%s' "$( git svn find-rev "$head" )"
 fi
 
 # Update index only on r/w media
@@ -75,7 +75,7 @@ fi
 # release to the next.
 # note that this may not work for ubuntu, we treet any
 # ubuntu version like debian testing or unstable.
-debian_version=$( cat /etc/debian_version 2>/dev/null | sed -e 's/\.//g; s/[^0-9]//g' | cut -c 1-2 )
+debian_version="$( cat /etc/debian_version 2>/dev/null | sed -e 's/\.//g; s/[^0-9]//g' | cut -c 1-2 )"
 if [ -n "$debian_version" ] ; then
         printf -- '-0.0~deb%s' $debian_version
 else
