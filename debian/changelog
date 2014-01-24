@@ -1,4 +1,4 @@
-chaosvpn (2.18~alpha-0) unstable; urgency=low
+chaosvpn (2.18-0) unstable; urgency=low
 
   * Include chaosvpn.conf template for OpenBSD.
   * Do not automatically restart tincd if it aborted cleanly with
