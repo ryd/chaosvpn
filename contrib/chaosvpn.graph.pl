@@ -12,12 +12,15 @@ use strict;
 
 my $tincctl = "/usr/sbin/tinc";
 my $network = "chaos";
-my $output = "/var/www/chaosvpn.png";
+my $png_output = "/var/www/chaosvpn.png";
+my $svg_output = "/var/www/chaosvpn.svg";
 
 my $grapher = "/usr/bin/fdp";
 my $node_attr = '-Nshape=ellipse -Nfontname=Verdana -Nfontsize=10 -Nstyle=filled -Nfillcolor=#eeeeee -Ncolor=#000000';
 my $edge_attr = '-Earrowhead=none -Efontsize=2 -Ecolor=#000044 -Estyle=solid';
-my $graph_attr = '-Tpng -Gcenter=1 -Gsplines=true';
+my $graph_attr = '-Gcenter=1 -Gsplines=true -Goverlap=false';
+my $png_attr = '-Tpng';
+my $svg_attr = '-Tsvg';
 
 my $include_offline = 1;
 
@@ -119,10 +122,17 @@ my $digraph =
   $links .
   "}\n";
 
-open(GRAPHER, "| $grapher -o $output.tmp $graph_attr $edge_attr $node_attr /dev/stdin") || exit 1;
+unlink("$png_output.tmp");
+open(GRAPHER, "| $grapher -o $png_output.tmp $graph_attr $edge_attr $node_attr $png_attr /dev/stdin") || exit 1;
 print GRAPHER $digraph;
 close(GRAPHER);
-rename("$output.tmp", $output);
+rename("$png_output.tmp", $png_output);
+
+unlink("$svg_output.tmp");
+open(GRAPHER, "| $grapher -o $svg_output.tmp $graph_attr $edge_attr $node_attr $svg_attr /dev/stdin") || exit 1;
+print GRAPHER $digraph;
+close(GRAPHER);
+rename("$svg_output.tmp", $svg_output);
 
 #print $digraph;
 
