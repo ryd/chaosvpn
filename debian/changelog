@@ -1,3 +1,9 @@
+chaosvpn (2.19~dev-0) unstable; urgency=low
+
+  * Development version
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 08 Aug 2014 00:23:26 +0200
+
 chaosvpn (2.18-0) unstable; urgency=low
 
   * Include chaosvpn.conf template for OpenBSD.
