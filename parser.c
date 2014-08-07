@@ -69,7 +69,7 @@ parser_create_config(char *name)
 	my_config->port = TINC_DEFAULT_PORT;
 	my_config->indirectdata = false;
 	my_config->key = strdup("");
-	my_config->ecdsapublickey = strdup("");
+	my_config->ed25519publickey = strdup("");
 	my_config->cipher = strdup("");
 	my_config->compression = strdup("");
 	my_config->digest = strdup("");
@@ -100,7 +100,7 @@ parser_free_peer_config(struct peer_config *config)
 	free(config->gatewayhost);
 	free(config->owner);
 	free(config->key);
-	free(config->ecdsapublickey);
+	free(config->ed25519publickey);
 	free(config->cipher);
 	free(config->compression);
 	free(config->digest);
@@ -256,8 +256,8 @@ parser_parse_line(char *line, struct list_head *configlist)
 		parser_replace_item(&my_config->digest, item);
 	} else if ((item = parser_check_configitem(line, "primary="))) {
 		my_config->primary = str_is_true(item, false);
-	} else if ((item = parser_check_configitem(line, "ecdsapublickey="))) {
-		parser_replace_item(&my_config->ecdsapublickey, item);
+	} else if ((item = parser_check_configitem(line, "ed25519publickey="))) {
+		parser_replace_item(&my_config->ed25519publickey, item);
 	} else if ((item = parser_check_configitem(line, "pingtest="))) {
 		/* allow, but ignore in chaosvpn client */
 	} else if ((item = parser_check_configitem(line, "-----BEGIN RSA PUBLIC KEY-----"))) {

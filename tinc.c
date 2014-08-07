@@ -63,11 +63,11 @@ tinc_generate_peer_config(struct config *config, struct string* buffer, struct p
 	CONCAT_YN(buffer, "TCPonly=%s\n", peer->use_tcp_only);
 	CONCAT_F(buffer, "%s\n\n", peer->key);
 
-	if (str_is_nonempty(peer->ecdsapublickey) &&
+	if (str_is_nonempty(peer->ed25519publickey) &&
 	        (strnatcmp(config->tincd_version, "1.1") > 0)) {
-	        /* write ECDSA public key only for tinc 1.1+ */
+	        /* write Ed25519 public key only for tinc 1.1+ */
 	        
-	        CONCAT_F(buffer, "ECDSAPublicKey=%s\n", peer->ecdsapublickey);
+	        CONCAT_F(buffer, "Ed25519PublicKey=%s\n", peer->ed25519publickey);
         }
 
 	return true;

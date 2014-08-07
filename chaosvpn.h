@@ -116,7 +116,7 @@ struct peer_config {
 	bool silent;
 	unsigned short port;
 	char *key;
-	char *ecdsapublickey;
+	char *ed25519publickey;
 	char *cipher;
 	char *compression;
 	char *digest;

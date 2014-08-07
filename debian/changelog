@@ -4,6 +4,8 @@ chaosvpn (2.19~dev-0) unstable; urgency=low
 
   * $use_dynamic_routes: Support compressed IPv6 addresses in
     subnet-up/down shellscript, as used by latest tinc 1.1-git.
+  * Replaced central config ecdsapublickey= with ed25519publickey=
+    following tinc 1.1-git development.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 08 Aug 2014 00:23:26 +0200
 
