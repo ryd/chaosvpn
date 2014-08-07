@@ -558,7 +558,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		}
 
 		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/([0-9]|[12][0-9]|3[012])$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv4", "")) return false;
 			
@@ -570,7 +570,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 			CONCAT(&buffer, "fi\n");
 		} else {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q '^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+/[0-9]\\+$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/([0-9]|[12][0-9]|3[012])$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv4", " (disabled)")) return false;
 			CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
@@ -580,7 +580,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		}
 
 		if (str_is_nonempty(config->vpn_ip6) && str_is_nonempty(routecmd6)) {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))/([0-9]{1,2}|1[01][0-9]|12[0-8])$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv6", "")) return false;
 
@@ -592,7 +592,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 			CONCAT(&buffer, "fi\n");
 		} else {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -i '^[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+:[0-9a-f]\\+/[0-9]\\+$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))/([0-9]{1,2}|1[01][0-9]|12[0-8])$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv6", " (disabled)")) return false;
 			CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
