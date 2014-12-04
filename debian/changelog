@@ -6,6 +6,9 @@ chaosvpn (2.19~dev-0) unstable; urgency=low
     subnet-up/down shellscript, as used by latest tinc 1.1-git.
   * Replaced central config ecdsapublickey= with ed25519publickey=
     following tinc 1.1-git development.
+  * Integrate /etc/tinc/chaos/ed25519_key.pub into generated
+    hosts file for own node, because the hosts file is the only
+    place that tinc searches for it.
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 08 Aug 2014 00:23:26 +0200
 
