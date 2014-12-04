@@ -63,11 +63,23 @@ tinc_generate_peer_config(struct config *config, struct string* buffer, struct p
 	CONCAT_YN(buffer, "TCPonly=%s\n", peer->use_tcp_only);
 	CONCAT_F(buffer, "%s\n\n", peer->key);
 
-	if (str_is_nonempty(peer->ed25519publickey) &&
-	        (strnatcmp(config->tincd_version, "1.1") > 0)) {
+	if (strnatcmp(config->tincd_version, "1.1") > 0) {
 	        /* write Ed25519 public key only for tinc 1.1+ */
-	        
-	        CONCAT_F(buffer, "Ed25519PublicKey=%s\n", peer->ed25519publickey);
+
+	        if (!strcmp(peer->name, config->peerid)) {
+                        /* append own Ed25519 public key for own hosts file, */
+                        /* because that is the only place tinc looks for it */
+                        if (str_is_nonempty(string_get(&config->ed25519publickey))) {
+                                CONCAT(buffer, string_get(&config->ed25519publickey));
+                                CONCAT(buffer, "\n");
+                        }
+	        } else {
+	                /* for other nodes include Ed25519 public key */
+	                /* if specified in central config */
+        	        if (str_is_nonempty(peer->ed25519publickey)) {
+                	        CONCAT_F(buffer, "Ed25519PublicKey=%s\n", peer->ed25519publickey);
+                        }
+                }
         }
 
 	return true;

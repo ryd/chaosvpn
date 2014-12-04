@@ -162,6 +162,7 @@ struct config {
 	char *tincd_user;
 	char *tincd_raw_config;
 	struct string privkey;
+	struct string ed25519publickey;
 	struct settings_list *exclude;
 	struct peer_config *my_peer;
 	struct list_head peer_config;

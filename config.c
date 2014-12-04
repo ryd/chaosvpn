@@ -138,6 +138,7 @@ config_free(struct config *config)
 	free(config->password);
 
 	string_free(&config->privkey);
+	string_free(&config->ed25519publickey);
 
 	free_settings_list(config->exclude);
 	parser_free_config(&config->peer_config);
@@ -203,7 +204,7 @@ bool
 config_init(struct config *config)
 {
 	struct stat st; 
-	struct string privkey_name;
+	struct string key_name;
 	char tmp[1024];
 	struct stat stat_buf;
 	struct passwd* pwentry;
@@ -378,16 +379,25 @@ config_init(struct config *config)
 		return false;
 	}
 
-	string_init(&privkey_name, 1024, 512);
-	if (!string_concat_sprintf(&privkey_name, "%s/rsa_key.priv", config->base_path)) { return false; }
+	string_init(&key_name, 1024, 512);
+	if (!string_concat_sprintf(&key_name, "%s/rsa_key.priv", config->base_path)) { return false; }
 
 	string_free(&config->privkey); /* just to be sure */
-	if (!fs_read_file(&config->privkey, string_get(&privkey_name))) {
-		log_err("error: can't read private rsa key at %s\n", string_get(&privkey_name));
-		string_free(&privkey_name);
+	if (!fs_read_file(&config->privkey, string_get(&key_name))) {
+		log_err("error: can't read private rsa key at %s\n", string_get(&key_name));
+		string_free(&key_name);
 		return false;
 	}
-	string_free(&privkey_name);
+	string_free(&key_name);
+
+
+	string_init(&key_name, 1024, 512);
+	if (!string_concat_sprintf(&key_name, "%s/ed25519_key.pub", config->base_path)) { return false; }
+
+	string_free(&config->ed25519publickey); /* just to be sure */
+	fs_read_file(&config->ed25519publickey, string_get(&key_name));
+	/* no read error checking here, errors are normal for older setups */
+	string_free(&key_name);
 
 
 	config->tincd_version = tinc_get_version(config);
