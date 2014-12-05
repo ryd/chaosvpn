@@ -88,6 +88,7 @@ config_alloc(void)
 	config->ifmodifiedsince		= 0;
 
 	string_lazyinit(&config->privkey, 2048);
+	string_lazyinit(&config->ed25519publickey, 1024);
 	INIT_LIST_HEAD(&config->peer_config);
 
 	config->configfile		= strdup(TINCDIR "/chaosvpn.conf");
