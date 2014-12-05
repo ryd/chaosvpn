@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "string.h"
 
@@ -12,6 +13,7 @@ string_concatb(struct string* s, const char* sta, uintptr_t len)
 
     if (len > (s->size - s->length)) {
         growby = s->growby;
+        if (growby == 0) return false;
         while ((s->size + growby - s->length) < len) {
             growby += s->growby;
             if ((s->size + growby) < s->size) return false;
