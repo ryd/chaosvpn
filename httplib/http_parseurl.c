@@ -10,8 +10,8 @@ int
 http_parseurl(struct string* url, struct string* hostname, int* port, struct string* path)
 {
     char* s;
-    uintptr_t l;
-    uintptr_t i;
+    size_t l;
+    size_t i;
     int urlpart = 0;
     struct string portnum;
     int retval = HTTP_EOK;

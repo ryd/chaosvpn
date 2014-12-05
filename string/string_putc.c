@@ -7,7 +7,7 @@
 bool
 string_putc(struct string* s, char c)
 {
-    uintptr_t growby;
+    size_t growby;
     char* buf;
 
     if (s->size == s->length) {

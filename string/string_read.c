@@ -9,7 +9,7 @@
 bool
 string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_read)
 {
-    uintptr_t growby;
+    size_t growby;
     char* buf;
 
     if (len > (s->size - s->length)) {

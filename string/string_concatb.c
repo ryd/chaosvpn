@@ -6,9 +6,9 @@
 #include "string.h"
 
 bool
-string_concatb(struct string* s, const char* sta, uintptr_t len)
+string_concatb(struct string* s, const char* sta, size_t len)
 {
-    uintptr_t growby;
+    size_t growby;
     char* buf;
 
     if (len > (s->size - s->length)) {

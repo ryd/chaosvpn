@@ -4,7 +4,7 @@
 #include "string.h"
 
 bool
-string_init(struct string* s, uintptr_t size, uintptr_t growby)
+string_init(struct string* s, size_t size, size_t growby)
 {
     s->length = 0;
     s->s = malloc(size);

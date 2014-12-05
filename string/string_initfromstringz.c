@@ -6,7 +6,7 @@
 bool
 string_initfromstringz(struct string* s, const char *is)
 {
-    uintptr_t l;
+    size_t l;
 
     l = strlen(is);
     string_lazyinit(s, l);

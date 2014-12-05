@@ -216,7 +216,7 @@ static int
 handle_header(struct string* s, int* httpres)
 {
     char* b;
-    uintptr_t l, i;
+    size_t l, i;
     char* p, * p2;
 
     b = string_get(s);
