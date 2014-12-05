@@ -10,19 +10,19 @@ string_concatb(struct string* s, const char* sta, uintptr_t len)
     uintptr_t growby;
     char* buf;
 
-    if (len > (s->_u._s.size - s->_u._s.length)) {
-        growby = s->_u._s.growby;
-        while ((s->_u._s.size + growby - s->_u._s.length) < len) {
-            growby += s->_u._s.growby;
-            if ((s->_u._s.size + growby) < s->_u._s.size) return false;
+    if (len > (s->size - s->length)) {
+        growby = s->growby;
+        while ((s->size + growby - s->length) < len) {
+            growby += s->growby;
+            if ((s->size + growby) < s->size) return false;
         }
-        buf = realloc(s->s, s->_u._s.size + growby);
-        memset(buf+s->_u._s.size, 0, growby);
+        buf = realloc(s->s, s->size + growby);
+        memset(buf+s->size, 0, growby);
         if (!buf) return false;
-        s->_u._s.size += growby;
+        s->size += growby;
         s->s = buf;
     }
-    memcpy(s->s + s->_u._s.length, sta, len);
-    s->_u._s.length += len;
+    memcpy(s->s + s->length, sta, len);
+    s->length += len;
     return true;
 }

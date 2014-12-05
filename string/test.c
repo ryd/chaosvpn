@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     string_init(&args, 1, 1);
     string_concatb(&args, "foo", 3);
     string_concatb(&args, "b", 1);
-    printf("%d\n", args._u._s.length);
+    printf("%d\n", args.length);
     for (i = 0; i < argc; i++) string_concat(&args, *argv++);
     puts(string_get(&args));
     string_free(&args);
@@ -23,8 +23,8 @@ int main(int argc, char** argv)
             for (i = 0; i < 100; i++) {
                 string_concat(&args, "test");
             }
-            printf("100x test == %d len, %d size, %d grow\n", args._u._s.length,
-                    args._u._s.size, args._u._s.growby);
+            printf("100x test == %d len, %d size, %d grow\n", args.length,
+                    args.size, args.growby);
             string_free(&args);
         }
     }

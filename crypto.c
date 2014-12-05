@@ -150,7 +150,7 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
             RSA_PKCS1_OAEP_PADDING);
         if (len >= 0) {
             /* TODO: need cleaner way: */
-            decrypted->_u._s.length = len;
+            decrypted->length = len;
             retval = true;
         } else {
             retval = false;
@@ -205,7 +205,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
             &decryptdone, (unsigned char*)string_get(ciphertext),
             string_length(ciphertext))) {
         /* TODO: need cleaner way: */
-        decrypted->_u._s.length = decryptdone;
+        decrypted->length = decryptdone;
     } else {
         log_err("crypto_aes_decrypt: decrypt failed\n");
         ERR_print_errors_fp(stderr);
@@ -216,7 +216,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
             (unsigned char*)string_get(decrypted)+string_length(decrypted),
             &decryptdone)) {
         /* TODO: need cleaner way: */
-        decrypted->_u._s.length += decryptdone;
+        decrypted->length += decryptdone;
     } else {
         log_err("crypto_aes_decrypt: decrypt final failed\n");
         ERR_print_errors_fp(stderr);

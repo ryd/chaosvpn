@@ -120,7 +120,7 @@ http_get(struct string* url, struct string* buffer,
     if (!string_concat(&request, "Connection: close\r\n")) { retval=HTTP_ENOMEM; goto bail_out; };
     if (!string_concat(&request, "\r\n")) { retval=HTTP_ENOMEM; goto bail_out; }
 
-    if (sendall(sfd, request.s, request._u._s.length, 0)) {
+    if (sendall(sfd, request.s, request.length, 0)) {
         retval = HTTP_ENETERR;
         goto bail_out;
     }
@@ -168,7 +168,7 @@ httprecv(int sfd, struct string* buf, int* httpres)
             if (b[i] == '\n') {
                 string_clear(&oneline);
                 if (!string_concatb(&oneline, b, i)) { retval=HTTP_ENOMEM; goto bail_out; }
-                if (oneline.s[oneline._u._s.length - 1] == '\r') --oneline._u._s.length;
+                if (oneline.s[oneline.length - 1] == '\r') --oneline.length;
                 if (++i >= bptr) { retval=HTTP_ESRVERR; goto bail_out; }
                 if (bptr != i) {
                     memmove(b, b + i, bptr - i);

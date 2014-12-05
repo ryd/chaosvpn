@@ -13,6 +13,6 @@ string_move(struct string* s1, struct string* s2)
 {
     memcpy(s2, s1, sizeof(struct string));
     s1->s = NULL;
-    s1->_u._s.size = 0;
-    s1->_u._s.length = 0;
+    s1->size = 0;
+    s1->length = 0;
 }

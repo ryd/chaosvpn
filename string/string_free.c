@@ -8,7 +8,7 @@ string_free(struct string* s)
 	if (s->s) {
 		free(s->s);
 		s->s = NULL;
-		s->_u._s.size = 0;
-		s->_u._s.length = 0;
+		s->size = 0;
+		s->length = 0;
 	}
 }

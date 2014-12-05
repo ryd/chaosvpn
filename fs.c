@@ -53,7 +53,7 @@ int fs_mkdir_p( char *path, mode_t mode )
 static bool
 fs_ensure_suffix(struct string* s)
 {
-	if (string_get(s)[s->_u._s.length - 1] == '/') return true;
+	if (string_get(s)[s->length - 1] == '/') return true;
 	if (!string_putc(s, '/')) return false;
 	return string_ensurez(s);
 }
@@ -68,7 +68,7 @@ fs_get_cwd(struct string* s)
 
 	if (getcwd(stackpath, sizeof(stackpath)) != NULL) {
 		if (!string_concat(s, stackpath)) return false;
-		if (string_get(s)[s->_u._s.length - 1] == '/') return true;
+		if (string_get(s)[s->length - 1] == '/') return true;
 		return string_putc(s, '/');
 	}
 	if (errno != ERANGE) return false;
@@ -79,7 +79,7 @@ fs_get_cwd(struct string* s)
 			retval = string_concat(s, allocpath);
 			free(allocpath);
 			if (!retval) return false;
-			if (string_get(s)[s->_u._s.length - 1] == '/') return true;
+			if (string_get(s)[s->length - 1] == '/') return true;
 			return string_putc(s, '/');
 		}
 		free(allocpath);
@@ -174,8 +174,8 @@ handledir(struct string* src, struct string* dst)
 		//log_debug("handle %s %s", string_get(src), dirent->d_name);
 
 		if (S_ISDIR(st.st_mode)) {
-			srcdirlen = src->_u._s.length;
-			dstdirlen = dst->_u._s.length;
+			srcdirlen = src->length;
+			dstdirlen = dst->length;
 			if (!string_concat(src, dirent->d_name)) goto bail_out;
 			if (!fs_ensure_suffix(src)) goto bail_out;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
@@ -186,8 +186,8 @@ handledir(struct string* src, struct string* dst)
 				log_warn("fs_cp_r: warning: utimes failed for %s", string_get(dst));
 			}
 #endif
-			src->_u._s.length = srcdirlen;
-			dst->_u._s.length = dstdirlen;
+			src->length = srcdirlen;
+			dst->length = dstdirlen;
 			(void)string_ensurez(src);
 			(void)string_ensurez(dst);
 			if (chdir(string_get(src))) {
@@ -195,7 +195,7 @@ handledir(struct string* src, struct string* dst)
 				goto bail_out;
 			}
 		} else if (S_ISREG(st.st_mode)) {
-			dstdirlen = dst->_u._s.length;
+			dstdirlen = dst->length;
 			if (!string_concat(dst, dirent->d_name)) goto bail_out;
 			if (!string_ensurez(dst)) goto bail_out;
 			if (!fs_cp_file(dirent->d_name, string_get(dst))) {
@@ -207,7 +207,7 @@ handledir(struct string* src, struct string* dst)
 				log_warn("fs_cp_r: warning: utimes failed for %s", string_get(dst));
 			}
 #endif
-			dst->_u._s.length = dstdirlen;
+			dst->length = dstdirlen;
 		}
 	}
 
@@ -299,12 +299,12 @@ fs_empty_dir(char* dest)
 				(dirent->d_name[2] == 0)))) continue;
 
 		if (S_ISREG(st.st_mode)) {
-			dstdirlen = dst._u._s.length;
+			dstdirlen = dst.length;
 			if (!string_concat(&dst, dirent->d_name)) goto bail_out_closedir;
 			if (unlink(string_get(&dst))) {
 				log_err("fs_empty_dir: failed to unlink %s: %s\n", string_get(&dst), strerror(errno));
 			}
-			dst._u._s.length = dstdirlen;
+			dst.length = dstdirlen;
 		}
 	}
 

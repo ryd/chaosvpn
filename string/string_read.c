@@ -12,22 +12,22 @@ string_read(struct string* s, const int fd, const size_t len, intptr_t* bytes_re
     uintptr_t growby;
     char* buf;
 
-    if (len > (s->_u._s.size - s->_u._s.length)) {
-        growby = s->_u._s.growby;
-        while ((s->_u._s.size + growby - s->_u._s.length) < len) {
-            growby += s->_u._s.growby;
-            if ((s->_u._s.size + growby) < s->_u._s.size) return false;
+    if (len > (s->size - s->length)) {
+        growby = s->growby;
+        while ((s->size + growby - s->length) < len) {
+            growby += s->growby;
+            if ((s->size + growby) < s->size) return false;
         }
-        buf = realloc(s->s, s->_u._s.size + growby);
+        buf = realloc(s->s, s->size + growby);
         if (!buf) return false;
-        memset(buf+s->_u._s.size, 0, growby);
-        s->_u._s.size += growby;
+        memset(buf+s->size, 0, growby);
+        s->size += growby;
         s->s = buf;
     }
 
-    *bytes_read = read(fd, s->s + s->_u._s.length, len);
+    *bytes_read = read(fd, s->s + s->length, len);
 
     if (*bytes_read > 0)
-        s->_u._s.length += *bytes_read;
+        s->length += *bytes_read;
     return true;
 }

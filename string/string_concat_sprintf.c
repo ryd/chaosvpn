@@ -89,7 +89,7 @@ finished:
     va_end(args);
 
     if (!string_putc(s, 0)) return false;
-    --s->_u._s.length;
+    --s->length;
 
     return true;
 }

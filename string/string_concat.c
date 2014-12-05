@@ -8,6 +8,6 @@ bool
 string_concat(struct string* s, const char* sta)
 {
     if (!string_concatb(s, sta, strlen(sta) + 1)) return false;
-    s->_u._s.length--;
+    s->length--;
     return true;
 }
