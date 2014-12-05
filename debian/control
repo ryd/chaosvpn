@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: ChaosVPN Mailinglist <chaosvpn@hamburg.ccc.de>
 Uploaders: Sven-Haegar Koch <haegar@sdinet.de>
 Build-Depends: debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
-Standards-Version: 3.9.4
+Standards-Version: 3.9.6
 Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
