@@ -570,7 +570,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 		}
 
 		if (str_is_nonempty(config->vpn_ip) && str_is_nonempty(routecmd)) {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/([0-9]|[12][0-9]|3[012])$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])(/([0-9]|[12][0-9]|3[012]))?$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv4", "")) return false;
 			
@@ -582,7 +582,7 @@ tinc_write_subnetupdown(struct config *config, bool up)
 
 			CONCAT(&buffer, "fi\n");
 		} else {
-			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/([0-9]|[12][0-9]|3[012])$' ; then\n");
+			CONCAT(&buffer, "if echo \"$SUBNET\" | grep -q -E '^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])(/([0-9]|[12][0-9]|3[012]))?$' ; then\n");
 			CONCAT(&buffer, "\t");
 			if (!string_concat_sprintf(&buffer, logger, "ipv4", " (disabled)")) return false;
 			CONCAT(&buffer, "\t[ -x \"$0.local\" ] && \"$0.local\" \"$@\"\n");
