@@ -44,7 +44,8 @@ while (<NODES>) {
   
   my $node = $1;
   my $where = $2;
-
+  $node =~ s/ id [0-9a-f]+$//;
+  
   my $is_online = (($where ne "(null)") && ($where ne "unknown"));
   process_node($node, $is_online);
 }

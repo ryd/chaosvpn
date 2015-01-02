@@ -36,6 +36,7 @@ while (<NODES>) {
   
   my $node = $1;
   my $where = $2;
+  $node =~ s/ id [0-9a-f]+$//;
   
   $nodes{$node} = 0;
 }
