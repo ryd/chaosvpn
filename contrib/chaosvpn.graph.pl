@@ -25,9 +25,22 @@ my $svg_attr = '-Tsvg';
 my $include_offline = 1;
 
 
+my %subnet_owners = ();
 my %nodes = ();
 my %colors = ();
 
+
+# get all subnets, and collect node names with subnets
+open(SUBNETS, "$tincctl -n $network dump subnets |") || exit(1);
+while (<SUBNETS>) {
+  chomp;
+  next unless (/^(.*?) owner (.*?)$/);
+  my $subnet = $1;
+  my $node = $2;
+
+  $subnet_owners{$node}++;
+}
+close(SUBNETS);
 
 # get all nodes
 open(NODES, "$tincctl -n $network dump nodes |") || exit(1);
@@ -37,7 +50,13 @@ while (<NODES>) {
   my $node = $1;
   my $where = $2;
   $node =~ s/ id [0-9a-f]+$//;
-  
+
+  if (!defined($subnet_owners{$node}) || $subnet_owners{$node} == 0) {
+    # skip nodes without subnets, they are deleted
+    # if still existing they will appear in the edge output
+    next;
+  }
+
   $nodes{$node} = 0;
 }
 close(NODES);
