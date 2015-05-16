@@ -11,6 +11,8 @@ my $network = "chaos";
 my $dbfile = "/var/www/chaosvpn.nodes.sqlite";
 my $html = "/var/www/chaosvpn.nodes.html";
 
+my $subnet_owners = {};
+
 
 my $dbh = DBI->connect("dbi:SQLite:dbname=$dbfile","","", {
   AutoCommit => 1,
@@ -37,9 +39,22 @@ $dbh->do("
 $dbh->do("PRAGMA synchronous = OFF") || die;
 
 
+# get all subnets, and collect node names with subnets
+open(SUBNETS, "$tincctl -n $network dump subnets |") || exit(1);
+while (<SUBNETS>) {
+  chomp;
+  next unless (/^(.*?) owner (.*?)$/);
+  my $subnet = $1;
+  my $node = $2;
+
+  $subnet_owners->{$node}++;
+}
+close(SUBNETS);
+
 # get all nodes
 open(NODES, "$tincctl -n $network dump nodes |") || exit(1);
 while (<NODES>) {
+  chomp;
   next unless (/^(.*?) at (.*?) /);
   
   my $node = $1;
@@ -47,7 +62,7 @@ while (<NODES>) {
   $node =~ s/ id [0-9a-f]+$//;
   
   my $is_online = (($where ne "(null)") && ($where ne "unknown"));
-  process_node($node, $is_online);
+  process_node($node, $subnet_owners->{$node}, $is_online);
 }
 close(NODES);
 
@@ -59,12 +74,16 @@ $dbh->disconnect();
 exit(0);
 
 
-sub process_node
+sub process_node($$$)
 {
-  my ($node, $is_online) = @_;
+  my ($node, $number_subnets, $is_online) = @_;
 
-  #printf "Process Node %s - Online: %s\n", $node, $is_online;
-    
+  #printf "Process Node %s - Subnets %s - Online: %s\n", $node, $number_subnets, $is_online;
+
+  if (!defined($number_subnets) || $number_subnets == 0) {
+    return;
+  }
+
   my $record = $dbh->selectrow_hashref(
     "SELECT * FROM nodes WHERE nodename = ?",
     undef,
@@ -100,7 +119,7 @@ sub process_node
 }
 
 
-sub output_html
+sub output_html()
 {
   open(HTML, ">$html.$$") || die;
   
