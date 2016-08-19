@@ -6,6 +6,8 @@ to getting into the chaosvpn network. To join chaosvpn, you need to
 install some software (tinc, chaosvpn). You also have to register your
 node before you can connect to the rest of the network.
 
+See https://wiki.hamburg.ccc.de/ChaosVPN for more info.
+
 
 The very short way building from git snapshot
 =============================================
@@ -29,8 +31,8 @@ If you are using debian, you can use haegar's repository: (If you're
 not using debian, you can compile the chaosvpn binary yourself (see
 below) and install tinc by some other means)
 
-# echo "deb     http://debian.sdinet.de/ squeeze chaosvpn" >> /etc/apt/sources.list
-# echo "deb-src http://debian.sdinet.de/ squeeze chaosvpn" >> /etc/apt/sources.list
+# echo "deb     http://debian.sdinet.de/ jessie chaosvpn" >> /etc/apt/sources.list
+# echo "deb-src http://debian.sdinet.de/ jessie chaosvpn" >> /etc/apt/sources.list
 
 Also you need to install the signing key:
 
@@ -95,83 +97,10 @@ https://wiki.hamburg.ccc.de/ChaosVPN:DebianHowto
 Publishing your details
 =======================
 
-Now we need some details from your machine to publish it to all other
-nodes within the ChaosVPN. You can fill your details into this
-template:
+Now we need some details from your setup to publish it to all other
+nodes within the ChaosVPN.
 
-(Remove the comment lines starting with # before sending)
-
-----------------------------------------------------------------
-[<nodename>]
-# This nodename or sometimes called peer-id is the name of the network
-# endpoint/gateway where the vpn software will be running, not necessarily
-# the name of the user, there may even be more than one gateway per user.
-#
-# Please use only characters a-z, 0-9 and _ in it. 
-
-gatewayhost=<clienthost>
-# This should be the external hostname or ip address of the client host, not
-# a VPN address.
-# If the client is not reachable over the internet leave it out and set
-# hidden=1 below.
-# If possible supply a hostname (even dyndns) and not an ip address for
-# easier changing
-# from your side without touching the central config.
-
-network=<ipv4 subnet in the vpn>
-network6=<ipv6 subnet in the vpn>
-# (mandatory, must include)
-# this may be more than one, IPv4 or IPv6, network6 with  IPv6 is optional
-#
-# These subnets must be unique in our vpn,
-# simply renumber your home network (or use something like NETMAP) with a
-# network block that is still free.
-#
-# Please select an unused IPv4 range out of
-# https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges, and
-# write yourself down in that wiki page to mark your future range as in-use.
-# Please select from the correct ranges, 172.31.*.* for Europe, and 10.100.*.*
-# for North America and elsewhere.
-# 
-# Repeat: Please do not forget to add yourself to the list at
-# https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges to mark your
-# range as used. 
-
-owner=
-# (mandatory, must include)
-# Admin of the VPN gateway, with email address - a way to contact the
-# responsible person in case of problems with your network link.
-# (Does not need to contain real name, just a way to contact the person - if
-# your node creates problems and we can not contact you it will just be
-# disabled in the central config)
-
-port=4711
-# (optional)
-# if not specified tinc works on tcp+udp port 655
-# it is better if everyone chooses a random port for this.
-# either this specified port or port 655 needs to accept TCP and UDP traffic
-# from outside.
-
-hidden=0
-# (optional)
-# "I cannot accept inbound tunnel connections, I can only connect out."
-# (e.g. behind a NAT)
-silent=0
-# (optional)
-# "I cannot connect out, but you can connect to me."
-# Only ONE of hidden=1 or silent=1 is possible.
-
------BEGIN RSA PUBLIC KEY-----
-....
------END RSA PUBLIC KEY-----
-# (mandatory, must include)
-# rsa-public-key - contents of your /etc/tinc/chaos/rsa_key.pub
-----------------------------------------------------------------
-
-Next, send the template to chaosvpn-join@hamburg.ccc.de
-
-At the same time please also add your network and node infos to
-https://wiki.hamburg.ccc.de/ChaosVPN:IPRanges
+See https://wiki.hamburg.ccc.de/ChaosVPN:RequestHowto for how to apply.
 
 
 Connecting to ChaosVPN
@@ -187,5 +116,6 @@ through /etc/init.d/chaosvpn.
 
 
 If you have got any questions, join our irc channel #chaosvpn at
-irc.hackint.eu (If you're already connected to the chaosvpn, you can
-point your irc client to hackint.hack or 172.31.98.1 instead)
+irc.hackint.org (If you're already connected to the chaosvpn, you can
+point your irc client to irc.hackint.hack, irc.hackint.dn42 or
+172.20.66.67 instead)

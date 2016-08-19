@@ -4,9 +4,6 @@ information on how to join the ChaosVPN, read INSTALL.
 It is intended to be small enough for embedded routing devices
 which runs OpenWRT as well as standard x86 hardware.
 
-First services which will be available over the ChaosVPN are
-the warzone project, the ChaosPhone and the CCC xmpp server.
-
 More information about the ChaosVPN is available at:
     https://wiki.hamburg.ccc.de/ChaosVPN
 
