@@ -31,8 +31,11 @@ If you are using debian, you can use haegar's repository: (If you're
 not using debian, you can compile the chaosvpn binary yourself (see
 below) and install tinc by some other means)
 
-# echo "deb     http://debian.sdinet.de/ jessie chaosvpn" >> /etc/apt/sources.list
-# echo "deb-src http://debian.sdinet.de/ jessie chaosvpn" >> /etc/apt/sources.list
+# echo "deb     http://debian.sdinet.de/ stable chaosvpn" >> /etc/apt/sources.list
+# echo "deb-src http://debian.sdinet.de/ stable chaosvpn" >> /etc/apt/sources.list
+
+(Instead of "stable" you can also directly choose your distribution
+with "unstable", "stretch", "jessie" or "wheezy")
 
 Also you need to install the signing key:
 
