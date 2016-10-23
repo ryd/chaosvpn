@@ -3,13 +3,13 @@ Section: net
 Priority: extra
 Maintainer: ChaosVPN Mailinglist <chaosvpn@hamburg.ccc.de>
 Uploaders: Sven-Haegar Koch <haegar@sdinet.de>
-Build-Depends: debhelper (>= 7.0.15~), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
-Standards-Version: 3.9.6
+Build-Depends: debhelper (>= 9), bison, flex, libssl-dev (>= 0.9.8), zlib1g-dev
+Standards-Version: 3.9.8
 Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, perl-base (>= 5.8.0), bash (>= 2), iproute
+Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6), perl-base (>= 5.8.0), bash (>= 2), iproute
 Description: Config generator to setup connection to ChaosVPN
  ChaosVPN is a tinc based VPN intended to connect Chaos and Hackerspaces,
  and their active members.
