@@ -1,3 +1,9 @@
+chaosvpn (2.19~dev-0) UNRELEASED; urgency=medium
+
+  * Development version.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 23 Oct 2016 15:16:38 +0200
+
 chaosvpn (2.19-0) unstable; urgency=low
 
   * $use_dynamic_routes: Support compressed IPv6 addresses in
