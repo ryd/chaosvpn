@@ -1,6 +1,4 @@
-chaosvpn (2.19~dev-0) unstable; urgency=low
-
-  * Development version
+chaosvpn (2.19-0) unstable; urgency=low
 
   * $use_dynamic_routes: Support compressed IPv6 addresses in
     subnet-up/down shellscript, as used by latest tinc 1.1-git.
@@ -10,7 +8,7 @@ chaosvpn (2.19~dev-0) unstable; urgency=low
     hosts file for own node, because the hosts file is the only
     place that tinc searches for it.
 
- -- Sven-Haegar Koch <haegar@sdinet.de>  Fri, 08 Aug 2014 00:23:26 +0200
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 23 Oct 2016 14:53:06 +0200
 
 chaosvpn (2.18-0) unstable; urgency=low
 
