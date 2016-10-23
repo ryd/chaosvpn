@@ -420,7 +420,7 @@ main_request_config(struct config *config, struct string *http_response)
 	if ((httpretval = http_get(&httpurl, &archive, config->ifmodifiedsince, &HTTP_USER_AGENT, &httpres, NULL))) {
 		if (httpretval == HTTP_ESRVERR) {
 			if (httpres == 304) {
-				log_info("Not fetching %s - got HTTP %d - not modified\n", string_get(&httpurl), httpres);
+				log_info("Not updating from %s - got HTTP %d - not modified\n", string_get(&httpurl), httpres);
 				retval = 0;
 			} else {
 				log_info("Unable to fetch %s - got HTTP %d\n", string_get(&httpurl), httpres);
