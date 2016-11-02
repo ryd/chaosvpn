@@ -1,6 +1,8 @@
-chaosvpn (2.19~dev-0) UNRELEASED; urgency=medium
+chaosvpn (2.19+dev-0) UNRELEASED; urgency=medium
 
   * Development version.
+
+  * Fixes compilation with OpenSSL 1.1.0
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 23 Oct 2016 15:16:38 +0200
 
