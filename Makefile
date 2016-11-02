@@ -17,7 +17,7 @@ ifneq (,$(findstring Darwin,$(OS)))
 	TINCDIR?=/usr/local/etc/tinc
 else
 	# Linux by default
-	CFLAGS+=-std=c99 -D_POSIX_C_SOURCE=2 -D_BSD_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
+	CFLAGS+=-std=c99 -D_POSIX_C_SOURCE=2 -D_DEFAULT_SOURCE -D_FILE_OFFSET_BITS=64 -O2 -Wall -g $(INCLUDES)
 	PREFIX?=/usr
 	TINCDIR?=/etc/tinc
 endif
