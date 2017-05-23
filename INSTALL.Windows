@@ -14,3 +14,5 @@ Installing on Windows
 
 This part is not done yet. You need to edit chaosvpn.conf and change the
 directories where you installed chaosvpn and tincd.exe.
+
+Most likely it will just not work on Windows.
