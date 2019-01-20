@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use constant VERSION => "0.2";
+use constant VERSION => "0.3";
 
 #
 # this is the backend postprocessing for the chaosvpn client
@@ -102,6 +102,12 @@ if ($peers) {
 	if ($@) {
 		warn $@;
 	}
+	eval {
+		create_shortconfig($peers);
+	};
+	if ($@) {
+		warn $@;
+	}
 } else {
 	die "read and parse failed!\n";
 }
@@ -128,10 +134,17 @@ sub parse_config($)
 				$peers->{$current_peer} = $peer;
 			}
 			$peer = {
-				"use-tcp-only"	=> 0,
-				"hidden"	=> 0,
-				"silent"	=> 0,
-				"port"		=> 655,
+				"owner"			=> "",
+				"gatewayhost"		=> "",
+				"use-tcp-only"		=> 0,
+				"hidden"		=> 0,
+				"silent"		=> 0,
+				"port"			=> 655,
+				"networks"		=> [],
+				"networks6"		=> [],
+				"indirect_data"		=> 0,
+				"pubkey"		=> "",
+				"Ed25519PublicKey"	=> "",
 				};
 			$current_peer = $1;
 			$current_peer = undef unless ($current_peer =~ /^[a-z0-9_\-]+$/i);
@@ -153,10 +166,6 @@ sub parse_config($)
 				push @{$peer->{networks}}, $1;
 			} elsif (/^\s*network6=(.*)\s*$/i) {
 				push @{$peer->{networks6}}, $1;
-			} elsif (/^\s*route_network=(.*)\s*$/i) {
-				push @{$peer->{route_networks}}, $1;
-			} elsif (/^\s*route_network6=(.*)\s*$/i) {
-				push @{$peer->{route_networks6}}, $1;
 			} elsif (/^\s*hidden=(.*)\s*$/i) {
 				$peer->{hidden} = $1;
 			} elsif (/^\s*silent=(.*)\s*$/i) {
@@ -165,6 +174,8 @@ sub parse_config($)
 				$peer->{port} = $1;
 			} elsif (/^\s*indirectdata=(.*)\s*$/i) {
 				$peer->{indirect_data} = $1;
+			} elsif (/^\s*Ed25519PublicKey=(.*)\s*$/i) {
+				$peer->{Ed25519PublicKey} = $1;
 			} elsif (/^-----BEGIN RSA PUBLIC KEY-----/) {
 				$in_key = 1;
 				$peer->{pubkey} = $_ . "\n";
@@ -213,7 +224,7 @@ sub create_config($)
 		#print Dumper($peer);
 
 		$ar->add_data("chaosvpn-version", $fileformat_version);
-                		
+
 		my $aeskey = Crypt::OpenSSL::Random::random_bytes(32);
 		my $aesiv = Crypt::OpenSSL::Random::random_bytes(16);
 		
@@ -285,6 +296,32 @@ sub create_config($)
 		rename("$destdir", "$destdir.old") || die;
 	}
 	rename("$destdir.new", "$destdir") || die;
+
+	return 1;
+}
+
+sub create_shortconfig($)
+{
+	my ($peers) = @_;
+	my $shortconfig = "";
+
+	PEERS: foreach my $id (sort(keys %$peers)) {
+		my $peer = $peers->{$id};
+
+		$shortconfig .= "\n[" . $id . "]\n";
+		if (ref($peer->{networks}) eq "ARRAY") {
+			foreach my $n (@{$peer->{networks}}) {
+				$shortconfig .= "network=$n\n";
+			}
+		}
+		if (ref($peer->{networks6}) eq "ARRAY") {
+			foreach my $n (@{$peer->{networks6}}) {
+				$shortconfig .= "network6=$n\n";
+			}
+		}
+	}
+
+	write_string_into_file(">$destdir/shortconfig.cfg", $shortconfig);
 
 	return 1;
 }
