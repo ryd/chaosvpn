@@ -9,7 +9,7 @@ Homepage: http://github.com/ryd/chaosvpn
 
 Package: chaosvpn
 Architecture: any
-Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6), perl-base (>= 5.8.0), bash (>= 2), iproute
+Depends: tinc (>= 1.0.13~), ${shlibs:Depends}, ${misc:Depends}, lsb-base (>= 3.0-6), perl-base (>= 5.8.0), bash (>= 2), iproute2
 Description: Config generator to setup connection to ChaosVPN
  ChaosVPN is a tinc based VPN intended to connect Chaos and Hackerspaces,
  and their active members.
