@@ -1,0 +1,1 @@
+rm_conffile /etc/cron.d/chaosvpn 2.06-0
