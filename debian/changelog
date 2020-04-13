@@ -4,11 +4,12 @@ chaosvpn (2.19+dev-0) UNRELEASED; urgency=medium
 
   * Fixes compilation with OpenSSL 1.1.0
   * Changed dependency from "iproute" to "iproute2"
+    (github issue #20)
   * Fixed compilation with musl-libc by not requireing sys/cdefs.h
     in ar.h
     (https://wiki.musl-libc.org/faq.html, "Q: When compiling something
     against musl, I get error messages about sys/cdefs.h")
-    (github bug #17)
+    (github issue #17)
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sun, 23 Oct 2016 15:16:38 +0200
 
