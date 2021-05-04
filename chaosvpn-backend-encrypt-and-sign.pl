@@ -62,10 +62,10 @@ my $signpubkey = "$GIT_DIR/chaosvpn-private/pubkey.pem";
 umask(0022);
 
 my $dn42_gateway_as = "64654";
-my $dn42_default_minlength4 = "21";
-my $dn42_default_maxlength4 = "32";
-my $dn42_default_minlength6 = "48";
-my $dn42_default_maxlength6 = "64";
+my $dn42_default_min_length4 = "21";
+my $dn42_default_max_length4 = "32";
+my $dn42_default_min_length6 = "48";
+my $dn42_default_max_length6 = "64";
 
 # --- no changes needed below for simple usage ---
 
@@ -166,10 +166,10 @@ sub parse_config($)
 				"pingtest"		=> "",
 				"pingtest6"		=> "",
 				"dn42-as"		=> [],
-				"dn42-minlength4"	=> $dn42_default_minlength4,
-				"dn42-maxlength4"	=> $dn42_default_maxlength4,
-				"dn42-minlength6"	=> $dn42_default_minlength6,
-				"dn42-maxlength6"	=> $dn42_default_maxlength6,
+				"dn42-min-length4"	=> $dn42_default_min_length4,
+				"dn42-max-length4"	=> $dn42_default_max_length4,
+				"dn42-min-length6"	=> $dn42_default_min_length6,
+				"dn42-max-length6"	=> $dn42_default_max_length6,
 				};
 
 			if ($dn42_gateway_as) {
@@ -212,14 +212,14 @@ sub parse_config($)
 				$peer->{"pingtest6"} = $1;
 			} elsif (/^dn42-as\s*=\s*(.*)$/i) {
 				push @{$peer->{"dn42-as"}}, $1;
-			} elsif (/^dn42-minlength4\s*=\s*(.*)$/i) {
-				$peer->{"dn42-minlength4"} = $1;
-			} elsif (/^dn42-maxlength4\s*=\s*(.*)$/i) {
-				$peer->{"dn42-maxlength4"} = $1;
-			} elsif (/^dn42-minlength6\s*=\s*(.*)$/i) {
-				$peer->{"dn42-minlength6"} = $1;
-			} elsif (/^dn42-maxlength6\s*=\s*(.*)$/i) {
-				$peer->{"dn42-maxlength6"} = $1;
+			} elsif (/^dn42-min-length4\s*=\s*(.*)$/i) {
+				$peer->{"dn42-min-length4"} = $1;
+			} elsif (/^dn42-max-length4\s*=\s*(.*)$/i) {
+				$peer->{"dn42-max-length4"} = $1;
+			} elsif (/^dn42-min-length6\s*=\s*(.*)$/i) {
+				$peer->{"dn42-min-length6"} = $1;
+			} elsif (/^dn42-max-length6\s*=\s*(.*)$/i) {
+				$peer->{"dn42-max-length6"} = $1;
 			} elsif (/^-----BEGIN RSA PUBLIC KEY-----/) {
 				$in_key = 1;
 				$peer->{pubkey} = $_ . "\n";
@@ -435,10 +435,10 @@ sub create_shortconfig($)
 			}
 		}
 
-		$shortconfig .= "dn42-minlength4=" . $peer->{"dn42-minlength4"} . "\n";
-		$shortconfig .= "dn42-maxlength4=" . $peer->{"dn42-maxlength4"} . "\n";
-		$shortconfig .= "dn42-minlength6=" . $peer->{"dn42-minlength6"} . "\n";
-		$shortconfig .= "dn42-maxlength6=" . $peer->{"dn42-maxlength6"} . "\n";
+		$shortconfig .= "dn42-min-length4=" . $peer->{"dn42-min-length4"} . "\n";
+		$shortconfig .= "dn42-max-length4=" . $peer->{"dn42-max-length4"} . "\n";
+		$shortconfig .= "dn42-min-length6=" . $peer->{"dn42-min-length6"} . "\n";
+		$shortconfig .= "dn42-max-length6=" . $peer->{"dn42-max-length6"} . "\n";
 	}
 
 	write_string_into_file(">$destdir/shortconfig.cfg", $shortconfig);
