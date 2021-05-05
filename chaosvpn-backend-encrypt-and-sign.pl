@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use constant VERSION => "0.4";
+use constant VERSION => "0.4.1";
 
 #
 # this is the backend postprocessing for the chaosvpn client
@@ -29,10 +29,12 @@ use constant VERSION => "0.4";
 # - added shortconfig.cfg creation for DN42 registry sync
 # v0.3.1 20201004 haegar@ccc.de
 # - server migration, set umask
-# v0.4 20210405 haegar@ccc.de
+# v0.4 20210504 haegar@ccc.de
 # - recreate config text used by chaosvpn nodes, remove
 #   all not needed things
 # - added dn42-as field support and output into shortconfig.cfg
+# v0.4.1 20210505 haegar@ccc.de
+# - bugfix, added forgotten "primary" parameter again
 
 
 use strict;
@@ -152,6 +154,7 @@ sub parse_config($)
 				$peers->{$current_peer} = $peer;
 			}
 			$peer = {
+				"primary"		=> 0,
 				"owner"			=> "",
 				"gatewayhost"		=> "",
 				"use-tcp-only"		=> 0,
@@ -188,6 +191,8 @@ sub parse_config($)
 					if (/^-----END RSA PUBLIC KEY-----/);
 			} elsif (/^gatewayhost\s*=\s*(.*)$/i) {
 				$peer->{gatewayhost} = $1;
+			} elsif (/^primary\s*=\s*(.*)$/i) {
+				$peer->{primary} = $1;
 			} elsif (/^owner\s*=\s*(.*)$/i) {
 				$peer->{owner} = $1;
 			} elsif (/^use-tcp-only\s*=\s*(.*)$/i) {
@@ -262,6 +267,9 @@ sub build_text_config($)
 		}
 		if ($peer->{port}) {
 			$config .= "port=" . $peer->{port} . "\n";
+		}
+		if ($peer->{primary}) {
+			$config .= "primary=1\n";
 		}
 		$config .= "hidden=" . ($peer->{hidden} ? "1" : "0") . "\n";
 		if ($peer->{silent}) {
