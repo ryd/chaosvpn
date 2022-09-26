@@ -9,7 +9,7 @@
 #define STRING_CFS_SIZE 32
 
 static bool
-defprintf(struct string* s, const char const* fmt, va_list exactlyonearg)
+defprintf(struct string* s, const char* fmt, va_list exactlyonearg)
 {
     char buf[4096];
     int len;
