@@ -4,9 +4,7 @@ chaosvpn (2.21-0) unstable; urgency=medium
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Tue, 27 Sep 2022 00:10:01 +0200
 
-chaosvpn (2.19+dev-0) unstable; urgency=medium
-
-  * Development version.
+chaosvpn (2.20-0) unstable; urgency=medium
 
   * Fixes compilation with OpenSSL 1.1.0
   * Changed dependency from "iproute" to "iproute2"
