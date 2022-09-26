@@ -1,3 +1,9 @@
+chaosvpn (2.22-0) unstable; urgency=medium
+
+  * Chmod pidfile after creation, to avoid start-stop-daemon bailing out.
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Tue, 27 Sep 2022 00:53:33 +0200
+
 chaosvpn (2.21-0) unstable; urgency=medium
 
   * Fixes compilation with OpenSSL 3.0
