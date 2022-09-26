@@ -30,6 +30,7 @@ pidfile_create_pidfile(const char *filename)
 		log_err("create_pidfile: error creating pidfile: %s", strerror(errno));
 		goto out_unlock;
 	}
+
 	if (fprintf(handle_pidfile, "%d\n", getpid()) < 0) {
 		log_err("create_pidfile: error writing to pidfile: %s", strerror(errno));
 		goto out_close;
@@ -38,6 +39,10 @@ pidfile_create_pidfile(const char *filename)
 	if (fclose(handle_pidfile) != 0) {
 		log_err("create_pidfile: error writing to pidfile: %s", strerror(errno));
 		goto out_unlock;
+	}
+
+	if (chmod(filename, 0600) != 0) {
+		log_warn("create_pidfile: error chmod pidfile: %s", strerror(errno));
 	}
 
 	retval = true;
