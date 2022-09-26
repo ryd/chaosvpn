@@ -60,7 +60,7 @@ crypto_load_key(const char *key, const bool is_private)
 
 	bio = BIO_new_mem_buf((void *)key, strlen(key));
 	if (bio == NULL) {
-            log_err("crypto_load_key: BIO_new_mem_buf() failed\n");
+            log_err("crypto_load_key: BIO_new_mem_buf() failed");
 	    return NULL;
 	}
 
@@ -72,7 +72,7 @@ crypto_load_key(const char *key, const bool is_private)
         }
         BIO_free(bio);
         if (pkey == NULL) {
-            log_err("crypto_load_key: loading and parsing key failed\n");
+            log_err("crypto_load_key: loading and parsing key failed");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             return NULL;
         }
@@ -92,19 +92,19 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
 	/* load public key into openssl structure */
         pkey = crypto_load_key(pubkey, false);
         if (pkey == NULL) {
-            log_err("crypto_verify_signature: key loading failed\n");
+            log_err("crypto_verify_signature: key loading failed");
             return false;
         }
 
         md_ctx = EVP_MD_CTX_create();
         if (!md_ctx) {
-            log_err("crypto_verify_signature: md_ctx alloc failed\n");
+            log_err("crypto_verify_signature: md_ctx alloc failed");
             return false;
         }
 
         /* Verify the signature */
         if (EVP_VerifyInit(md_ctx, EVP_sha512()) != 1) {
-            log_err("crypto_verify_signature: libcrypto verify init failed\n");
+            log_err("crypto_verify_signature: libcrypto verify init failed");
             EVP_MD_CTX_destroy(md_ctx);
             EVP_PKEY_free(pkey);
             return false;
@@ -114,7 +114,7 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
         EVP_PKEY_free(pkey);
         
         if (err != 1) {
-            log_err("crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
+            log_err("crypto_verify_signature: signature verify failed, received bogus data from backend.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             retval = false;
             goto bailout_ctx_cleanup;
@@ -125,7 +125,7 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
 bailout_ctx_cleanup:
         EVP_MD_CTX_destroy(md_ctx);
 
-        //log_info("Signature Verified Ok.\n");
+        //log_info("Signature Verified Ok.");
 	return retval;
 }
 
@@ -140,13 +140,13 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
         /* load private key into openssl */
         pkey = crypto_load_key(privkey, true);
         if (pkey == NULL) {
-            log_err("crypto_rsa_decrypt: key loading failed.\n");
+            log_err("crypto_rsa_decrypt: key loading failed.");
             return false;
         }
 
         /* check length of ciphertext */
         if (string_length(ciphertext) != EVP_PKEY_size(pkey)) {
-            log_err("crypto_rsa_decrypt: ciphertext should match length of key (%" PRIuPTR " vs %d).\n",
+            log_err("crypto_rsa_decrypt: ciphertext should match length of key (%" PRIuPTR " vs %d).",
                     string_length(ciphertext),EVP_PKEY_size(pkey));
             goto bail_out;
         }
@@ -154,28 +154,28 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
         string_free(decrypted); /* just to be sure */
         string_init(decrypted, EVP_PKEY_size(pkey), 512);
         if (string_size(decrypted) < EVP_PKEY_size(pkey)) {
-            log_err("crypto_rsa_decrypt: malloc error.\n");
+            log_err("crypto_rsa_decrypt: malloc error.");
             goto bail_out;
         }
 
         ctx = EVP_PKEY_CTX_new(pkey, NULL);
         if (!ctx) {
             retval = false;
-            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_new() failed.\n");
+            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_new() failed.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             goto bail_out;
         }
 
         if (EVP_PKEY_decrypt_init(ctx) <= 0) {
             retval = false;
-            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt_init() failed.\n");
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt_init() failed.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             goto bail_out_ctx;
         }
 
         if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0) {
             retval = false;
-            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_set_rsa_padding() failed.\n");
+            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_set_rsa_padding() failed.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             goto bail_out_ctx;
         }
@@ -185,7 +185,7 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
 
         if (len != string_length(ciphertext)) {
             retval = false;
-            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt output len != input len\n");
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt output len != input len");
             goto bail_out_ctx;
         }
 
@@ -196,7 +196,7 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
             string_length(ciphertext)) <= 0) {
 
             retval = false;
-            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt() failed.\n");
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt() failed.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             goto bail_out_ctx;
         }
@@ -207,7 +207,7 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
             retval = true;
         } else {
             retval = false;
-            log_err("crypto_rsa_decrypt: rsa decrypt failed.\n");
+            log_err("crypto_rsa_decrypt: rsa decrypt failed.");
             ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         }
 
@@ -228,26 +228,26 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
 
     ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
-        log_err("crypto_aes_decrypt: ctx alloc failed\n");
+        log_err("crypto_aes_decrypt: ctx alloc failed");
         goto bail_out;
     }
 
     if (!EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL,
         (unsigned char *)string_get(aes_key),
         (unsigned char *)string_get(aes_iv))) {
-        log_err("crypto_aes_decrypt: init failed\n");
+        log_err("crypto_aes_decrypt: init failed");
         ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
     EVP_CIPHER_CTX_set_padding(ctx, 1);
     
     if (string_length(aes_key) != EVP_CIPHER_CTX_key_length(ctx)) {
-        log_err("crypto_aes_decrypt: invalid key size (%" PRIuPTR " vs expected %d)\n",
+        log_err("crypto_aes_decrypt: invalid key size (%" PRIuPTR " vs expected %d)",
                 string_length(aes_key), EVP_CIPHER_CTX_key_length(ctx));
         goto bail_out;
     }
     if (string_length(aes_iv) != EVP_CIPHER_CTX_iv_length(ctx)) {
-        log_err("crypto_aes_decrypt: invalid iv size (%" PRIuPTR " vs expected %d)\n",
+        log_err("crypto_aes_decrypt: invalid iv size (%" PRIuPTR " vs expected %d)",
                 string_length(aes_iv), EVP_CIPHER_CTX_iv_length(ctx));
         goto bail_out;
     }
@@ -257,7 +257,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
     string_free(decrypted); /* free previous buffer */
     string_init(decrypted, decryptspace, 1024);
     if (string_size(decrypted) < decryptspace) {
-        log_err("crypto_aes_decrypt: decrypt buffer malloc error\n");
+        log_err("crypto_aes_decrypt: decrypt buffer malloc error");
         goto bail_out;
     }
     
@@ -267,7 +267,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         /* TODO: need cleaner way: */
         decrypted->length = decryptdone;
     } else {
-        log_err("crypto_aes_decrypt: decrypt failed\n");
+        log_err("crypto_aes_decrypt: decrypt failed");
         ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
@@ -278,7 +278,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         /* TODO: need cleaner way: */
         decrypted->length += decryptdone;
     } else {
-        log_err("crypto_aes_decrypt: decrypt final failed\n");
+        log_err("crypto_aes_decrypt: decrypt final failed");
         ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
