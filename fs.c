@@ -432,7 +432,7 @@ fs_backticks_exec(const char *cmd, struct string *outputbuffer)
 	}
 	
 	retval = fs_read_fd(outputbuffer, pfd);
-	fclose(pfd);
+	pclose(pfd);
 	
 bail_out:
 	return retval;
