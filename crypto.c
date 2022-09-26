@@ -46,9 +46,11 @@ openssl dgst \
 
 */
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-#define EVP_PKEY_get0_RSA(a) ((a)->pkey.rsa)
-#endif
+static int crypto_log_err_cb(const char *str, size_t len, void *u)
+{
+    log_err("openssl returned error: %s", str);
+    return 1;
+}
 
 EVP_PKEY *
 crypto_load_key(const char *key, const bool is_private)
@@ -71,7 +73,7 @@ crypto_load_key(const char *key, const bool is_private)
         BIO_free(bio);
         if (pkey == NULL) {
             log_err("crypto_load_key: loading and parsing key failed\n");
-            ERR_print_errors_fp(stderr);
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             return NULL;
         }
         
@@ -113,7 +115,7 @@ crypto_rsa_verify_signature(struct string *databuffer, struct string *signature,
         
         if (err != 1) {
             log_err("crypto_verify_signature: signature verify failed, received bogus data from backend.\n");
-            ERR_print_errors_fp(stderr);
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
             retval = false;
             goto bailout_ctx_cleanup;
         }
@@ -131,8 +133,9 @@ bool
 crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string *decrypted)
 {
         bool retval = false;
-        int len;
+        size_t len;
         EVP_PKEY *pkey;
+        EVP_PKEY_CTX *ctx;
 
         /* load private key into openssl */
         pkey = crypto_load_key(privkey, true);
@@ -152,13 +155,52 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
         string_init(decrypted, EVP_PKEY_size(pkey), 512);
         if (string_size(decrypted) < EVP_PKEY_size(pkey)) {
             log_err("crypto_rsa_decrypt: malloc error.\n");
+            goto bail_out;
         }
-        
-        len = RSA_private_decrypt(string_length(ciphertext),
-            (unsigned char*)string_get(ciphertext),
+
+        ctx = EVP_PKEY_CTX_new(pkey, NULL);
+        if (!ctx) {
+            retval = false;
+            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_new() failed.\n");
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
+            goto bail_out;
+        }
+
+        if (EVP_PKEY_decrypt_init(ctx) <= 0) {
+            retval = false;
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt_init() failed.\n");
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
+            goto bail_out_ctx;
+        }
+
+        if (EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_OAEP_PADDING) <= 0) {
+            retval = false;
+            log_err("crypto_rsa_decrypt: EVP_PKEY_CTX_set_rsa_padding() failed.\n");
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
+            goto bail_out_ctx;
+        }
+
+        /* determine output size */
+        EVP_PKEY_decrypt(ctx, NULL, &len, (unsigned char*)string_get(ciphertext), string_length(ciphertext));
+
+        if (len != string_length(ciphertext)) {
+            retval = false;
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt output len != input len\n");
+            goto bail_out_ctx;
+        }
+
+        if (EVP_PKEY_decrypt(ctx,
             (unsigned char*)string_get(decrypted),
-            EVP_PKEY_get0_RSA(pkey),
-            RSA_PKCS1_OAEP_PADDING);
+            &len,
+            (unsigned char*)string_get(ciphertext),
+            string_length(ciphertext)) <= 0) {
+
+            retval = false;
+            log_err("crypto_rsa_decrypt: EVP_PKEY_decrypt() failed.\n");
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
+            goto bail_out_ctx;
+        }
+
         if (len >= 0) {
             /* TODO: need cleaner way: */
             decrypted->length = len;
@@ -166,9 +208,11 @@ crypto_rsa_decrypt(struct string *ciphertext, const char *privkey, struct string
         } else {
             retval = false;
             log_err("crypto_rsa_decrypt: rsa decrypt failed.\n");
-            ERR_print_errors_fp(stderr);
+            ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         }
 
+bail_out_ctx:
+        EVP_PKEY_CTX_free(ctx);
 bail_out:
         EVP_PKEY_free(pkey);
         return retval;
@@ -192,7 +236,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         (unsigned char *)string_get(aes_key),
         (unsigned char *)string_get(aes_iv))) {
         log_err("crypto_aes_decrypt: init failed\n");
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
     EVP_CIPHER_CTX_set_padding(ctx, 1);
@@ -224,7 +268,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         decrypted->length = decryptdone;
     } else {
         log_err("crypto_aes_decrypt: decrypt failed\n");
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
     
@@ -235,7 +279,7 @@ crypto_aes_decrypt(struct string *ciphertext, struct string *aes_key, struct str
         decrypted->length += decryptdone;
     } else {
         log_err("crypto_aes_decrypt: decrypt final failed\n");
-        ERR_print_errors_fp(stderr);
+        ERR_print_errors_cb(&crypto_log_err_cb, NULL);
         goto bail_out;
     }
 
