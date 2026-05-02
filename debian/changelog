@@ -1,7 +1,7 @@
-chaosvpn (2.22.1.sdinetM1) unstable; urgency=medium
+chaosvpn (2.22.1.sdinetM2) unstable; urgency=medium
 
   * Created minimal chaosvpn.service
-  * Updated to use debhelper 11
+  * Updated to use debhelper 12
 
  -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 02 May 2026 14:15:17 +0200
 
