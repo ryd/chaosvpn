@@ -9,26 +9,14 @@ CFLAGS		:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get 
 CXXFLAGS	:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get CXXFLAGS)
 LDFLAGS		:= $(shell DEB_BUILD_MAINT_OPTIONS=hardening=+all dpkg-buildflags --get LDFLAGS)
 
-build: build-arch build-indep
+%:
+	dh $@ --with autoreconf
 
-build-arch: build-stamp
-
-build-indep:
-
-build-stamp:
-	dh_testdir
-
+override_dh_auto_build:
 	# Add here commands to compile the package.
 	CFLAGS='$(CFLAGS) $(CPPFLAGS)' LDFLAGS='$(LDFLAGS)' $(MAKE)
 
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
-
-	# Add here commands to clean up after the build process.
+override_dh_auto_clean:
 	$(MAKE) clean
 
 	# running $(MAKE) CHANGES in clean target to have changelog as part
@@ -36,62 +24,8 @@ clean:
 	[ -e .git/HEAD -a -n "$(shell which git)" ] && rm -f CHANGES || true
 	-$(MAKE) CHANGES
 
-	dh_clean
+	dh_auto_clean
 
-install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
-
-	# Add here commands to install the package into debian/<packagename>
+override_dh_auto_install:
+	dh_auto_install
 	$(MAKE) DESTDIR=`pwd`/debian/`dh_listpackages`/ install
-
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	if [ -e CHANGES ] ; then \
-		dh_installchangelogs CHANGES ; \
-	else \
-		dh_installchangelogs ; \
-	fi
-	dh_installdocs
-	dh_installexamples
-	dh_install
-	dh_installman
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installcatalogs
-#	dh_installpam
-	dh_installppp
-#	dh_installmime
-	dh_installinit --error-handler=invokerc_error
-	dh_installcron
-#	dh_installinfo
-#	dh_installwm
-#	dh_installudev
-	dh_lintian
-#	dh_bugfiles
-#	dh_undocumented
-	dh_installman
-	dh_link
-	#dh_strip
-	dh_compress
-	dh_fixperms
-#	dh_perl
-#	dh_makeshlibs
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install

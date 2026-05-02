@@ -1,0 +1,21 @@
+[Unit]
+SourcePath=/etc/init.d/chaosvpn
+Description=LSB: ChaosVPN client
+Before=multi-user.target
+Before=graphical.target
+After=network-online.target
+After=remote-fs.target
+After=nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+Restart=no
+TimeoutSec=1min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+RemainAfterExit=yes
+SuccessExitStatus=5 6
+ExecStart=/etc/init.d/chaosvpn start
+ExecStop=/etc/init.d/chaosvpn stop

@@ -1,3 +1,10 @@
+chaosvpn (2.22.1.sdinetM1) unstable; urgency=medium
+
+  * Created minimal chaosvpn.service
+  * Updated to use debhelper 11
+
+ -- Sven-Haegar Koch <haegar@sdinet.de>  Sat, 02 May 2026 14:15:17 +0200
+
 chaosvpn (2.22-0) unstable; urgency=medium
 
   * Chmod pidfile after creation, to avoid start-stop-daemon bailing out.

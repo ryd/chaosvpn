@@ -5,3 +5,4 @@ chaosvpn.postrm.debhelper
 chaosvpn.preinst.debhelper
 chaosvpn.prerm.debhelper
 chaosvpn.substvars
+debhelper-build-stamp
